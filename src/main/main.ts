@@ -14,6 +14,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import i18nInit from '../renderer/services/i18nInit';
 
 class AppUpdater {
   constructor() {
@@ -56,7 +57,8 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
-const createWindow = async () => {
+// -- MAIN WINDOW CREATOR --
+const createWindow = async (i18n: any) => {
   if (isDebug) {
     await installExtensions();
   }
@@ -112,6 +114,10 @@ const createWindow = async () => {
   new AppUpdater();
 };
 
+function reloadApp() {
+  BrowserWindow.getFocusedWindow()?.loadURL(resolveHtmlPath('index.html'));
+}
+
 /**
  * Add event listeners...
  */
@@ -124,14 +130,50 @@ app.on('window-all-closed', () => {
   }
 });
 
+// START APP
+
+let appI18N: any;
+
 app
   .whenReady()
   .then(() => {
-    createWindow();
-    app.on('activate', () => {
-      // On macOS it's common to re-create a window in the app when the
-      // dock icon is clicked and there are no other windows open.
-      if (mainWindow === null) createWindow();
+    return i18nInit().then((i18n) => {
+      appI18N = i18n;
+
+      createWindow(i18n);
+
+      process.removeAllListeners('uncaughtException');
+      process.on('uncaughtException', (error) => {
+        console.error(
+          'UNCAUGHT EXCEPTION in main:',
+          error && error.stack ? error.stack : error,
+        );
+        const msg = error && error.message ? error.message : '';
+        //@ts-ignore
+        const code = error && error.code ? error.code : '';
+        const isAbort = error && error.name === 'AbortError';
+        const isSocketHangUp =
+          msg.includes('socket hang up') ||
+          code === 'ECONNRESET' ||
+          code === 'ECONNABORTED';
+
+        if (isAbort || isSocketHangUp) {
+          console.warn(
+            'Known non-fatal error (ignored):',
+            msg || code || error,
+          );
+          return;
+        }
+        try {
+          reloadApp();
+        } catch (reloadErr) {
+          console.error(
+            'reloadApp() failed, exiting process:',
+            reloadErr && reloadErr.stack ? reloadErr.stack : reloadErr,
+          );
+          process.exit(1);
+        }
+      });
     });
   })
   .catch(console.log);
