@@ -9,12 +9,19 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  shell,
+  ipcMain,
+  BrowserWindowConstructorOptions,
+} from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import i18nInit from '../renderer/services/i18nInit';
+import windowStateKeeper from 'electron-window-state';
 
 class AppUpdater {
   constructor() {
@@ -57,11 +64,36 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
+//#region APP CONSTANTS
+const DEFAULT_APP_SIZE = {
+  defaultWidth: 1280,
+  defaultHeight: 800,
+};
+
+const browserWindowOptions: BrowserWindowConstructorOptions = {
+  show: false,
+  center: true,
+  autoHideMenuBar: true,
+  titleBarStyle: process.platform === 'darwin' ? 'hidden' : 'default',
+  webPreferences: {
+    spellcheck: true,
+    preload:
+      app.isPackaged || !isDebug
+        ? path.join(__dirname, 'preload.js')
+        : path.join(__dirname, '../../.erb/dll/preload.js'),
+  },
+};
+
+const SUPPORTED_EXTS = new Set(['.md', '.mmd', '.txt', '.html', '.glb']);
+//#endregion
+
 // -- MAIN WINDOW CREATOR --
 const createWindow = async (i18n: any) => {
   if (isDebug) {
     await installExtensions();
   }
+
+  const mainWindowState = windowStateKeeper(DEFAULT_APP_SIZE);
 
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
@@ -114,13 +146,62 @@ const createWindow = async (i18n: any) => {
   new AppUpdater();
 };
 
+//#region DEFINE EVENT CALLBACK
+function showApp() {
+  const windows = BrowserWindow.getAllWindows();
+  windows.forEach((win, i) => {
+    if (win && i < 1) {
+      if (win.isMinimized()) win.restore();
+      else win.show();
+    }
+  });
+}
+
 function reloadApp() {
   BrowserWindow.getFocusedWindow()?.loadURL(resolveHtmlPath('index.html'));
 }
 
-/**
- * Add event listeners...
- */
+function createNewWindowInstance(url?: string) {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow(appI18N);
+    return;
+  }
+  const mainWindowState = windowStateKeeper(DEFAULT_APP_SIZE);
+  const newWindowInstance = new BrowserWindow({
+    ...browserWindowOptions,
+    width: mainWindowState.width,
+    height: mainWindowState.height,
+    x: mainWindowState.x,
+    y: mainWindowState.y,
+    show: true,
+    center: true,
+  });
+  if (mainWindow) {
+    // @ts-ignore
+    mainWindow.fileChanged = false;
+    // @ts-ignore
+    mainWindow.descriptionChanged = false;
+  }
+  newWindowInstance.setMenuBarVisibility(false);
+  if (url) newWindowInstance.loadURL(url);
+  else newWindowInstance.loadURL(resolveHtmlPath('index.html'));
+}
+//#endregion
+
+//#region --- Add Electron App Events Listeners ---
+
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+
+app.on('open-file', (event, filePath) => {
+  event.preventDefault(); // important — prevents default macOS behavior
+  const startupFilePath = filePath;
+  if (app.isReady()) {
+    const startupParameter = '?cmdopen=' + encodeURIComponent(startupFilePath);
+    const url = resolveHtmlPath('index.html') + startupParameter;
+    createNewWindowInstance(url);
+  } else {
+  }
+});
 
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
@@ -129,6 +210,25 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
+if (!isDebug) {
+  const gotLock = app.requestSingleInstanceLock();
+  if (!gotLock) {
+    app.quit();
+  } else {
+    // Windows and Linux solution for opening files
+    app.on('second-instance', (event, argv) => {
+      const fileArg = argv.find((arg) =>
+        SUPPORTED_EXTS.has(path.extname(arg).toLowerCase()),
+      );
+      const startupParameter = '?cmdopen=' + encodeURIComponent(fileArg);
+      const url = resolveHtmlPath('index.html') + startupParameter;
+      createNewWindowInstance(url);
+    });
+  }
+}
+
+//#endregion
 
 // START APP
 
@@ -142,6 +242,21 @@ app
 
       createWindow(i18n);
 
+      i18n.on('languageChanged', (lng) => {
+        try {
+          console.log('[Localisation] LanguageChanged: ' + lng);
+          // TODO how to change languages
+        } catch (ex) {
+          console.log('[Localisation] LanguageChanged - Error:', ex);
+        }
+      });
+
+      //#region --- IPC Main Handlers ---
+      ipcMain.on('show-main-window', showApp);
+      ipcMain.on('relaunch-app', reloadApp);
+      //#endregion
+
+      //#region --- Process Event Handler
       process.removeAllListeners('uncaughtException');
       process.on('uncaughtException', (error) => {
         console.error(
@@ -174,6 +289,7 @@ app
           process.exit(1);
         }
       });
+      //#endregion
     });
   })
   .catch(console.log);

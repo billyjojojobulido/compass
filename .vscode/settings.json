@@ -4,13 +4,15 @@
     ".prettierrc": "jsonc",
     ".eslintignore": "ignore"
   },
-  
+
   "eslint.validate": [
     "javascript",
     "javascriptreact",
     "html",
     "typescriptreact"
   ],
+
+  "todohighlight.isEnable": true,
 
   "javascript.validate.enable": false,
   "javascript.format.enable": false,
