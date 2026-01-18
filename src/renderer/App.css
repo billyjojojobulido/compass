@@ -1,62 +1,449 @@
-/*
- * @NOTE: Prepend a `~` to css file paths that are in your node_modules
- *        See https://github.com/webpack-contrib/sass-loader#imports
- */
+:root {
+  --bg: #0e1624;
+  --panel: #132033;
+  --panel2: #172a43;
+  --card: #ffffff;
+  --text: #e9eef7;
+  --muted: rgba(233, 238, 247, 0.7);
+  --stroke: rgba(255, 255, 255, 0.1);
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+}
 body {
-  position: relative;
-  color: white;
-  height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(
+      1200px 700px at 20% 0%,
+      rgba(65, 170, 255, 0.1),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 600px at 90% 20%,
+      rgba(255, 110, 199, 0.1),
+      transparent 60%
+    ),
+    var(--bg);
+  color: var(--text);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    'Apple Color Emoji',
+    'Segoe UI Emoji';
+}
+
+/* Root layout mimics 1280x800 ratio but stays responsive */
+.appRoot {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top bar */
+.topBar {
+  height: 56px; /* TODO: may adjust this later, temp just try not to make it too high */
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: 1fr minmax(260px, 520px) 1fr;
+  align-items: center;
+  gap: 12px;
   background: linear-gradient(
-    200.96deg,
-    #fedc2a -29.09%,
-    #dd5789 51.77%,
-    #7a2c9e 129.35%
+    180deg,
+    rgba(19, 32, 51, 0.92),
+    rgba(19, 32, 51, 0.72)
   );
-  font-family: sans-serif;
-  overflow-y: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  border-bottom: 1px solid var(--stroke);
+  backdrop-filter: blur(10px);
 }
 
-button {
-  background-color: white;
-  padding: 10px 20px;
-  border-radius: 10px;
+.topLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sidebarToggle {
+  display: none; /* only display when window is wide */
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+/* TODO: placeholder for Logo on top bar*/
+.logoMark {
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  background: conic-gradient(from 200deg, #4cc3ff, #ff6ec7, #ffd86e, #4cc3ff);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+}
+.logoText {
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topCenter {
+  display: flex;
+  justify-content: center;
+}
+.searchWrap {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--stroke);
+}
+.searchIcon {
+  opacity: 0.8;
+}
+.searchInput {
+  width: 100%;
   border: none;
-  appearance: none;
-  font-size: 1.3rem;
-  box-shadow: 0px 8px 28px -6px rgba(24, 39, 75, 0.12),
-    0px 18px 88px -4px rgba(24, 39, 75, 0.14);
-  transition: all ease-in 0.1s;
-  cursor: pointer;
-  opacity: 0.9;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+}
+.searchInput::placeholder {
+  color: rgba(233, 238, 247, 0.55);
 }
 
-button:hover {
-  transform: scale(1.05);
-  opacity: 1;
-}
-
-li {
-  list-style: none;
-}
-
-a {
-  text-decoration: none;
-  height: fit-content;
-  width: fit-content;
-  margin: 10px;
-}
-
-a:hover {
-  opacity: 1;
-  text-decoration: none;
-}
-
-.Hello {
+.topRight {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
+}
+
+.iconBtn {
+  height: 36px;
+  min-width: 36px;
+  padding: 0 10px;
+  border-radius: 12px;
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  cursor: pointer;
+}
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Main row */
+.mainRow {
+  height: calc(100% - 56px);
+  display: grid;
+  grid-template-columns: 25% 75%;
+  gap: 0;
+  overflow: hidden; /* forbid entire UI to scroll */
+}
+
+/* Sidebar */
+.sidebar {
+  border-right: 1px solid var(--stroke);
+  background: linear-gradient(
+    180deg,
+    rgba(23, 42, 67, 0.72),
+    rgba(23, 42, 67, 0.55)
+  );
+  backdrop-filter: blur(10px);
+  min-width: 260px; /* a baseline for responsive design */
+}
+
+.sidebarInner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  gap: 12px;
+}
+
+.navTop {
+  height: 40%;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.navBtn {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
   align-items: center;
-  margin: 20px 0;
+  gap: 10px;
+  text-align: left;
+}
+.navBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.navBtn.active {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.22);
+}
+.navIcon {
+  width: 22px;
+  opacity: 0.95;
+}
+.navLabel {
+  font-weight: 650;
+  letter-spacing: 0.2px;
+}
+
+.sidebarDivider {
+  height: 1px;
+  background: var(--stroke);
+}
+
+.navBottom {
+  height: 55%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 240px;
+}
+.sectionTitle {
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: rgba(233, 238, 247, 0.7);
+}
+
+.weekList {
+  flex: 1;
+  overflow: auto;
+  padding-right: 6px;
+}
+.weekRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  color: rgba(233, 238, 247, 0.85);
+  cursor: pointer;
+}
+.weekRow:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--stroke);
+}
+.weekRow.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.weekLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.weekChevron {
+  opacity: 0.7;
+  margin-left: 12px;
+}
+
+.sidebarBuffer {
+  height: 5%;
+  min-height: 12px;
+}
+
+/* Content */
+.content {
+  height: 100%;
+  padding: 14px;
+  overflow: hidden;
+}
+
+.contentHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 2px 12px;
+}
+.contentTitle {
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: 0.2px;
+}
+.contentHint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Kanban board */
+.kanbanBoard {
+  height: calc(100% - 42px);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(240px, 1fr));
+  gap: 14px;
+  /* BUGFIX: forbid to scroll entire board, particularly vertically */
+  overflow-y: hidden;
+  /* BUGFIX: still allow horizontal scroll for responsiveness, in case columns cant show all info when window to thin */
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.kanbanCol {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+}
+
+.colHeader {
+  padding: 12px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--stroke);
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.col-TODO {
+  background: rgba(255, 255, 255, 0.05);
+}
+.col-WIP {
+  background: rgba(255, 216, 110, 0.1);
+}
+.col-QA {
+  background: rgba(155, 140, 255, 0.1);
+}
+.col-DONE {
+  background: rgba(120, 220, 160, 0.1);
+}
+
+.colTitle {
+  font-size: 13px;
+}
+.colCount {
+  font-size: 12px;
+  opacity: 0.8;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.colBody {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* this allows kanban column to scroll */
+  overflow: auto;
+  /* KEY!!! let colBody take all height execpt header */
+  flex: 1;
+  min-height: 0;
+}
+
+.taskCard {
+  background: rgba(255, 255, 255, 0.92);
+  color: #0d1b2a;
+  border-radius: 12px;
+  padding: 10px 10px 9px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.taskTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.taskTitle {
+  font-weight: 750;
+  font-size: 13px;
+  line-height: 1.25;
+}
+.taskMeta {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.74;
+}
+
+.miniBtn {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 10px;
+  cursor: pointer;
+  height: 28px;
+  min-width: 32px;
+  padding: 0 8px;
+}
+.miniBtn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.emptyState {
+  padding: 10px 8px;
+  color: rgba(233, 238, 247, 0.65);
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Responsive: narrow screens */
+@media (max-width: 980px) {
+  .topBar {
+    grid-template-columns: 1fr 1.2fr 1fr;
+  }
+  .sidebarToggle {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 860px) {
+  .mainRow {
+    grid-template-columns: 1fr; /* a single column */
+  }
+
+  .sidebar {
+    position: absolute;
+    top: 56px;
+    left: 0;
+    height: calc(100% - 56px);
+    width: min(360px, 86vw);
+    z-index: 20;
+    box-shadow: var(--shadow);
+    transform: translateX(0);
+    transition: transform 0.18s ease;
+  }
+  .sidebar.closed {
+    transform: translateX(-110%);
+  }
+  .content {
+    padding: 14px;
+  }
 }
