@@ -155,6 +155,12 @@ export default function App() {
       {/* Main */}
       <div className="mainRow">
         {/* Sidebar */}
+
+        <div
+          className={`backdrop ${sidebarOpen ? 'show' : ''}`}
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden
+        />
         <aside className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
           <div className="sidebarInner">
             {/* Top Half= (40%) */}

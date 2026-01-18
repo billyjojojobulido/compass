@@ -278,6 +278,9 @@ body {
   height: 100%;
   padding: 14px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .contentHeader {
@@ -299,7 +302,9 @@ body {
 
 /* Kanban board */
 .kanbanBoard {
-  height: calc(100% - 42px);
+  flex: 1;
+  min-height: 0;
+  /* height: calc(100% - 42px); */
   display: grid;
   grid-template-columns: repeat(4, minmax(240px, 1fr));
   gap: 14px;
@@ -308,6 +313,9 @@ body {
   /* BUGFIX: still allow horizontal scroll for responsiveness, in case columns cant show all info when window to thin */
   overflow-x: auto;
   padding-bottom: 6px;
+  /* UX: make scrolling experience more natual */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .kanbanCol {
@@ -317,7 +325,7 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 360px;
+  min-height: 0;
   min-width: 240px; /* just in case it is over compressed when screen too narrow */
 }
 
@@ -331,6 +339,8 @@ body {
   letter-spacing: 0.2px;
   position: sticky; /* to make header stick when scrolling down */
   backdrop-filter: blur(8px);
+  top: 0;
+  z-index: 5;
 }
 
 .col-TODO {
@@ -368,6 +378,8 @@ body {
   /* KEY!!! let colBody take all height execpt header */
   flex: 1;
   min-height: 0; /* this is just to make inner scroll to take effect, instead of enlarging it's container */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .taskCard {
@@ -433,7 +445,20 @@ body {
     position: relative; /* so sidebar absolute use this as baseline */
     overflow: hidden; /* not all scrolling as an entity */
   }
-
+  .backdrop {
+    display: block;
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.38);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+    z-index: 15;
+  }
+  .backdrop.show {
+    opacity: 1;
+    pointer-events: auto; /* click to close */
+  }
   .sidebar {
     position: absolute;
     top: 0;
@@ -453,4 +478,9 @@ body {
     overflow: hidden;
     padding: 14px;
   }
+}
+
+/* Backdrop overlay (for mobile sidebar drawer) */
+.backdrop {
+  display: none;
 }
