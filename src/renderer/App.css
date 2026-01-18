@@ -484,3 +484,33 @@ body {
 .backdrop {
   display: none;
 }
+
+/* Drag handle */
+.dragHandle {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 10px;
+  cursor: grab;
+  height: 28px;
+  min-width: 34px;
+  padding: 0 8px;
+  line-height: 1;
+}
+.dragHandle:active {
+  cursor: grabbing;
+}
+.dragHandle:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* Dragging feedback */
+.taskCard.dragging {
+  box-shadow: 0 26px 48px rgba(0, 0, 0, 0.22);
+}
+
+/* ✅ DragOverlay card: fell more like floating */
+.taskCard.overlay {
+  transform: rotate(0.6deg);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
