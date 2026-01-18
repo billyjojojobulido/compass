@@ -211,6 +211,18 @@ app.on('window-all-closed', () => {
   }
 });
 
+app.on('activate', (event, hasVisibleWindows) => {
+  const windows = BrowserWindow.getAllWindows();
+  // On macOS it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
+  if (windows.length === 0) {
+    createWindow(appI18N);
+  } else {
+    showApp();
+  }
+  event.preventDefault();
+});
+
 if (!isDebug) {
   const gotLock = app.requestSingleInstanceLock();
   if (!gotLock) {
