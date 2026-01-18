@@ -19,6 +19,7 @@ body,
   height: 100%;
 }
 body {
+  overflow: hidden;
   margin: 0;
   background:
     radial-gradient(
@@ -168,7 +169,6 @@ body {
     rgba(23, 42, 67, 0.55)
   );
   backdrop-filter: blur(10px);
-  min-width: 260px; /* a baseline for responsive design */
 }
 
 .sidebarInner {
@@ -318,6 +318,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 360px;
+  min-width: 240px; /* just in case it is over compressed when screen too narrow */
 }
 
 .colHeader {
@@ -328,6 +329,8 @@ body {
   border-bottom: 1px solid var(--stroke);
   font-weight: 700;
   letter-spacing: 0.2px;
+  position: sticky; /* to make header stick when scrolling down */
+  backdrop-filter: blur(8px);
 }
 
 .col-TODO {
@@ -364,7 +367,7 @@ body {
   overflow: auto;
   /* KEY!!! let colBody take all height execpt header */
   flex: 1;
-  min-height: 0;
+  min-height: 0; /* this is just to make inner scroll to take effect, instead of enlarging it's container */
 }
 
 .taskCard {
@@ -426,14 +429,16 @@ body {
 
 @media (max-width: 860px) {
   .mainRow {
-    grid-template-columns: 1fr; /* a single column */
+    grid-template-columns: 1fr;
+    position: relative; /* so sidebar absolute use this as baseline */
+    overflow: hidden; /* not all scrolling as an entity */
   }
 
   .sidebar {
     position: absolute;
-    top: 56px;
+    top: 0;
     left: 0;
-    height: calc(100% - 56px);
+    height: 100%;
     width: min(360px, 86vw);
     z-index: 20;
     box-shadow: var(--shadow);
@@ -444,6 +449,8 @@ body {
     transform: translateX(-110%);
   }
   .content {
+    height: 100%;
+    overflow: hidden;
     padding: 14px;
   }
 }
