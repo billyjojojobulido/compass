@@ -24,6 +24,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import icon from 'assets/icon.png';
 
 type KanbanStatus = 'TODO' | 'WIP' | 'QA' | 'DONE';
 
@@ -250,7 +251,7 @@ export default function App() {
           </button>
 
           <div className="logo" title="Compass">
-            <div className="logoMark" />
+            <img src={icon} alt="Compass" className="logoImg" />
             <div className="logoText">Compass</div>
           </div>
         </div>
