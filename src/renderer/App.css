@@ -58,7 +58,7 @@ body {
   height: 56px; /* TODO: may adjust this later, temp just try not to make it too high */
   padding: 10px 14px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
   gap: 12px;
   background: linear-gradient(
@@ -411,7 +411,7 @@ body {
 /* Responsive: narrow screens */
 @media (max-width: 980px) {
   .topBar {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
   }
   .sidebarToggle {
     display: inline-flex;
