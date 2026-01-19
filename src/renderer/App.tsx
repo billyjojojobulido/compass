@@ -14,6 +14,7 @@ import {
   DragOverlay,
   UniqueIdentifier,
   useDroppable,
+  closestCenter,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -365,7 +366,7 @@ export default function App() {
 
           <DndContext
             sensors={sensors}
-            collisionDetection={closestCorners}
+            collisionDetection={closestCenter}
             onDragStart={onDragStart}
             onDragOver={onDragOver}
             onDragEnd={onDragEnd}
