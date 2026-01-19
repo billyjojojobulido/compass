@@ -382,6 +382,12 @@ body {
   overscroll-behavior: contain;
 }
 
+.colBody.isOver {
+  outline: 2px solid rgba(255, 255, 255, 0.18);
+  outline-offset: -6px;
+  border-radius: 12px;
+}
+
 .taskCard {
   background: rgba(255, 255, 255, 0.92);
   color: #0d1b2a;

@@ -13,6 +13,7 @@ import {
   useSensors,
   DragOverlay,
   UniqueIdentifier,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -408,6 +409,7 @@ function KanbanColumn(props: {
 }) {
   const { status, title, count, itemIds, children } = props;
 
+  const { setNodeRef, isOver } = useDroppable({ id: status });
   return (
     <section className="kanbanCol" aria-label={status}>
       <div className={`colHeader col-${status}`}>
@@ -416,7 +418,7 @@ function KanbanColumn(props: {
       </div>
 
       {/*  containerId -> status :: to identify over different containers */}
-      <div className="colBody">
+      <div ref={setNodeRef} className={`colBody ${isOver ? 'isOver' : ''}`}>
         <SortableContext
           id={status}
           items={itemIds}
