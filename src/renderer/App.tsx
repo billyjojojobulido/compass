@@ -57,7 +57,6 @@ function isStatus(x: any): x is KanbanStatus {
 }
 
 export default function App() {
-  const [query, setQuery] = useState('');
   const [activeNav, setActiveNav] = useState<
     '技术债务' | '待做事项' | '周总结'
   >('待做事项');
@@ -125,29 +124,6 @@ export default function App() {
     for (const t of initialTasks) cols[t.status].push(t.id);
     return cols;
   });
-
-  // TODO: Do We Really Need Search?
-  const filteredColumns = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return columns;
-
-    const passes = (id: string) => {
-      const t = tasksById[id];
-      if (!t) return false;
-      return (
-        t.title.toLowerCase().includes(q) ||
-        (t.meta?.toLowerCase().includes(q) ?? false) ||
-        t.status.toLowerCase().includes(q)
-      );
-    };
-
-    return {
-      TODO: columns.TODO.filter(passes),
-      WIP: columns.WIP.filter(passes),
-      QA: columns.QA.filter(passes),
-      DONE: columns.DONE.filter(passes),
-    };
-  }, [columns, tasksById, query]);
 
   // ---------- DnD ----------
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
@@ -279,20 +255,6 @@ export default function App() {
           </div>
         </div>
 
-        <div className="topCenter">
-          <div className="searchWrap">
-            <span className="searchIcon" aria-hidden>
-              🔎
-            </span>
-            <input
-              className="searchInput"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search…"
-            />
-          </div>
-        </div>
-
         <div className="topRight">
           <button className="iconBtn" aria-label="Settings" title="Settings">
             ⚙️
@@ -373,7 +335,7 @@ export default function App() {
           >
             <div className="kanbanBoard" aria-label="Kanban board">
               {STATUSES.map((st) => {
-                const ids = filteredColumns[st];
+                const ids = columns[st];
                 return (
                   <KanbanColumn
                     key={st}
