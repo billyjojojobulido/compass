@@ -1,0 +1,24 @@
+{
+  "priorities": [
+    { "id": "P0", "label": "P0 - Critical", "rank": 0 },
+    { "id": "P1", "label": "P1 - High", "rank": 1 },
+    { "id": "P2", "label": "P2 - Medium", "rank": 2 },
+    { "id": "P3", "label": "P3 - Low", "rank": 3 }
+  ],
+  "statuses": [
+    { "id": "TODO", "label": "To Do", "tone": "gray" },
+    { "id": "WIP", "label": "In Progress", "tone": "yellow" },
+    { "id": "BLOCKED", "label": "Blocked", "tone": "red" },
+    { "id": "QA", "label": "QA", "tone": "blue" },
+    { "id": "DONE", "label": "Done", "tone": "green" }
+  ],
+  "stakeholders": [
+    { "id": "ME", "label": "Me" },
+    { "id": "DEV", "label": "Dev" },
+    { "id": "ART", "label": "Artist" },
+    { "id": "QA", "label": "QA" },
+    { "id": "COPY", "label": "Copywriter" },
+    { "id": "BE", "label": "Backend" },
+    { "id": "MATH", "label": "Math Team" }
+  ]
+}
