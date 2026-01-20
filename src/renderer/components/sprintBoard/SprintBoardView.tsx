@@ -26,50 +26,18 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { loadSprintConfig, byId } from '-/config/sprintConfig.ts';
 
 /** ---------------- Config (future: load from file/db) ---------------- */
 type StatusId = string;
 type StakeholderId = string;
 type PriorityId = string;
 
-type StatusDef = {
-  id: StatusId;
-  label: string;
-  tone: 'gray' | 'blue' | 'yellow' | 'green' | 'red';
-};
-type StakeholderDef = { id: StakeholderId; label: string };
-type PriorityDef = { id: PriorityId; label: string; rank: number }; // smaller rank => higher priority
+const CFG = loadSprintConfig();
+const STATUS = CFG.statuses;
+const STAKEHOLDERS = CFG.stakeholders;
+const PRIORITIES = CFG.priorities;
 
-const STATUS: StatusDef[] = [
-  { id: 'TODO', label: 'To Do', tone: 'gray' },
-  { id: 'WIP', label: 'In Progress', tone: 'yellow' },
-  { id: 'BLOCKED', label: 'Blocked', tone: 'red' },
-  { id: 'QA', label: 'QA', tone: 'blue' },
-  { id: 'DONE', label: 'Done', tone: 'green' },
-];
-
-const STAKEHOLDERS: StakeholderDef[] = [
-  { id: 'ME', label: 'Me' },
-  { id: 'DEV', label: 'Dev' },
-  { id: 'ART', label: 'Artist' },
-  { id: 'QA', label: 'QA' },
-  { id: 'COPY', label: 'Copywriter' },
-  { id: 'BE', label: 'Backend' },
-  { id: 'MATH', label: 'Math Team' },
-];
-
-const PRIORITIES: PriorityDef[] = [
-  { id: 'P0', label: 'P0 - Critical', rank: 0 },
-  { id: 'P1', label: 'P1 - High', rank: 1 },
-  { id: 'P2', label: 'P2 - Medium', rank: 2 },
-  { id: 'P3', label: 'P3 - Low', rank: 3 },
-];
-
-function byId<T extends { id: string }>(arr: T[]) {
-  const m = new Map<string, T>();
-  arr.forEach((x) => m.set(x.id, x));
-  return m;
-}
 const statusMap = byId(STATUS);
 const stakeholderMap = byId(STAKEHOLDERS);
 const priorityMap = byId(PRIORITIES);
