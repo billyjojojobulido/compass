@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TopBar from './TopBar';
 import Sidebar, { NavKey } from './SideBar';
-import Content from './Content';
+import Content from '-/components/core/Content';
 
 export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(true);

@@ -19,6 +19,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import '-/styles/kanban.css';
 
 type KanbanStatus = 'TODO' | 'WIP' | 'QA' | 'DONE';
 type Task = { id: string; title: string; status: KanbanStatus; meta?: string };

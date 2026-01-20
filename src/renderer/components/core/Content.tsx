@@ -1,6 +1,6 @@
 import React from 'react';
-import type { NavKey } from './SideBar';
-import KanbanView from './kanban/KanbanView';
+import type { NavKey } from '-/components/core/SideBar';
+import KanbanView from '-/components/kanban/KanbanView';
 
 type Props = {
   activeNav: NavKey;
