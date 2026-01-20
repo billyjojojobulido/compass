@@ -203,6 +203,21 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
     const [epicModal, setEpicModal] = useState<EpicModalState>({ open: false });
     const [taskModal, setTaskModal] = useState<TaskModalState>({ open: false });
 
+    function openCreateTask(defaultEpicId?: EpicId) {
+      setTaskModal({ open: true, mode: 'create', defaultEpicId });
+    }
+    function openEditTask(taskId: TaskId) {
+      setTaskModal({ open: true, mode: 'edit', taskId });
+    }
+
+    // expose set methods to Outer Components;
+    // Content header buttons will call
+    /* baocheng notes: TODO: may migrate to Redux in future */
+    useImperativeHandle(ref, () => ({
+      openCreateEpic,
+      openCreateTask,
+    }));
+
     /** ---- DnD ---- */
     const sensors = useSensors(
       useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -373,19 +388,6 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
     }
 
     /** ---------------- CRUD: Tasks ---------------- */
-    function openCreateTask(defaultEpicId?: EpicId) {
-      setTaskModal({ open: true, mode: 'create', defaultEpicId });
-    }
-    function openEditTask(taskId: TaskId) {
-      setTaskModal({ open: true, mode: 'edit', taskId });
-    }
-
-    // ✅ 把方法暴露给外部（Content header 的按钮会调用）
-    useImperativeHandle(ref, () => ({
-      openCreateEpic,
-      openCreateTask,
-    }));
-
     function saveTask(payload: {
       taskId?: TaskId;
       epicId: EpicId;

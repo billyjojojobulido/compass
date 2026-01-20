@@ -4,10 +4,6 @@ import SprintBoardView, {
   SprintBoardHandle,
 } from '-/components/sprintBoard/SprintBoardView';
 
-type Props = {
-  activeNav: NavKey;
-};
-
 export default function Content({ activeNav }: { activeNav: NavKey }) {
   const boardRef = useRef<SprintBoardHandle>(null);
 
@@ -39,7 +35,7 @@ export default function Content({ activeNav }: { activeNav: NavKey }) {
           </div>
         ) : null}
       </div>
-      {activeNav === '待做事项' && <SprintBoardView />}
+      {activeNav === '待做事项' && <SprintBoardView ref={boardRef} />}
       {activeNav === '周总结' && (
         <div style={{ padding: 12, opacity: 0.75 }}>Weekly placeholder</div>
       )}
