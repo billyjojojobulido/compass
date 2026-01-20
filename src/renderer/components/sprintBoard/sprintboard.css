@@ -7,16 +7,6 @@
   flex: 1;
 }
 
-/* free items to Content Top Right */
-.sprintActions {
-  position: absolute;
-  right: 16px;
-  top: 12px;
-  display: flex;
-  gap: 10px;
-  z-index: 3;
-}
-
 /* board: scroll horizontally, not the entire app */
 .sprintBoard {
   flex: 1;
