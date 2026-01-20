@@ -1,0 +1,970 @@
+import React, { useMemo, useState } from 'react';
+import './sprintboard.css';
+
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+  DragOverlay,
+  PointerSensor,
+  UniqueIdentifier,
+  closestCenter,
+  useSensor,
+  useSensors,
+  useDroppable,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+/** ---------------- Config (future: load from file/db) ---------------- */
+type StatusId = string;
+type StakeholderId = string;
+type PriorityId = string;
+
+type StatusDef = {
+  id: StatusId;
+  label: string;
+  tone: 'gray' | 'blue' | 'yellow' | 'green' | 'red';
+};
+type StakeholderDef = { id: StakeholderId; label: string };
+type PriorityDef = { id: PriorityId; label: string; rank: number }; // smaller rank => higher priority
+
+const STATUS: StatusDef[] = [
+  { id: 'TODO', label: 'To Do', tone: 'gray' },
+  { id: 'WIP', label: 'In Progress', tone: 'yellow' },
+  { id: 'BLOCKED', label: 'Blocked', tone: 'red' },
+  { id: 'QA', label: 'QA', tone: 'blue' },
+  { id: 'DONE', label: 'Done', tone: 'green' },
+];
+
+const STAKEHOLDERS: StakeholderDef[] = [
+  { id: 'ME', label: 'Me' },
+  { id: 'DEV', label: 'Dev' },
+  { id: 'ART', label: 'Artist' },
+  { id: 'QA', label: 'QA' },
+  { id: 'COPY', label: 'Copywriter' },
+  { id: 'BE', label: 'Backend' },
+  { id: 'MATH', label: 'Math Team' },
+];
+
+const PRIORITIES: PriorityDef[] = [
+  { id: 'P0', label: 'P0 - Critical', rank: 0 },
+  { id: 'P1', label: 'P1 - High', rank: 1 },
+  { id: 'P2', label: 'P2 - Medium', rank: 2 },
+  { id: 'P3', label: 'P3 - Low', rank: 3 },
+];
+
+function byId<T extends { id: string }>(arr: T[]) {
+  const m = new Map<string, T>();
+  arr.forEach((x) => m.set(x.id, x));
+  return m;
+}
+const statusMap = byId(STATUS);
+const stakeholderMap = byId(STAKEHOLDERS);
+const priorityMap = byId(PRIORITIES);
+
+/** ---------------- Data model ---------------- */
+type EpicId = string;
+type TaskId = string;
+
+type Epic = {
+  id: EpicId;
+  title: string;
+  priorityId: PriorityId;
+  statusId: StatusId; // Epic Status (manual / aggregate from tasks)
+};
+
+type Task = {
+  id: TaskId;
+  epicId: EpicId;
+  title: string;
+  statusId: StatusId;
+  stakeholderId?: StakeholderId; // not required if DONE
+};
+
+type TasksById = Record<TaskId, Task>;
+type TaskOrderByEpic = Record<EpicId, TaskId[]>;
+
+function clampInsertIndex(index: number, len: number) {
+  return Math.max(0, Math.min(index, len));
+}
+
+/** dnd ids (avoid conflicts with epic/task id) */
+const epicDndId = (id: EpicId) => `epic:${id}`;
+const taskDndId = (id: TaskId) => `task:${id}`;
+const isEpicDndId = (id: string) => id.startsWith('epic:');
+const isTaskDndId = (id: string) => id.startsWith('task:');
+const parseEpicId = (id: string) => id.replace('epic:', '');
+const parseTaskId = (id: string) => id.replace('task:', '');
+
+type EpicModalState =
+  | { open: false }
+  | { open: true; mode: 'create' }
+  | { open: true; mode: 'edit'; epicId: EpicId };
+
+type TaskModalState =
+  | { open: false }
+  | { open: true; mode: 'create'; defaultEpicId?: EpicId }
+  | { open: true; mode: 'edit'; taskId: TaskId };
+
+export default function SprintBoardView() {
+  /** ---- Hardcoded initial data (future: load) ---- */
+  const [epics, setEpics] = useState<Epic[]>([
+    { id: 'e1', title: 'UIv3', priorityId: 'P0', statusId: 'WIP' },
+    { id: 'e2', title: 'Lobby Refresh', priorityId: 'P1', statusId: 'QA' },
+    {
+      id: 'e3',
+      title: 'Tech Debt Cleanup',
+      priorityId: 'P2',
+      statusId: 'TODO',
+    },
+  ]);
+
+  const [tasksById, setTasksById] = useState<TasksById>({
+    t1: {
+      id: 't1',
+      epicId: 'e1',
+      title: 'Game Of Queen – Implement core UI',
+      statusId: 'WIP',
+      stakeholderId: 'ME',
+    },
+    t2: {
+      id: 't2',
+      epicId: 'e1',
+      title: 'Game Of King – Waiting for final art assets (icons + background)',
+      statusId: 'BLOCKED',
+      stakeholderId: 'ART',
+    },
+    t3: {
+      id: 't3',
+      epicId: 'e1',
+      title: 'Integrate i18n copy',
+      statusId: 'TODO',
+      stakeholderId: 'COPY',
+    },
+
+    t4: {
+      id: 't4',
+      epicId: 'e2',
+      title: 'Lobby layout polish',
+      statusId: 'QA',
+      stakeholderId: 'QA',
+    },
+    t5: {
+      id: 't5',
+      epicId: 'e2',
+      title: 'Fix iPad scaling regression when rotating device orientation',
+      statusId: 'WIP',
+      stakeholderId: 'DEV',
+    },
+    t6: {
+      id: 't6',
+      epicId: 'e2',
+      title: 'Main menu animation cleanup',
+      statusId: 'DONE',
+    },
+
+    t7: {
+      id: 't7',
+      epicId: 'e3',
+      title: 'Remove redundant getComponent calls via @property injection',
+      statusId: 'TODO',
+      stakeholderId: 'ME',
+    },
+  });
+
+  const [taskOrderByEpic, setTaskOrderByEpic] = useState<TaskOrderByEpic>({
+    e1: ['t1', 't2', 't3'],
+    e2: ['t4', 't5', 't6'],
+    e3: ['t7'],
+  });
+
+  /** ---- sort epics by priority (higher => left) ---- */
+  const sortedEpics = useMemo(() => {
+    const rank = (p: PriorityId) => priorityMap.get(p)?.rank ?? 999;
+    return [...epics].sort((a, b) => rank(a.priorityId) - rank(b.priorityId));
+  }, [epics]);
+
+  /** ---- modal states ---- */
+  const [epicModal, setEpicModal] = useState<EpicModalState>({ open: false });
+  const [taskModal, setTaskModal] = useState<TaskModalState>({ open: false });
+
+  /** ---- DnD ---- */
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  );
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+
+  const activeTask = useMemo(() => {
+    if (!activeId) return null;
+    const id = String(activeId);
+    if (!isTaskDndId(id)) return null;
+    const tid = parseTaskId(id);
+    return tasksById[tid] ?? null;
+  }, [activeId, tasksById]);
+
+  function findEpicContainerByDndId(id: UniqueIdentifier): EpicId | null {
+    const sid = String(id);
+    if (isEpicDndId(sid)) return parseEpicId(sid);
+    if (isTaskDndId(sid)) {
+      const tid = parseTaskId(sid);
+      return tasksById[tid]?.epicId ?? null;
+    }
+    return null;
+  }
+
+  function onDragStart(e: DragStartEvent) {
+    setActiveId(e.active.id);
+  }
+
+  function onDragOver(e: DragOverEvent) {
+    const { active, over } = e;
+    if (!over) return;
+
+    const activeSid = String(active.id);
+    const overSid = String(over.id);
+
+    if (!isTaskDndId(activeSid)) return; // only tasks are draggable
+
+    const fromEpicId = findEpicContainerByDndId(active.id);
+    const toEpicId = findEpicContainerByDndId(over.id);
+
+    if (!fromEpicId || !toEpicId) return;
+    if (fromEpicId === toEpicId) return;
+
+    const taskId = parseTaskId(activeSid);
+
+    setTaskOrderByEpic((prev) => {
+      const next = { ...prev };
+      const fromList = [...(next[fromEpicId] ?? [])];
+      const toList = [...(next[toEpicId] ?? [])];
+
+      const fromIndex = fromList.indexOf(taskId);
+      if (fromIndex === -1) return prev;
+
+      fromList.splice(fromIndex, 1);
+
+      // insert position: if hovering a task -> before it; if hovering epic container -> end
+      let insertIndex = toList.length;
+      if (isTaskDndId(overSid)) {
+        const overTaskId = parseTaskId(overSid);
+        const idx = toList.indexOf(overTaskId);
+        if (idx >= 0) insertIndex = idx;
+      }
+      toList.splice(insertIndex, 0, taskId);
+
+      next[fromEpicId] = fromList;
+      next[toEpicId] = toList;
+      return next;
+    });
+
+    // update task epicId
+    setTasksById((prev) => {
+      const t = prev[taskId];
+      if (!t) return prev;
+      if (t.epicId === toEpicId) return prev;
+      return { ...prev, [taskId]: { ...t, epicId: toEpicId } };
+    });
+  }
+
+  function onDragEnd(e: DragEndEvent) {
+    const { active, over } = e;
+    setActiveId(null);
+    if (!over) return;
+
+    const activeSid = String(active.id);
+    const overSid = String(over.id);
+    if (!isTaskDndId(activeSid)) return;
+
+    const epicId = findEpicContainerByDndId(active.id);
+    const overEpicId = findEpicContainerByDndId(over.id);
+    if (!epicId || !overEpicId) return;
+
+    // same epic: reorder
+    if (epicId === overEpicId && isTaskDndId(overSid)) {
+      const taskId = parseTaskId(activeSid);
+      const overTaskId = parseTaskId(overSid);
+
+      setTaskOrderByEpic((prev) => {
+        const list = [...(prev[epicId] ?? [])];
+        const oldIndex = list.indexOf(taskId);
+        const newIndex = list.indexOf(overTaskId);
+        if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex)
+          return prev;
+        return { ...prev, [epicId]: arrayMove(list, oldIndex, newIndex) };
+      });
+    }
+  }
+
+  /** ---------------- CRUD: Epics ---------------- */
+  function openCreateEpic() {
+    setEpicModal({ open: true, mode: 'create' });
+  }
+  function openEditEpic(epicId: EpicId) {
+    setEpicModal({ open: true, mode: 'edit', epicId });
+  }
+
+  function saveEpic(payload: {
+    epicId?: EpicId;
+    title: string;
+    priorityId: PriorityId;
+    statusId: StatusId;
+  }) {
+    if (epicModal.open && epicModal.mode === 'create') {
+      const id = `e${Date.now()}`;
+      const newEpic: Epic = {
+        id,
+        title: payload.title,
+        priorityId: payload.priorityId,
+        statusId: payload.statusId,
+      };
+      setEpics((prev) => [...prev, newEpic]);
+      setTaskOrderByEpic((prev) => ({ ...prev, [id]: [] }));
+    } else if (epicModal.open && epicModal.mode === 'edit') {
+      const id = epicModal.epicId;
+      setEpics((prev) =>
+        prev.map((e) =>
+          e.id === id
+            ? {
+                ...e,
+                title: payload.title,
+                priorityId: payload.priorityId,
+                statusId: payload.statusId,
+              }
+            : e,
+        ),
+      );
+    }
+    setEpicModal({ open: false });
+  }
+
+  function deleteEpic(epicId: EpicId) {
+    // delete epic + its tasks (simple strategy)
+    setEpics((prev) => prev.filter((e) => e.id !== epicId));
+
+    const taskIds = taskOrderByEpic[epicId] ?? [];
+    setTasksById((prev) => {
+      const next = { ...prev };
+      taskIds.forEach((tid) => delete next[tid]);
+      return next;
+    });
+
+    setTaskOrderByEpic((prev) => {
+      const next = { ...prev };
+      delete next[epicId];
+      return next;
+    });
+
+    setEpicModal({ open: false });
+  }
+
+  /** ---------------- CRUD: Tasks ---------------- */
+  function openCreateTask(defaultEpicId?: EpicId) {
+    setTaskModal({ open: true, mode: 'create', defaultEpicId });
+  }
+  function openEditTask(taskId: TaskId) {
+    setTaskModal({ open: true, mode: 'edit', taskId });
+  }
+
+  function saveTask(payload: {
+    taskId?: TaskId;
+    epicId: EpicId;
+    title: string;
+    statusId: StatusId;
+    stakeholderId?: StakeholderId;
+  }) {
+    const isDone = payload.statusId === 'DONE';
+    const stakeholderId = isDone ? undefined : payload.stakeholderId;
+
+    if (taskModal.open && taskModal.mode === 'create') {
+      const id = `t${Date.now()}`;
+      const t: Task = {
+        id,
+        epicId: payload.epicId,
+        title: payload.title,
+        statusId: payload.statusId,
+        stakeholderId,
+      };
+      setTasksById((prev) => ({ ...prev, [id]: t }));
+      setTaskOrderByEpic((prev) => ({
+        ...prev,
+        [payload.epicId]: [...(prev[payload.epicId] ?? []), id],
+      }));
+    } else if (taskModal.open && taskModal.mode === 'edit') {
+      const id = taskModal.taskId;
+      const prevTask = tasksById[id];
+      if (!prevTask) {
+        setTaskModal({ open: false });
+        return;
+      }
+
+      // if epic changed, move order lists
+      if (prevTask.epicId !== payload.epicId) {
+        setTaskOrderByEpic((prev) => {
+          const next = { ...prev };
+          next[prevTask.epicId] = (next[prevTask.epicId] ?? []).filter(
+            (x) => x !== id,
+          );
+          next[payload.epicId] = [...(next[payload.epicId] ?? []), id];
+          return next;
+        });
+      }
+
+      setTasksById((prev) => ({
+        ...prev,
+        [id]: {
+          ...prev[id],
+          epicId: payload.epicId,
+          title: payload.title,
+          statusId: payload.statusId,
+          stakeholderId,
+        },
+      }));
+    }
+
+    setTaskModal({ open: false });
+  }
+
+  function deleteTask(taskId: TaskId) {
+    const t = tasksById[taskId];
+    if (!t) {
+      setTaskModal({ open: false });
+      return;
+    }
+
+    setTasksById((prev) => {
+      const next = { ...prev };
+      delete next[taskId];
+      return next;
+    });
+
+    setTaskOrderByEpic((prev) => ({
+      ...prev,
+      [t.epicId]: (prev[t.epicId] ?? []).filter((x) => x !== taskId),
+    }));
+
+    setTaskModal({ open: false });
+  }
+
+  /** ---------------- Render ---------------- */
+  return (
+    <div className="sprintRoot">
+      {/* Actions mount point for Content header */}
+      <ActionsImpl
+        onAddEpic={openCreateEpic}
+        onCreateTask={() => openCreateTask()}
+      />
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDragEnd={onDragEnd}
+      >
+        <div className="sprintBoard" aria-label="Sprint board">
+          {sortedEpics.map((epic) => {
+            const ids = taskOrderByEpic[epic.id] ?? [];
+            return (
+              <EpicColumn
+                key={epic.id}
+                epic={epic}
+                taskIds={ids}
+                onEditEpic={() => openEditEpic(epic.id)}
+                onCreateTask={() => openCreateTask(epic.id)}
+              >
+                {ids.map((tid) => (
+                  <SortableTaskCard
+                    key={tid}
+                    task={tasksById[tid]}
+                    onOpen={() => openEditTask(tid)}
+                  />
+                ))}
+              </EpicColumn>
+            );
+          })}
+        </div>
+
+        <DragOverlay dropAnimation={null}>
+          {activeTask ? <TaskCard task={activeTask} overlay /> : null}
+        </DragOverlay>
+      </DndContext>
+
+      {/* Modals */}
+      {epicModal.open ? (
+        <EpicModal
+          mode={epicModal.mode}
+          epic={
+            epicModal.mode === 'edit'
+              ? (epics.find((e) => e.id === epicModal.epicId) ?? null)
+              : null
+          }
+          onClose={() => setEpicModal({ open: false })}
+          onSave={(v) => saveEpic(v)}
+          onDelete={(epicId) => deleteEpic(epicId)}
+        />
+      ) : null}
+
+      {taskModal.open ? (
+        <TaskModal
+          mode={taskModal.mode}
+          epics={epics}
+          defaultEpicId={
+            taskModal.mode === 'create' ? taskModal.defaultEpicId : undefined
+          }
+          task={
+            taskModal.mode === 'edit'
+              ? (tasksById[taskModal.taskId] ?? null)
+              : null
+          }
+          onClose={() => setTaskModal({ open: false })}
+          onSave={(v) => saveTask(v)}
+          onDelete={(taskId) => deleteTask(taskId)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+/** ---------------- Actions (mounted into Content header via static field) ---------------- */
+function ActionsImpl(props: {
+  onAddEpic: () => void;
+  onCreateTask: () => void;
+}) {
+  // this renders nothing in-body; we will “portal-like” mount via CSS grid by absolute? (simpler:)
+  // We'll just render here but style it to sit at top-right of content area (no global scroll impact).
+  return (
+    <div className="sprintActions">
+      <button className="btnPrimary" onClick={props.onAddEpic}>
+        Add Epic
+      </button>
+      <button className="btnGhost" onClick={props.onCreateTask}>
+        Create Task
+      </button>
+    </div>
+  );
+}
+
+/** Expose to Content header */
+SprintBoardView.Actions = function ActionsSlot() {
+  // The real buttons are rendered inside SprintBoardView (ActionsImpl).
+  // This slot keeps Content happy; you can leave it empty.
+  return null;
+} as any;
+
+/** ---------------- UI Components ---------------- */
+
+function EpicColumn(props: {
+  epic: Epic;
+  taskIds: TaskId[];
+  children: React.ReactNode;
+  onEditEpic: () => void;
+  onCreateTask: () => void;
+}) {
+  const { epic, taskIds, children, onEditEpic, onCreateTask } = props;
+
+  // column droppable for “drop to empty space”
+  const { setNodeRef, isOver } = useDroppable({ id: epicDndId(epic.id) });
+
+  const pr = priorityMap.get(epic.priorityId)?.label ?? epic.priorityId;
+  const st = statusMap.get(epic.statusId);
+
+  return (
+    <section className="epicCol" aria-label={epic.title}>
+      {/* sticky header */}
+      <div className={`epicHeader ${isOver ? 'isOver' : ''}`}>
+        <div className="epicHeaderTop">
+          <div className="epicTitle" title={epic.title}>
+            {epic.title}
+          </div>
+
+          {/* pen icon */}
+          <button
+            className="iconMini"
+            onClick={onEditEpic}
+            aria-label="Edit Epic"
+            title="Edit Epic"
+          >
+            ✒️
+          </button>
+        </div>
+
+        <div className="epicMeta">
+          <span className={`pill tone-${st?.tone ?? 'gray'}`}>
+            {st?.label ?? epic.statusId}
+          </span>
+          <span className="pill outline">{pr}</span>
+          <button className="linkMini" onClick={onCreateTask}>
+            + Task
+          </button>
+        </div>
+      </div>
+
+      <div ref={setNodeRef} className="epicBody">
+        <SortableContext
+          items={taskIds.map(taskDndId)}
+          strategy={verticalListSortingStrategy}
+        >
+          {children}
+        </SortableContext>
+
+        {taskIds.length === 0 ? (
+          <div className="emptyHint">Drop task here</div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function SortableTaskCard(props: { task: Task; onOpen: () => void }) {
+  const dndId = taskDndId(props.task.id);
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: dndId,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.2 : 1,
+      }}
+    >
+      <TaskCard
+        task={props.task}
+        onOpen={props.onOpen}
+        dragging={isDragging}
+        dragHandleProps={{ ...attributes, ...listeners }}
+      />
+    </div>
+  );
+}
+
+function TaskCard(props: {
+  task: Task;
+  onOpen?: () => void;
+  dragging?: boolean;
+  overlay?: boolean;
+  dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
+}) {
+  const { task, onOpen, dragging, overlay, dragHandleProps } = props;
+  const st = statusMap.get(task.statusId);
+  const stakeholder = task.stakeholderId
+    ? stakeholderMap.get(task.stakeholderId)?.label
+    : null;
+  const showStakeholder = task.statusId !== 'DONE';
+
+  return (
+    <article
+      className={`taskCard2 ${dragging ? 'dragging' : ''} ${overlay ? 'overlay' : ''}`}
+    >
+      <div className="taskRow">
+        {/* title clickable; hover shows full title */}
+        <button className="taskTitleBtn" onClick={onOpen} title={task.title}>
+          <span className="taskTitleClamp">{task.title}</span>
+        </button>
+
+        {/* drag handle only */}
+        <button
+          className="dragHandle2"
+          {...dragHandleProps}
+          aria-label="Drag"
+          title="Drag"
+        >
+          ⠿
+        </button>
+      </div>
+
+      <div className="taskRow taskMetaRow">
+        {/* status only as colored pill (no redundant “Status: WIP” text) */}
+        <span className={`pill tone-${st?.tone ?? 'gray'}`}>
+          {st?.label ?? task.statusId}
+        </span>
+
+        {/* stakeholder only when not DONE */}
+        {showStakeholder ? (
+          <span className="pill outline">
+            {stakeholder ? `Stuck at: ${stakeholder}` : 'Stuck at: —'}
+          </span>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+/** ---------------- Modals (400x300) ---------------- */
+
+function EpicModal(props: {
+  mode: 'create' | 'edit';
+  epic: Epic | null;
+  onClose: () => void;
+  onSave: (v: {
+    epicId?: EpicId;
+    title: string;
+    priorityId: PriorityId;
+    statusId: StatusId;
+  }) => void;
+  onDelete: (epicId: EpicId) => void;
+}) {
+  const isEdit = props.mode === 'edit';
+  const [title, setTitle] = useState(props.epic?.title ?? '');
+  const [priorityId, setPriorityId] = useState<PriorityId>(
+    props.epic?.priorityId ?? 'P2',
+  );
+  const [statusId, setStatusId] = useState<StatusId>(
+    props.epic?.statusId ?? 'TODO',
+  );
+
+  return (
+    <ModalShell
+      title={isEdit ? 'Edit Epic' : 'Create Epic'}
+      onClose={props.onClose}
+    >
+      <div className="formRow">
+        <label className="label">Epic Name</label>
+        <input
+          className="input"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="e.g. UIv3"
+        />
+      </div>
+
+      <div className="formRow">
+        <label className="label">Priority</label>
+        <select
+          className="select"
+          value={priorityId}
+          onChange={(e) => setPriorityId(e.target.value)}
+        >
+          {PRIORITIES.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="formRow">
+        <label className="label">Epic Status</label>
+        <select
+          className="select"
+          value={statusId}
+          onChange={(e) => setStatusId(e.target.value)}
+        >
+          {STATUS.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="modalActions">
+        {isEdit && props.epic ? (
+          <button
+            className="btnDanger"
+            onClick={() => props.onDelete(props.epic!.id)}
+          >
+            Delete
+          </button>
+        ) : (
+          <div />
+        )}
+
+        <div className="actionsRight">
+          <button className="btnGhost" onClick={props.onClose}>
+            Cancel
+          </button>
+          <button
+            className="btnPrimary"
+            onClick={() =>
+              props.onSave({
+                epicId: props.epic?.id,
+                title: title.trim(),
+                priorityId,
+                statusId,
+              })
+            }
+            disabled={!title.trim()}
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </ModalShell>
+  );
+}
+
+function TaskModal(props: {
+  mode: 'create' | 'edit';
+  task: Task | null;
+  epics: Epic[];
+  defaultEpicId?: EpicId;
+  onClose: () => void;
+  onSave: (v: {
+    taskId?: TaskId;
+    epicId: EpicId;
+    title: string;
+    statusId: StatusId;
+    stakeholderId?: StakeholderId;
+  }) => void;
+  onDelete: (taskId: TaskId) => void;
+}) {
+  const isEdit = props.mode === 'edit';
+
+  const [title, setTitle] = useState(props.task?.title ?? '');
+  const [epicId, setEpicId] = useState<EpicId>(
+    props.task?.epicId ?? props.defaultEpicId ?? props.epics[0]?.id ?? 'e1',
+  );
+  const [statusId, setStatusId] = useState<StatusId>(
+    props.task?.statusId ?? 'TODO',
+  );
+  const [stakeholderId, setStakeholderId] = useState<StakeholderId>(
+    props.task?.stakeholderId ?? 'ME',
+  );
+
+  const isDone = statusId === 'DONE';
+
+  return (
+    <ModalShell
+      title={isEdit ? 'Edit Task' : 'Create Task'}
+      onClose={props.onClose}
+    >
+      <div className="formRow">
+        <label className="label">Title</label>
+        <input
+          className="input"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Task title"
+        />
+      </div>
+
+      <div className="formRow">
+        <label className="label">Epic</label>
+        <select
+          className="select"
+          value={epicId}
+          onChange={(e) => setEpicId(e.target.value)}
+        >
+          {props.epics.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.title}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="formRow">
+        <label className="label">Status</label>
+        <select
+          className="select"
+          value={statusId}
+          onChange={(e) => setStatusId(e.target.value)}
+        >
+          {STATUS.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="formRow">
+        <label className="label">Stakeholder</label>
+        <select
+          className="select"
+          value={stakeholderId}
+          onChange={(e) => setStakeholderId(e.target.value)}
+          disabled={isDone}
+          title={isDone ? 'DONE tasks do not require stakeholder' : ''}
+        >
+          {STAKEHOLDERS.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="modalActions">
+        {isEdit && props.task ? (
+          <button
+            className="btnDanger"
+            onClick={() => props.onDelete(props.task!.id)}
+          >
+            Delete
+          </button>
+        ) : (
+          <div />
+        )}
+
+        <div className="actionsRight">
+          <button className="btnGhost" onClick={props.onClose}>
+            Cancel
+          </button>
+          <button
+            className="btnPrimary"
+            onClick={() =>
+              props.onSave({
+                taskId: props.task?.id,
+                epicId,
+                title: title.trim(),
+                statusId,
+                stakeholderId: isDone ? undefined : stakeholderId,
+              })
+            }
+            disabled={!title.trim() || !epicId}
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </ModalShell>
+  );
+}
+
+function ModalShell(props: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="modalBackdrop" onMouseDown={props.onClose}>
+      <div
+        className="modal"
+        style={{ width: 400, height: 300 }}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <div className="modalHeader">
+          <div className="modalTitle">{props.title}</div>
+          <button
+            className="iconMini"
+            onClick={props.onClose}
+            aria-label="Close"
+            title="Close"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="modalBody">{props.children}</div>
+      </div>
+    </div>
+  );
+}

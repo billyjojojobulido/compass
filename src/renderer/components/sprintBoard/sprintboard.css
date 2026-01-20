@@ -1,0 +1,360 @@
+/* =============== Sprint Board =============== */
+
+.sprintRoot {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+/* free items to Content Top Right */
+.sprintActions {
+  position: absolute;
+  right: 16px;
+  top: 12px;
+  display: flex;
+  gap: 10px;
+  z-index: 3;
+}
+
+/* board: scroll horizontally, not the entire app */
+.sprintBoard {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 14px;
+  padding: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* epic column */
+.epicCol {
+  width: 320px;
+  min-width: 320px;
+  max-width: 320px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* sticky header */
+.epicHeader {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  background: rgba(10, 12, 18, 0.7);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+.epicHeader.isOver {
+  outline: 2px solid rgba(255, 255, 255, 0.18);
+  outline-offset: -6px;
+  border-radius: 16px;
+}
+
+.epicHeaderTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.epicTitle {
+  font-weight: 700;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.92);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.epicMeta {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.epicBody {
+  flex: 1;
+  min-height: 0;
+  padding: 10px 12px 12px;
+  overflow: auto; /* only column body scroll */
+}
+
+.emptyHint {
+  padding: 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+}
+
+/* Task card */
+.taskCard2 {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 14px;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.taskCard2.dragging {
+  box-shadow: 0 26px 48px rgba(0, 0, 0, 0.22);
+}
+.taskCard2.overlay {
+  transform: rotate(0.6deg);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.28);
+}
+
+.taskRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/*  title: 2 lines clamp + hover shows full via title attr */
+.taskTitleBtn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+}
+.taskTitleBtn:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.taskTitleClamp {
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  font-weight: 650;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+/* handle */
+.dragHandle2 {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 10px;
+  cursor: grab;
+  height: 28px;
+  min-width: 34px;
+  padding: 0 8px;
+  line-height: 1;
+}
+.dragHandle2:active {
+  cursor: grabbing;
+}
+.dragHandle2:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.taskMetaRow {
+  margin-top: 8px;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  user-select: none;
+}
+.pill.outline {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* tones */
+.tone-gray {
+  background: rgba(255, 255, 255, 0.1);
+}
+.tone-blue {
+  background: rgba(96, 165, 250, 0.22);
+}
+.tone-yellow {
+  background: rgba(250, 204, 21, 0.22);
+}
+.tone-green {
+  background: rgba(34, 197, 94, 0.22);
+}
+.tone-red {
+  background: rgba(248, 113, 113, 0.22);
+}
+
+/* small buttons */
+.iconMini {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.88);
+  border-radius: 10px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0 8px;
+  cursor: pointer;
+}
+.iconMini:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.linkMini {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 650;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.linkMini:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* content header actions layout helper (if you use it) */
+.contentHeader {
+  position: relative;
+}
+.contentActions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* buttons */
+.btnPrimary {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(96, 165, 250, 0.22);
+  color: rgba(255, 255, 255, 0.92);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btnPrimary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btnGhost {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.88);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.btnDanger {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(248, 113, 113, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* modal */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(16, 18, 26, 0.92);
+  border-radius: 16px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.modalHeader {
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.modalTitle {
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.92);
+}
+.modalBody {
+  padding: 12px;
+  height: calc(300px - 46px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 650;
+}
+.input,
+.select {
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 0 10px;
+  outline: none;
+}
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.modalActions {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.actionsRight {
+  display: flex;
+  gap: 10px;
+}
