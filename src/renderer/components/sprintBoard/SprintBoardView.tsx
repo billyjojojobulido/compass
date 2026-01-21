@@ -599,13 +599,28 @@ function EpicColumn(props: {
   const pr = priorityMap.get(epic.priorityId)?.label ?? epic.priorityId;
   const st = statusMap.get(epic.statusId);
 
+  const totalCount = taskIds.length;
+  const closedCount = taskIds.reduce(
+    (acc, tid) => acc + (isClosedStatus(tid) ? 1 : 0),
+    0,
+  );
+
   return (
     <section className="epicCol" aria-label={epic.title}>
       {/* sticky header */}
       <div className={`epicHeader ${isOver ? 'isOver' : ''}`}>
         <div className="epicHeaderTop">
-          <div className="epicTitle" title={epic.title}>
-            {epic.title}
+          <div className="epicTitleRow">
+            <div className="epicTitleClamp" title={epic.title}>
+              {epic.title}
+            </div>
+
+            <div
+              className="epicProgress"
+              title={`${closedCount}/${totalCount} closed`}
+            >
+              {closedCount}/{totalCount}
+            </div>
           </div>
 
           {/* pen icon */}
