@@ -634,7 +634,7 @@ function TaskCard(props: {
 
   return (
     <article
-      className={`taskCard2 ${dragging ? 'dragging' : ''} ${overlay ? 'overlay' : ''} ${isDone ? 'done' : ''}`}
+      className={`taskCard2 ${dragging ? 'dragging' : ''} ${overlay ? 'overlay' : ''} ${isDone && !overlay ? 'done' : ''}`}
     >
       <div className="taskRow">
         {/* title clickable; hover shows full title */}
