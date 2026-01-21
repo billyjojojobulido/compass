@@ -356,6 +356,32 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
     }
 
     /** ---------------- CRUD: Tasks ---------------- */
+
+    function moveToBottom(list: string[], id: string) {
+      const next = list.filter((x) => x !== id);
+      next.push(id);
+      return next;
+    }
+
+    function moveToEndOfNonDone(
+      list: string[],
+      id: string,
+      tasksById: Record<string, { statusId: string }>,
+    ) {
+      const without = list.filter((x) => x !== id);
+
+      // find the first DONE position
+      const firstDoneIndex = without.findIndex(
+        (tid) => tasksById[tid]?.statusId === 'DONE',
+      );
+      const insertIndex =
+        firstDoneIndex === -1 ? without.length : firstDoneIndex;
+
+      const next = [...without];
+      next.splice(insertIndex, 0, id);
+      return next;
+    }
+
     function saveTask(payload: {
       taskId?: TaskId;
       epicId: EpicId;
@@ -388,28 +414,67 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
           return;
         }
 
+        const prevStatus = prevTask.statusId;
+        const nextStatus = payload.statusId;
+
+        const prevEpicId = prevTask.epicId;
+        const nextEpicId = payload.epicId;
+
         // if epic changed, move order lists
-        if (prevTask.epicId !== payload.epicId) {
+        if (prevEpicId !== nextEpicId) {
           setTaskOrderByEpic((prev) => {
             const next = { ...prev };
-            next[prevTask.epicId] = (next[prevTask.epicId] ?? []).filter(
-              (x) => x !== id,
-            );
-            next[payload.epicId] = [...(next[payload.epicId] ?? []), id];
+            next[prevEpicId] = (next[prevEpicId] ?? []).filter((x) => x !== id);
+            next[nextEpicId] = [...(next[nextEpicId] ?? []), id]; // append frist
             return next;
           });
         }
 
-        setTasksById((prev) => ({
-          ...prev,
-          [id]: {
-            ...prev[id],
-            epicId: payload.epicId,
-            title: payload.title,
-            statusId: payload.statusId,
-            stakeholderId,
-          },
-        }));
+        // then update tasksById (state change first)
+        setTasksById((prev) => {
+          const nextTasks = {
+            ...prev,
+            [id]: {
+              ...prev[id],
+              epicId: nextEpicId,
+              title: payload.title,
+              statusId: nextStatus,
+              stakeholderId,
+            },
+          };
+
+          setTaskOrderByEpic((prevOrder) => {
+            const nextOrder = { ...prevOrder };
+
+            // make sure it is already in the nextEpicId list
+            // if epic is changed, can do the moving first
+            if (prevEpicId !== nextEpicId) {
+              nextOrder[prevEpicId] = (nextOrder[prevEpicId] ?? []).filter(
+                (x) => x !== id,
+              );
+              nextOrder[nextEpicId] = [...(nextOrder[nextEpicId] ?? []), id];
+            }
+
+            if (prevStatus !== nextStatus) {
+              if (nextStatus === 'DONE') {
+                nextOrder[nextEpicId] = moveToBottom(
+                  nextOrder[nextEpicId] ?? [],
+                  id,
+                );
+              } else if (prevStatus === 'DONE') {
+                nextOrder[nextEpicId] = moveToEndOfNonDone(
+                  nextOrder[nextEpicId] ?? [],
+                  id,
+                  nextTasks,
+                );
+              }
+            }
+
+            return nextOrder;
+          });
+
+          return nextTasks;
+        });
       }
 
       setTaskModal({ open: false });
