@@ -2,7 +2,12 @@ import raw from '@/config/sprintConfig.json';
 
 export type Tone = 'gray' | 'blue' | 'yellow' | 'green' | 'red';
 
-export type StatusDef = { id: string; label: string; tone: Tone };
+export type StatusDef = {
+  id: string;
+  label: string;
+  tone: Tone;
+  toClose: boolean;
+};
 export type StakeholderDef = { id: string; label: string };
 export type PriorityDef = { id: string; label: string; rank: number };
 

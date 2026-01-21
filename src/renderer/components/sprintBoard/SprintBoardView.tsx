@@ -42,6 +42,10 @@ const statusMap = byId(STATUS);
 const stakeholderMap = byId(STAKEHOLDERS);
 const priorityMap = byId(PRIORITIES);
 
+const isClosedStatus = (statusId: string) => {
+  return statusMap.get(statusId)?.toClose === true;
+};
+
 /** ---------------- Data model ---------------- */
 type EpicId = string;
 type TaskId = string;
@@ -644,7 +648,7 @@ function EpicColumn(props: {
 
 function SortableTaskCard(props: { task: Task; onOpen: () => void }) {
   const dndId = taskDndId(props.task.id);
-  const isDone = props.task.statusId === 'DONE';
+  const isClosed = isClosedStatus(props.task.statusId);
 
   const {
     attributes,
@@ -655,7 +659,7 @@ function SortableTaskCard(props: { task: Task; onOpen: () => void }) {
     isDragging,
   } = useSortable({
     id: dndId,
-    disabled: isDone,
+    disabled: isClosed,
   });
 
   return (
@@ -671,9 +675,10 @@ function SortableTaskCard(props: { task: Task; onOpen: () => void }) {
         task={props.task}
         onOpen={props.onOpen}
         dragging={isDragging}
-        dragHandleProps={isDone ? undefined : { ...attributes, ...listeners }}
+        dragHandleProps={isClosed ? undefined : { ...attributes, ...listeners }}
         // if task is DONE then don't bind handle to drag
-        dragDisabled={isDone}
+        dragDisabled={isClosed}
+        closed={isClosed}
       />
     </div>
   );
@@ -686,10 +691,11 @@ function TaskCard(props: {
   overlay?: boolean;
   dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
   dragDisabled?: boolean;
+  closed?: boolean;
 }) {
   const { task, onOpen, dragging, overlay, dragHandleProps, dragDisabled } =
     props;
-  const isDone = task.statusId === 'DONE';
+  const isClosed = isClosedStatus(task.statusId);
 
   const st = statusMap.get(task.statusId);
   const stakeholder = task.stakeholderId
@@ -699,7 +705,7 @@ function TaskCard(props: {
 
   return (
     <article
-      className={`taskCard2 ${dragging ? 'dragging' : ''} ${overlay ? 'overlay' : ''} ${isDone && !overlay ? 'done' : ''}`}
+      className={`taskCard2 ${dragging ? 'dragging' : ''} ${overlay ? 'overlay' : ''} ${isClosed && !overlay ? 'done' : ''}`}
     >
       <div className="taskRow">
         {/* title clickable; hover shows full title */}
@@ -868,7 +874,7 @@ function TaskModal(props: {
     props.task?.stakeholderId ?? 'ME',
   );
 
-  const isDone = statusId === 'DONE';
+  const isClosed = isClosedStatus(statusId);
 
   return (
     <ModalShell
@@ -921,8 +927,8 @@ function TaskModal(props: {
           className="select"
           value={stakeholderId}
           onChange={(e) => setStakeholderId(e.target.value)}
-          disabled={isDone}
-          title={isDone ? 'DONE tasks do not require stakeholder' : ''}
+          disabled={isClosed}
+          title={isClosed ? 'Closed tasks do not require stakeholder' : ''}
         >
           {STAKEHOLDERS.map((p) => (
             <option key={p.id} value={p.id}>
@@ -956,7 +962,7 @@ function TaskModal(props: {
                 epicId,
                 title: title.trim(),
                 statusId,
-                stakeholderId: isDone ? undefined : stakeholderId,
+                stakeholderId: isClosed ? undefined : stakeholderId,
               })
             }
             disabled={!title.trim() || !epicId}
