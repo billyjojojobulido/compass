@@ -1,4 +1,4 @@
-import raw from '-/config/sprintConfig.json';
+import raw from '@/config/sprintConfig.json';
 
 export type Tone = 'gray' | 'blue' | 'yellow' | 'green' | 'red';
 

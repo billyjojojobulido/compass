@@ -26,7 +26,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { loadSprintConfig, byId } from '-/config/sprintConfig.ts';
+import { loadSprintConfig, byId } from '@/config/sprintConfig.ts';
 
 /** ---------------- Config (future: load from file/db) ---------------- */
 type StatusId = string;

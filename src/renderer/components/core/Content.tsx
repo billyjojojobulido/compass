@@ -1,8 +1,8 @@
 import React, { useRef } from 'react';
-import type { NavKey } from '-/components/core/SideBar';
+import type { NavKey } from '@/components/core/SideBar';
 import SprintBoardView, {
   SprintBoardHandle,
-} from '-/components/sprintBoard/SprintBoardView';
+} from '@/components/sprintBoard/SprintBoardView';
 
 export default function Content({ activeNav }: { activeNav: NavKey }) {
   const boardRef = useRef<SprintBoardHandle>(null);
