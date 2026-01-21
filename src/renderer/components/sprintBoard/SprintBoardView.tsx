@@ -693,9 +693,15 @@ function TaskCard(props: {
   dragDisabled?: boolean;
   closed?: boolean;
 }) {
-  const { task, onOpen, dragging, overlay, dragHandleProps, dragDisabled } =
-    props;
-  const isClosed = isClosedStatus(task.statusId);
+  const {
+    task,
+    onOpen,
+    dragging,
+    overlay,
+    dragHandleProps,
+    dragDisabled,
+    closed,
+  } = props;
 
   const st = statusMap.get(task.statusId);
   const stakeholder = task.stakeholderId
@@ -705,12 +711,14 @@ function TaskCard(props: {
 
   return (
     <article
-      className={`taskCard2 ${dragging ? 'dragging' : ''} ${overlay ? 'overlay' : ''} ${isClosed && !overlay ? 'done' : ''}`}
+      className={`taskCard2  ${dragging ? 'dragging' : ''} ${overlay ? 'overlay' : ''} ${closed ? 'closed' : ''}`}
     >
       <div className="taskRow">
         {/* title clickable; hover shows full title */}
         <button className="taskTitleBtn" onClick={onOpen} title={task.title}>
-          <span className="taskTitleClamp">{task.title}</span>
+          <span className={`taskTitleClamp ${closed ? 'strike' : ''}`}>
+            {task.title}
+          </span>
         </button>
 
         {/* drag handle only */}

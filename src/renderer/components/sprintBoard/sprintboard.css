@@ -116,6 +116,21 @@
   color: rgba(255, 255, 255, 0.78);
 }
 
+/* Closed: gray + slightly faded */
+.taskCard2.closed {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  opacity: 0.78;
+  filter: grayscale(0.45);
+}
+
+/* Title strike-through when closed */
+.taskTitleClamp.strike {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: rgba(255, 255, 255, 0.45);
+}
+
 .dragHandle2.disabled {
   opacity: 0.45;
   cursor: not-allowed;
