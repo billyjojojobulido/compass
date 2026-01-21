@@ -579,6 +579,7 @@ function EpicColumn(props: {
 
 function SortableTaskCard(props: { task: Task; onOpen: () => void }) {
   const dndId = taskDndId(props.task.id);
+  const isDone = props.task.statusId === 'DONE';
 
   const {
     attributes,
@@ -589,6 +590,7 @@ function SortableTaskCard(props: { task: Task; onOpen: () => void }) {
     isDragging,
   } = useSortable({
     id: dndId,
+    disabled: isDone,
   });
 
   return (
@@ -604,7 +606,9 @@ function SortableTaskCard(props: { task: Task; onOpen: () => void }) {
         task={props.task}
         onOpen={props.onOpen}
         dragging={isDragging}
-        dragHandleProps={{ ...attributes, ...listeners }}
+        dragHandleProps={isDone ? undefined : { ...attributes, ...listeners }}
+        // if task is DONE then don't bind handle to drag
+        dragDisabled={isDone}
       />
     </div>
   );
@@ -616,8 +620,12 @@ function TaskCard(props: {
   dragging?: boolean;
   overlay?: boolean;
   dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
+  dragDisabled?: boolean;
 }) {
-  const { task, onOpen, dragging, overlay, dragHandleProps } = props;
+  const { task, onOpen, dragging, overlay, dragHandleProps, dragDisabled } =
+    props;
+  const isDone = task.statusId === 'DONE';
+
   const st = statusMap.get(task.statusId);
   const stakeholder = task.stakeholderId
     ? stakeholderMap.get(task.stakeholderId)?.label
@@ -626,7 +634,7 @@ function TaskCard(props: {
 
   return (
     <article
-      className={`taskCard2 ${dragging ? 'dragging' : ''} ${overlay ? 'overlay' : ''}`}
+      className={`taskCard2 ${dragging ? 'dragging' : ''} ${overlay ? 'overlay' : ''} ${isDone ? 'done' : ''}`}
     >
       <div className="taskRow">
         {/* title clickable; hover shows full title */}
@@ -636,10 +644,11 @@ function TaskCard(props: {
 
         {/* drag handle only */}
         <button
-          className="dragHandle2"
-          {...dragHandleProps}
-          aria-label="Drag"
-          title="Drag"
+          className={`dragHandle2 ${dragDisabled ? 'disabled' : ''}`}
+          {...(dragHandleProps ?? {})}
+          aria-label={dragDisabled ? 'Drag disabled' : 'Drag'}
+          title={dragDisabled ? 'DONE tasks cannot be dragged' : 'Drag'}
+          disabled={dragDisabled}
         >
           ⠿
         </button>

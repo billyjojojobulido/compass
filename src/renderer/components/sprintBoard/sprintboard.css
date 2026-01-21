@@ -105,6 +105,25 @@
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.28);
 }
 
+.taskCard2.done {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  opacity: 0.78;
+  filter: grayscale(0.35);
+}
+
+.taskCard2.done .taskTitleBtn {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.dragHandle2.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.dragHandle2:disabled {
+  cursor: not-allowed;
+}
+
 .taskRow {
   display: flex;
   align-items: flex-start;
