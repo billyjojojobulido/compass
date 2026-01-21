@@ -7,16 +7,6 @@
   flex: 1;
 }
 
-/* free items to Content Top Right */
-.sprintActions {
-  position: absolute;
-  right: 16px;
-  top: 12px;
-  display: flex;
-  gap: 10px;
-  z-index: 3;
-}
-
 /* board: scroll horizontally, not the entire app */
 .sprintBoard {
   flex: 1;
@@ -113,6 +103,40 @@
 .taskCard2.overlay {
   transform: rotate(0.6deg);
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.28);
+}
+
+.taskCard2.done {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  opacity: 0.78;
+  filter: grayscale(0.35);
+}
+
+.taskCard2.done .taskTitleBtn {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* Closed: gray + slightly faded */
+.taskCard2.closed {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  opacity: 0.78;
+  filter: grayscale(0.45);
+}
+
+/* Title strike-through when closed */
+.taskTitleClamp.strike {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: rgba(255, 255, 255, 0.45);
+}
+
+.dragHandle2.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.dragHandle2:disabled {
+  cursor: not-allowed;
 }
 
 .taskRow {

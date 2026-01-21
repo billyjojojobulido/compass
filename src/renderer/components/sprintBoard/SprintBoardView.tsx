@@ -1,4 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, {
+  useMemo,
+  useState,
+  useImperativeHandle,
+  forwardRef,
+} from 'react';
 import './sprintboard.css';
 
 import {
@@ -21,53 +26,25 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { loadSprintConfig, byId } from '@/config/sprintConfig.ts';
 
 /** ---------------- Config (future: load from file/db) ---------------- */
 type StatusId = string;
 type StakeholderId = string;
 type PriorityId = string;
 
-type StatusDef = {
-  id: StatusId;
-  label: string;
-  tone: 'gray' | 'blue' | 'yellow' | 'green' | 'red';
-};
-type StakeholderDef = { id: StakeholderId; label: string };
-type PriorityDef = { id: PriorityId; label: string; rank: number }; // smaller rank => higher priority
+const CFG = loadSprintConfig();
+const STATUS = CFG.statuses;
+const STAKEHOLDERS = CFG.stakeholders;
+const PRIORITIES = CFG.priorities;
 
-const STATUS: StatusDef[] = [
-  { id: 'TODO', label: 'To Do', tone: 'gray' },
-  { id: 'WIP', label: 'In Progress', tone: 'yellow' },
-  { id: 'BLOCKED', label: 'Blocked', tone: 'red' },
-  { id: 'QA', label: 'QA', tone: 'blue' },
-  { id: 'DONE', label: 'Done', tone: 'green' },
-];
-
-const STAKEHOLDERS: StakeholderDef[] = [
-  { id: 'ME', label: 'Me' },
-  { id: 'DEV', label: 'Dev' },
-  { id: 'ART', label: 'Artist' },
-  { id: 'QA', label: 'QA' },
-  { id: 'COPY', label: 'Copywriter' },
-  { id: 'BE', label: 'Backend' },
-  { id: 'MATH', label: 'Math Team' },
-];
-
-const PRIORITIES: PriorityDef[] = [
-  { id: 'P0', label: 'P0 - Critical', rank: 0 },
-  { id: 'P1', label: 'P1 - High', rank: 1 },
-  { id: 'P2', label: 'P2 - Medium', rank: 2 },
-  { id: 'P3', label: 'P3 - Low', rank: 3 },
-];
-
-function byId<T extends { id: string }>(arr: T[]) {
-  const m = new Map<string, T>();
-  arr.forEach((x) => m.set(x.id, x));
-  return m;
-}
 const statusMap = byId(STATUS);
 const stakeholderMap = byId(STAKEHOLDERS);
 const priorityMap = byId(PRIORITIES);
+
+const isClosedStatus = (statusId: string) => {
+  return statusMap.get(statusId)?.toClose === true;
+};
 
 /** ---------------- Data model ---------------- */
 type EpicId = string;
@@ -91,10 +68,6 @@ type Task = {
 type TasksById = Record<TaskId, Task>;
 type TaskOrderByEpic = Record<EpicId, TaskId[]>;
 
-function clampInsertIndex(index: number, len: number) {
-  return Math.max(0, Math.min(index, len));
-}
-
 /** dnd ids (avoid conflicts with epic/task id) */
 const epicDndId = (id: EpicId) => `epic:${id}`;
 const taskDndId = (id: TaskId) => `task:${id}`;
@@ -113,450 +86,501 @@ type TaskModalState =
   | { open: true; mode: 'create'; defaultEpicId?: EpicId }
   | { open: true; mode: 'edit'; taskId: TaskId };
 
-export default function SprintBoardView() {
-  /** ---- Hardcoded initial data (future: load) ---- */
-  const [epics, setEpics] = useState<Epic[]>([
-    { id: 'e1', title: 'UIv3', priorityId: 'P0', statusId: 'WIP' },
-    { id: 'e2', title: 'Lobby Refresh', priorityId: 'P1', statusId: 'QA' },
-    {
-      id: 'e3',
-      title: 'Tech Debt Cleanup',
-      priorityId: 'P2',
-      statusId: 'TODO',
-    },
-  ]);
+export type SprintBoardHandle = {
+  openCreateEpic: () => void;
+  openCreateTask: () => void;
+};
 
-  const [tasksById, setTasksById] = useState<TasksById>({
-    t1: {
-      id: 't1',
-      epicId: 'e1',
-      title: 'Game Of Queen – Implement core UI',
-      statusId: 'WIP',
-      stakeholderId: 'ME',
-    },
-    t2: {
-      id: 't2',
-      epicId: 'e1',
-      title: 'Game Of King – Waiting for final art assets (icons + background)',
-      statusId: 'BLOCKED',
-      stakeholderId: 'ART',
-    },
-    t3: {
-      id: 't3',
-      epicId: 'e1',
-      title: 'Integrate i18n copy',
-      statusId: 'TODO',
-      stakeholderId: 'COPY',
-    },
+const SprintBoardView = forwardRef<SprintBoardHandle>(
+  function SprintBoardView(_props, ref) {
+    /** ---- Hardcoded initial data (future: load) ---- */
+    const [epics, setEpics] = useState<Epic[]>([
+      { id: 'e1', title: 'UIv3', priorityId: 'P0', statusId: 'WIP' },
+      { id: 'e2', title: 'Lobby Refresh', priorityId: 'P1', statusId: 'QA' },
+      {
+        id: 'e3',
+        title: 'Tech Debt Cleanup',
+        priorityId: 'P2',
+        statusId: 'TODO',
+      },
+    ]);
 
-    t4: {
-      id: 't4',
-      epicId: 'e2',
-      title: 'Lobby layout polish',
-      statusId: 'QA',
-      stakeholderId: 'QA',
-    },
-    t5: {
-      id: 't5',
-      epicId: 'e2',
-      title: 'Fix iPad scaling regression when rotating device orientation',
-      statusId: 'WIP',
-      stakeholderId: 'DEV',
-    },
-    t6: {
-      id: 't6',
-      epicId: 'e2',
-      title: 'Main menu animation cleanup',
-      statusId: 'DONE',
-    },
+    const [tasksById, setTasksById] = useState<TasksById>({
+      t1: {
+        id: 't1',
+        epicId: 'e1',
+        title: 'Game Of Queen – Implement core UI',
+        statusId: 'WIP',
+        stakeholderId: 'ME',
+      },
+      t2: {
+        id: 't2',
+        epicId: 'e1',
+        title:
+          'Game Of King – Waiting for final art assets (icons + background)',
+        statusId: 'BLOCKED',
+        stakeholderId: 'ART',
+      },
+      t3: {
+        id: 't3',
+        epicId: 'e1',
+        title: 'Integrate i18n copy',
+        statusId: 'TODO',
+        stakeholderId: 'COPY',
+      },
 
-    t7: {
-      id: 't7',
-      epicId: 'e3',
-      title: 'Remove redundant getComponent calls via @property injection',
-      statusId: 'TODO',
-      stakeholderId: 'ME',
-    },
-  });
+      t4: {
+        id: 't4',
+        epicId: 'e2',
+        title: 'Lobby layout polish',
+        statusId: 'QA',
+        stakeholderId: 'QA',
+      },
+      t5: {
+        id: 't5',
+        epicId: 'e2',
+        title: 'Fix iPad scaling regression when rotating device orientation',
+        statusId: 'WIP',
+        stakeholderId: 'DEV',
+      },
+      t6: {
+        id: 't6',
+        epicId: 'e2',
+        title: 'Main menu animation cleanup',
+        statusId: 'DONE',
+      },
 
-  const [taskOrderByEpic, setTaskOrderByEpic] = useState<TaskOrderByEpic>({
-    e1: ['t1', 't2', 't3'],
-    e2: ['t4', 't5', 't6'],
-    e3: ['t7'],
-  });
+      t7: {
+        id: 't7',
+        epicId: 'e3',
+        title: 'Remove redundant getComponent calls via @property injection',
+        statusId: 'TODO',
+        stakeholderId: 'ME',
+      },
+    });
 
-  /** ---- sort epics by priority (higher => left) ---- */
-  const sortedEpics = useMemo(() => {
-    const rank = (p: PriorityId) => priorityMap.get(p)?.rank ?? 999;
-    return [...epics].sort((a, b) => rank(a.priorityId) - rank(b.priorityId));
-  }, [epics]);
+    const [taskOrderByEpic, setTaskOrderByEpic] = useState<TaskOrderByEpic>({
+      e1: ['t1', 't2', 't3'],
+      e2: ['t4', 't5', 't6'],
+      e3: ['t7'],
+    });
 
-  /** ---- modal states ---- */
-  const [epicModal, setEpicModal] = useState<EpicModalState>({ open: false });
-  const [taskModal, setTaskModal] = useState<TaskModalState>({ open: false });
+    /** ---- sort epics by priority (higher => left) ---- */
+    const sortedEpics = useMemo(() => {
+      const rank = (p: PriorityId) => priorityMap.get(p)?.rank ?? 999;
+      return [...epics].sort((a, b) => rank(a.priorityId) - rank(b.priorityId));
+    }, [epics]);
 
-  /** ---- DnD ---- */
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-  );
-  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+    /** ---- modal states ---- */
+    const [epicModal, setEpicModal] = useState<EpicModalState>({ open: false });
+    const [taskModal, setTaskModal] = useState<TaskModalState>({ open: false });
 
-  const activeTask = useMemo(() => {
-    if (!activeId) return null;
-    const id = String(activeId);
-    if (!isTaskDndId(id)) return null;
-    const tid = parseTaskId(id);
-    return tasksById[tid] ?? null;
-  }, [activeId, tasksById]);
-
-  function findEpicContainerByDndId(id: UniqueIdentifier): EpicId | null {
-    const sid = String(id);
-    if (isEpicDndId(sid)) return parseEpicId(sid);
-    if (isTaskDndId(sid)) {
-      const tid = parseTaskId(sid);
-      return tasksById[tid]?.epicId ?? null;
+    function openCreateTask(defaultEpicId?: EpicId) {
+      setTaskModal({ open: true, mode: 'create', defaultEpicId });
     }
-    return null;
-  }
+    function openEditTask(taskId: TaskId) {
+      setTaskModal({ open: true, mode: 'edit', taskId });
+    }
 
-  function onDragStart(e: DragStartEvent) {
-    setActiveId(e.active.id);
-  }
+    // expose set methods to Outer Components;
+    // Content header buttons will call
+    /* baocheng notes: TODO: may migrate to Redux in future */
+    useImperativeHandle(ref, () => ({
+      openCreateEpic,
+      openCreateTask,
+    }));
 
-  function onDragOver(e: DragOverEvent) {
-    const { active, over } = e;
-    if (!over) return;
+    /** ---- DnD ---- */
+    const sensors = useSensors(
+      useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    );
+    const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
 
-    const activeSid = String(active.id);
-    const overSid = String(over.id);
+    const activeTask = useMemo(() => {
+      if (!activeId) return null;
+      const id = String(activeId);
+      if (!isTaskDndId(id)) return null;
+      const tid = parseTaskId(id);
+      return tasksById[tid] ?? null;
+    }, [activeId, tasksById]);
 
-    if (!isTaskDndId(activeSid)) return; // only tasks are draggable
-
-    const fromEpicId = findEpicContainerByDndId(active.id);
-    const toEpicId = findEpicContainerByDndId(over.id);
-
-    if (!fromEpicId || !toEpicId) return;
-    if (fromEpicId === toEpicId) return;
-
-    const taskId = parseTaskId(activeSid);
-
-    setTaskOrderByEpic((prev) => {
-      const next = { ...prev };
-      const fromList = [...(next[fromEpicId] ?? [])];
-      const toList = [...(next[toEpicId] ?? [])];
-
-      const fromIndex = fromList.indexOf(taskId);
-      if (fromIndex === -1) return prev;
-
-      fromList.splice(fromIndex, 1);
-
-      // insert position: if hovering a task -> before it; if hovering epic container -> end
-      let insertIndex = toList.length;
-      if (isTaskDndId(overSid)) {
-        const overTaskId = parseTaskId(overSid);
-        const idx = toList.indexOf(overTaskId);
-        if (idx >= 0) insertIndex = idx;
+    function findEpicContainerByDndId(id: UniqueIdentifier): EpicId | null {
+      const sid = String(id);
+      if (isEpicDndId(sid)) return parseEpicId(sid);
+      if (isTaskDndId(sid)) {
+        const tid = parseTaskId(sid);
+        return tasksById[tid]?.epicId ?? null;
       }
-      toList.splice(insertIndex, 0, taskId);
+      return null;
+    }
 
-      next[fromEpicId] = fromList;
-      next[toEpicId] = toList;
-      return next;
-    });
+    function onDragStart(e: DragStartEvent) {
+      setActiveId(e.active.id);
+    }
 
-    // update task epicId
-    setTasksById((prev) => {
-      const t = prev[taskId];
-      if (!t) return prev;
-      if (t.epicId === toEpicId) return prev;
-      return { ...prev, [taskId]: { ...t, epicId: toEpicId } };
-    });
-  }
+    function onDragOver(e: DragOverEvent) {
+      const { active, over } = e;
+      if (!over) return;
 
-  function onDragEnd(e: DragEndEvent) {
-    const { active, over } = e;
-    setActiveId(null);
-    if (!over) return;
+      const activeSid = String(active.id);
+      const overSid = String(over.id);
 
-    const activeSid = String(active.id);
-    const overSid = String(over.id);
-    if (!isTaskDndId(activeSid)) return;
+      if (!isTaskDndId(activeSid)) return; // only tasks are draggable
 
-    const epicId = findEpicContainerByDndId(active.id);
-    const overEpicId = findEpicContainerByDndId(over.id);
-    if (!epicId || !overEpicId) return;
+      const fromEpicId = findEpicContainerByDndId(active.id);
+      const toEpicId = findEpicContainerByDndId(over.id);
 
-    // same epic: reorder
-    if (epicId === overEpicId && isTaskDndId(overSid)) {
+      if (!fromEpicId || !toEpicId) return;
+      if (fromEpicId === toEpicId) return;
+
       const taskId = parseTaskId(activeSid);
-      const overTaskId = parseTaskId(overSid);
 
       setTaskOrderByEpic((prev) => {
-        const list = [...(prev[epicId] ?? [])];
-        const oldIndex = list.indexOf(taskId);
-        const newIndex = list.indexOf(overTaskId);
-        if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex)
-          return prev;
-        return { ...prev, [epicId]: arrayMove(list, oldIndex, newIndex) };
+        const next = { ...prev };
+        const fromList = [...(next[fromEpicId] ?? [])];
+        const toList = [...(next[toEpicId] ?? [])];
+
+        const fromIndex = fromList.indexOf(taskId);
+        if (fromIndex === -1) return prev;
+
+        fromList.splice(fromIndex, 1);
+
+        // insert position: if hovering a task -> before it; if hovering epic container -> end
+        let insertIndex = toList.length;
+        if (isTaskDndId(overSid)) {
+          const overTaskId = parseTaskId(overSid);
+          const idx = toList.indexOf(overTaskId);
+          if (idx >= 0) insertIndex = idx;
+        }
+        toList.splice(insertIndex, 0, taskId);
+
+        next[fromEpicId] = fromList;
+        next[toEpicId] = toList;
+        return next;
+      });
+
+      // update task epicId
+      setTasksById((prev) => {
+        const t = prev[taskId];
+        if (!t) return prev;
+        if (t.epicId === toEpicId) return prev;
+        return { ...prev, [taskId]: { ...t, epicId: toEpicId } };
       });
     }
-  }
 
-  /** ---------------- CRUD: Epics ---------------- */
-  function openCreateEpic() {
-    setEpicModal({ open: true, mode: 'create' });
-  }
-  function openEditEpic(epicId: EpicId) {
-    setEpicModal({ open: true, mode: 'edit', epicId });
-  }
+    function onDragEnd(e: DragEndEvent) {
+      const { active, over } = e;
+      setActiveId(null);
+      if (!over) return;
 
-  function saveEpic(payload: {
-    epicId?: EpicId;
-    title: string;
-    priorityId: PriorityId;
-    statusId: StatusId;
-  }) {
-    if (epicModal.open && epicModal.mode === 'create') {
-      const id = `e${Date.now()}`;
-      const newEpic: Epic = {
-        id,
-        title: payload.title,
-        priorityId: payload.priorityId,
-        statusId: payload.statusId,
-      };
-      setEpics((prev) => [...prev, newEpic]);
-      setTaskOrderByEpic((prev) => ({ ...prev, [id]: [] }));
-    } else if (epicModal.open && epicModal.mode === 'edit') {
-      const id = epicModal.epicId;
-      setEpics((prev) =>
-        prev.map((e) =>
-          e.id === id
-            ? {
-                ...e,
-                title: payload.title,
-                priorityId: payload.priorityId,
-                statusId: payload.statusId,
-              }
-            : e,
-        ),
-      );
-    }
-    setEpicModal({ open: false });
-  }
+      const activeSid = String(active.id);
+      const overSid = String(over.id);
+      if (!isTaskDndId(activeSid)) return;
 
-  function deleteEpic(epicId: EpicId) {
-    // delete epic + its tasks (simple strategy)
-    setEpics((prev) => prev.filter((e) => e.id !== epicId));
+      const epicId = findEpicContainerByDndId(active.id);
+      const overEpicId = findEpicContainerByDndId(over.id);
+      if (!epicId || !overEpicId) return;
 
-    const taskIds = taskOrderByEpic[epicId] ?? [];
-    setTasksById((prev) => {
-      const next = { ...prev };
-      taskIds.forEach((tid) => delete next[tid]);
-      return next;
-    });
+      // same epic: reorder
+      if (epicId === overEpicId && isTaskDndId(overSid)) {
+        const taskId = parseTaskId(activeSid);
+        const overTaskId = parseTaskId(overSid);
 
-    setTaskOrderByEpic((prev) => {
-      const next = { ...prev };
-      delete next[epicId];
-      return next;
-    });
-
-    setEpicModal({ open: false });
-  }
-
-  /** ---------------- CRUD: Tasks ---------------- */
-  function openCreateTask(defaultEpicId?: EpicId) {
-    setTaskModal({ open: true, mode: 'create', defaultEpicId });
-  }
-  function openEditTask(taskId: TaskId) {
-    setTaskModal({ open: true, mode: 'edit', taskId });
-  }
-
-  function saveTask(payload: {
-    taskId?: TaskId;
-    epicId: EpicId;
-    title: string;
-    statusId: StatusId;
-    stakeholderId?: StakeholderId;
-  }) {
-    const isDone = payload.statusId === 'DONE';
-    const stakeholderId = isDone ? undefined : payload.stakeholderId;
-
-    if (taskModal.open && taskModal.mode === 'create') {
-      const id = `t${Date.now()}`;
-      const t: Task = {
-        id,
-        epicId: payload.epicId,
-        title: payload.title,
-        statusId: payload.statusId,
-        stakeholderId,
-      };
-      setTasksById((prev) => ({ ...prev, [id]: t }));
-      setTaskOrderByEpic((prev) => ({
-        ...prev,
-        [payload.epicId]: [...(prev[payload.epicId] ?? []), id],
-      }));
-    } else if (taskModal.open && taskModal.mode === 'edit') {
-      const id = taskModal.taskId;
-      const prevTask = tasksById[id];
-      if (!prevTask) {
-        setTaskModal({ open: false });
-        return;
-      }
-
-      // if epic changed, move order lists
-      if (prevTask.epicId !== payload.epicId) {
         setTaskOrderByEpic((prev) => {
-          const next = { ...prev };
-          next[prevTask.epicId] = (next[prevTask.epicId] ?? []).filter(
-            (x) => x !== id,
-          );
-          next[payload.epicId] = [...(next[payload.epicId] ?? []), id];
-          return next;
+          const list = [...(prev[epicId] ?? [])];
+          const oldIndex = list.indexOf(taskId);
+          const newIndex = list.indexOf(overTaskId);
+          if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex)
+            return prev;
+          return { ...prev, [epicId]: arrayMove(list, oldIndex, newIndex) };
         });
       }
+    }
 
-      setTasksById((prev) => ({
-        ...prev,
-        [id]: {
-          ...prev[id],
+    /** ---------------- CRUD: Epics ---------------- */
+    function openCreateEpic() {
+      setEpicModal({ open: true, mode: 'create' });
+    }
+    function openEditEpic(epicId: EpicId) {
+      setEpicModal({ open: true, mode: 'edit', epicId });
+    }
+
+    function saveEpic(payload: {
+      epicId?: EpicId;
+      title: string;
+      priorityId: PriorityId;
+      statusId: StatusId;
+    }) {
+      if (epicModal.open && epicModal.mode === 'create') {
+        const id = `e${Date.now()}`;
+        const newEpic: Epic = {
+          id,
+          title: payload.title,
+          priorityId: payload.priorityId,
+          statusId: payload.statusId,
+        };
+        setEpics((prev) => [...prev, newEpic]);
+        setTaskOrderByEpic((prev) => ({ ...prev, [id]: [] }));
+      } else if (epicModal.open && epicModal.mode === 'edit') {
+        const id = epicModal.epicId;
+        setEpics((prev) =>
+          prev.map((e) =>
+            e.id === id
+              ? {
+                  ...e,
+                  title: payload.title,
+                  priorityId: payload.priorityId,
+                  statusId: payload.statusId,
+                }
+              : e,
+          ),
+        );
+      }
+      setEpicModal({ open: false });
+    }
+
+    function deleteEpic(epicId: EpicId) {
+      // delete epic + its tasks (simple strategy)
+      setEpics((prev) => prev.filter((e) => e.id !== epicId));
+
+      const taskIds = taskOrderByEpic[epicId] ?? [];
+      setTasksById((prev) => {
+        const next = { ...prev };
+        taskIds.forEach((tid) => delete next[tid]);
+        return next;
+      });
+
+      setTaskOrderByEpic((prev) => {
+        const next = { ...prev };
+        delete next[epicId];
+        return next;
+      });
+
+      setEpicModal({ open: false });
+    }
+
+    /** ---------------- CRUD: Tasks ---------------- */
+
+    function moveToBottom(list: string[], id: string) {
+      const next = list.filter((x) => x !== id);
+      next.push(id);
+      return next;
+    }
+
+    function moveToEndOfNonDone(
+      list: string[],
+      id: string,
+      tasksById: Record<string, { statusId: string }>,
+    ) {
+      const without = list.filter((x) => x !== id);
+
+      // find the first DONE position
+      const firstDoneIndex = without.findIndex(
+        (tid) => tasksById[tid]?.statusId === 'DONE',
+      );
+      const insertIndex =
+        firstDoneIndex === -1 ? without.length : firstDoneIndex;
+
+      const next = [...without];
+      next.splice(insertIndex, 0, id);
+      return next;
+    }
+
+    function saveTask(payload: {
+      taskId?: TaskId;
+      epicId: EpicId;
+      title: string;
+      statusId: StatusId;
+      stakeholderId?: StakeholderId;
+    }) {
+      const isDone = payload.statusId === 'DONE';
+      const stakeholderId = isDone ? undefined : payload.stakeholderId;
+
+      if (taskModal.open && taskModal.mode === 'create') {
+        const id = `t${Date.now()}`;
+        const t: Task = {
+          id,
           epicId: payload.epicId,
           title: payload.title,
           statusId: payload.statusId,
           stakeholderId,
-        },
-      }));
-    }
+        };
+        setTasksById((prev) => ({ ...prev, [id]: t }));
+        setTaskOrderByEpic((prev) => ({
+          ...prev,
+          [payload.epicId]: [...(prev[payload.epicId] ?? []), id],
+        }));
+      } else if (taskModal.open && taskModal.mode === 'edit') {
+        const id = taskModal.taskId;
+        const prevTask = tasksById[id];
+        if (!prevTask) {
+          setTaskModal({ open: false });
+          return;
+        }
 
-    setTaskModal({ open: false });
-  }
+        const prevStatus = prevTask.statusId;
+        const nextStatus = payload.statusId;
 
-  function deleteTask(taskId: TaskId) {
-    const t = tasksById[taskId];
-    if (!t) {
+        const prevEpicId = prevTask.epicId;
+        const nextEpicId = payload.epicId;
+
+        // if epic changed, move order lists
+        if (prevEpicId !== nextEpicId) {
+          setTaskOrderByEpic((prev) => {
+            const next = { ...prev };
+            next[prevEpicId] = (next[prevEpicId] ?? []).filter((x) => x !== id);
+            next[nextEpicId] = [...(next[nextEpicId] ?? []), id]; // append frist
+            return next;
+          });
+        }
+
+        // then update tasksById (state change first)
+        setTasksById((prev) => {
+          const nextTasks = {
+            ...prev,
+            [id]: {
+              ...prev[id],
+              epicId: nextEpicId,
+              title: payload.title,
+              statusId: nextStatus,
+              stakeholderId,
+            },
+          };
+
+          setTaskOrderByEpic((prevOrder) => {
+            const nextOrder = { ...prevOrder };
+
+            // make sure it is already in the nextEpicId list
+            // if epic is changed, can do the moving first
+            if (prevEpicId !== nextEpicId) {
+              nextOrder[prevEpicId] = (nextOrder[prevEpicId] ?? []).filter(
+                (x) => x !== id,
+              );
+              nextOrder[nextEpicId] = [...(nextOrder[nextEpicId] ?? []), id];
+            }
+
+            if (prevStatus !== nextStatus) {
+              if (nextStatus === 'DONE') {
+                nextOrder[nextEpicId] = moveToBottom(
+                  nextOrder[nextEpicId] ?? [],
+                  id,
+                );
+              } else if (prevStatus === 'DONE') {
+                nextOrder[nextEpicId] = moveToEndOfNonDone(
+                  nextOrder[nextEpicId] ?? [],
+                  id,
+                  nextTasks,
+                );
+              }
+            }
+
+            return nextOrder;
+          });
+
+          return nextTasks;
+        });
+      }
+
       setTaskModal({ open: false });
-      return;
     }
 
-    setTasksById((prev) => {
-      const next = { ...prev };
-      delete next[taskId];
-      return next;
-    });
+    function deleteTask(taskId: TaskId) {
+      const t = tasksById[taskId];
+      if (!t) {
+        setTaskModal({ open: false });
+        return;
+      }
 
-    setTaskOrderByEpic((prev) => ({
-      ...prev,
-      [t.epicId]: (prev[t.epicId] ?? []).filter((x) => x !== taskId),
-    }));
+      setTasksById((prev) => {
+        const next = { ...prev };
+        delete next[taskId];
+        return next;
+      });
 
-    setTaskModal({ open: false });
-  }
+      setTaskOrderByEpic((prev) => ({
+        ...prev,
+        [t.epicId]: (prev[t.epicId] ?? []).filter((x) => x !== taskId),
+      }));
 
-  /** ---------------- Render ---------------- */
-  return (
-    <div className="sprintRoot">
-      {/* Actions mount point for Content header */}
-      <ActionsImpl
-        onAddEpic={openCreateEpic}
-        onCreateTask={() => openCreateTask()}
-      />
+      setTaskModal({ open: false });
+    }
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={onDragStart}
-        onDragOver={onDragOver}
-        onDragEnd={onDragEnd}
-      >
-        <div className="sprintBoard" aria-label="Sprint board">
-          {sortedEpics.map((epic) => {
-            const ids = taskOrderByEpic[epic.id] ?? [];
-            return (
-              <EpicColumn
-                key={epic.id}
-                epic={epic}
-                taskIds={ids}
-                onEditEpic={() => openEditEpic(epic.id)}
-                onCreateTask={() => openCreateTask(epic.id)}
-              >
-                {ids.map((tid) => (
-                  <SortableTaskCard
-                    key={tid}
-                    task={tasksById[tid]}
-                    onOpen={() => openEditTask(tid)}
-                  />
-                ))}
-              </EpicColumn>
-            );
-          })}
-        </div>
+    /** ---------------- Render ---------------- */
+    return (
+      <div className="sprintRoot">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={onDragStart}
+          onDragOver={onDragOver}
+          onDragEnd={onDragEnd}
+        >
+          <div className="sprintBoard" aria-label="Sprint board">
+            {sortedEpics.map((epic) => {
+              const ids = taskOrderByEpic[epic.id] ?? [];
+              return (
+                <EpicColumn
+                  key={epic.id}
+                  epic={epic}
+                  taskIds={ids}
+                  onEditEpic={() => openEditEpic(epic.id)}
+                  onCreateTask={() => openCreateTask(epic.id)}
+                >
+                  {ids.map((tid) => (
+                    <SortableTaskCard
+                      key={tid}
+                      task={tasksById[tid]}
+                      onOpen={() => openEditTask(tid)}
+                    />
+                  ))}
+                </EpicColumn>
+              );
+            })}
+          </div>
 
-        <DragOverlay dropAnimation={null}>
-          {activeTask ? <TaskCard task={activeTask} overlay /> : null}
-        </DragOverlay>
-      </DndContext>
+          <DragOverlay dropAnimation={null}>
+            {activeTask ? <TaskCard task={activeTask} overlay /> : null}
+          </DragOverlay>
+        </DndContext>
 
-      {/* Modals */}
-      {epicModal.open ? (
-        <EpicModal
-          mode={epicModal.mode}
-          epic={
-            epicModal.mode === 'edit'
-              ? (epics.find((e) => e.id === epicModal.epicId) ?? null)
-              : null
-          }
-          onClose={() => setEpicModal({ open: false })}
-          onSave={(v) => saveEpic(v)}
-          onDelete={(epicId) => deleteEpic(epicId)}
-        />
-      ) : null}
+        {/* Modals */}
+        {epicModal.open ? (
+          <EpicModal
+            mode={epicModal.mode}
+            epic={
+              epicModal.mode === 'edit'
+                ? (epics.find((e) => e.id === epicModal.epicId) ?? null)
+                : null
+            }
+            onClose={() => setEpicModal({ open: false })}
+            onSave={(v) => saveEpic(v)}
+            onDelete={(epicId) => deleteEpic(epicId)}
+          />
+        ) : null}
 
-      {taskModal.open ? (
-        <TaskModal
-          mode={taskModal.mode}
-          epics={epics}
-          defaultEpicId={
-            taskModal.mode === 'create' ? taskModal.defaultEpicId : undefined
-          }
-          task={
-            taskModal.mode === 'edit'
-              ? (tasksById[taskModal.taskId] ?? null)
-              : null
-          }
-          onClose={() => setTaskModal({ open: false })}
-          onSave={(v) => saveTask(v)}
-          onDelete={(taskId) => deleteTask(taskId)}
-        />
-      ) : null}
-    </div>
-  );
-}
+        {taskModal.open ? (
+          <TaskModal
+            mode={taskModal.mode}
+            epics={epics}
+            defaultEpicId={
+              taskModal.mode === 'create' ? taskModal.defaultEpicId : undefined
+            }
+            task={
+              taskModal.mode === 'edit'
+                ? (tasksById[taskModal.taskId] ?? null)
+                : null
+            }
+            onClose={() => setTaskModal({ open: false })}
+            onSave={(v) => saveTask(v)}
+            onDelete={(taskId) => deleteTask(taskId)}
+          />
+        ) : null}
+      </div>
+    );
+  },
+);
 
-/** ---------------- Actions (mounted into Content header via static field) ---------------- */
-function ActionsImpl(props: {
-  onAddEpic: () => void;
-  onCreateTask: () => void;
-}) {
-  // this renders nothing in-body; we will “portal-like” mount via CSS grid by absolute? (simpler:)
-  // We'll just render here but style it to sit at top-right of content area (no global scroll impact).
-  return (
-    <div className="sprintActions">
-      <button className="btnPrimary" onClick={props.onAddEpic}>
-        Add Epic
-      </button>
-      <button className="btnGhost" onClick={props.onCreateTask}>
-        Create Task
-      </button>
-    </div>
-  );
-}
-
-/** Expose to Content header */
-SprintBoardView.Actions = function ActionsSlot() {
-  // The real buttons are rendered inside SprintBoardView (ActionsImpl).
-  // This slot keeps Content happy; you can leave it empty.
-  return null;
-} as any;
+export default SprintBoardView;
 
 /** ---------------- UI Components ---------------- */
 
@@ -624,6 +648,7 @@ function EpicColumn(props: {
 
 function SortableTaskCard(props: { task: Task; onOpen: () => void }) {
   const dndId = taskDndId(props.task.id);
+  const isClosed = isClosedStatus(props.task.statusId);
 
   const {
     attributes,
@@ -634,6 +659,7 @@ function SortableTaskCard(props: { task: Task; onOpen: () => void }) {
     isDragging,
   } = useSortable({
     id: dndId,
+    disabled: isClosed,
   });
 
   return (
@@ -649,7 +675,10 @@ function SortableTaskCard(props: { task: Task; onOpen: () => void }) {
         task={props.task}
         onOpen={props.onOpen}
         dragging={isDragging}
-        dragHandleProps={{ ...attributes, ...listeners }}
+        dragHandleProps={isClosed ? undefined : { ...attributes, ...listeners }}
+        // if task is DONE then don't bind handle to drag
+        dragDisabled={isClosed}
+        closed={isClosed}
       />
     </div>
   );
@@ -661,8 +690,19 @@ function TaskCard(props: {
   dragging?: boolean;
   overlay?: boolean;
   dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
+  dragDisabled?: boolean;
+  closed?: boolean;
 }) {
-  const { task, onOpen, dragging, overlay, dragHandleProps } = props;
+  const {
+    task,
+    onOpen,
+    dragging,
+    overlay,
+    dragHandleProps,
+    dragDisabled,
+    closed,
+  } = props;
+
   const st = statusMap.get(task.statusId);
   const stakeholder = task.stakeholderId
     ? stakeholderMap.get(task.stakeholderId)?.label
@@ -671,20 +711,23 @@ function TaskCard(props: {
 
   return (
     <article
-      className={`taskCard2 ${dragging ? 'dragging' : ''} ${overlay ? 'overlay' : ''}`}
+      className={`taskCard2  ${dragging ? 'dragging' : ''} ${overlay ? 'overlay' : ''} ${closed ? 'closed' : ''}`}
     >
       <div className="taskRow">
         {/* title clickable; hover shows full title */}
         <button className="taskTitleBtn" onClick={onOpen} title={task.title}>
-          <span className="taskTitleClamp">{task.title}</span>
+          <span className={`taskTitleClamp ${closed ? 'strike' : ''}`}>
+            {task.title}
+          </span>
         </button>
 
         {/* drag handle only */}
         <button
-          className="dragHandle2"
-          {...dragHandleProps}
-          aria-label="Drag"
-          title="Drag"
+          className={`dragHandle2 ${dragDisabled ? 'disabled' : ''}`}
+          {...(dragHandleProps ?? {})}
+          aria-label={dragDisabled ? 'Drag disabled' : 'Drag'}
+          title={dragDisabled ? 'DONE tasks cannot be dragged' : 'Drag'}
+          disabled={dragDisabled}
         >
           ⠿
         </button>
@@ -839,7 +882,7 @@ function TaskModal(props: {
     props.task?.stakeholderId ?? 'ME',
   );
 
-  const isDone = statusId === 'DONE';
+  const isClosed = isClosedStatus(statusId);
 
   return (
     <ModalShell
@@ -892,8 +935,8 @@ function TaskModal(props: {
           className="select"
           value={stakeholderId}
           onChange={(e) => setStakeholderId(e.target.value)}
-          disabled={isDone}
-          title={isDone ? 'DONE tasks do not require stakeholder' : ''}
+          disabled={isClosed}
+          title={isClosed ? 'Closed tasks do not require stakeholder' : ''}
         >
           {STAKEHOLDERS.map((p) => (
             <option key={p.id} value={p.id}>
@@ -927,7 +970,7 @@ function TaskModal(props: {
                 epicId,
                 title: title.trim(),
                 statusId,
-                stakeholderId: isDone ? undefined : stakeholderId,
+                stakeholderId: isClosed ? undefined : stakeholderId,
               })
             }
             disabled={!title.trim() || !epicId}
