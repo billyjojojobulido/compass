@@ -518,6 +518,12 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
           <div className="sprintBoard" aria-label="Sprint board">
             {sortedEpics.map((epic) => {
               const ids = taskOrderByEpic[epic.id] ?? [];
+              const totalCount = ids.length;
+              const closedCount = ids.reduce(
+                (acc, tid) =>
+                  acc + (isClosedStatus(tasksById[tid]?.statusId) ? 1 : 0),
+                0,
+              );
               return (
                 <EpicColumn
                   key={epic.id}
@@ -525,6 +531,8 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
                   taskIds={ids}
                   onEditEpic={() => openEditEpic(epic.id)}
                   onCreateTask={() => openCreateTask(epic.id)}
+                  totalCount={totalCount}
+                  closedCount={closedCount}
                 >
                   {ids.map((tid) => (
                     <SortableTaskCard
@@ -590,8 +598,18 @@ function EpicColumn(props: {
   children: React.ReactNode;
   onEditEpic: () => void;
   onCreateTask: () => void;
+  totalCount: number;
+  closedCount: number;
 }) {
-  const { epic, taskIds, children, onEditEpic, onCreateTask } = props;
+  const {
+    epic,
+    taskIds,
+    children,
+    onEditEpic,
+    onCreateTask,
+    totalCount,
+    closedCount,
+  } = props;
 
   // column droppable for “drop to empty space”
   const { setNodeRef, isOver } = useDroppable({ id: epicDndId(epic.id) });
@@ -604,8 +622,17 @@ function EpicColumn(props: {
       {/* sticky header */}
       <div className={`epicHeader ${isOver ? 'isOver' : ''}`}>
         <div className="epicHeaderTop">
-          <div className="epicTitle" title={epic.title}>
-            {epic.title}
+          <div className="epicTitleRow">
+            <div className="epicTitleClamp" title={epic.title}>
+              {epic.title}
+            </div>
+
+            <div
+              className="epicProgress"
+              title={`${closedCount}/${totalCount} closed`}
+            >
+              {closedCount}/{totalCount}
+            </div>
           </div>
 
           {/* pen icon */}
