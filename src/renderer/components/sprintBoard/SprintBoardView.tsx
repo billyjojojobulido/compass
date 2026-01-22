@@ -261,6 +261,16 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
       if (!fromEpicId || !toEpicId) return;
       if (fromEpicId === toEpicId) return;
 
+      emitEvent({
+        entity: { type: 'task', id: activeSid },
+        action: 'move',
+        meta: {
+          fromEpicId: fromEpicId,
+          toEpicId: toEpicId,
+          overId: String(over.id),
+        },
+      });
+
       const taskId = parseTaskId(activeSid);
 
       setTaskOrderByEpic((prev) => {
@@ -438,6 +448,18 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
           ...prev,
           [payload.epicId]: [...(prev[payload.epicId] ?? []), id],
         }));
+        emitEvent({
+          entity: { type: 'task', id: id },
+          action: 'create',
+          diff: {
+            after: {
+              title: t.title,
+              epicId: t.epicId,
+              statusId: t.statusId,
+              stakeholderId: t.stakeholderId,
+            },
+          },
+        });
       } else if (taskModal.open && taskModal.mode === 'edit') {
         const id = taskModal.taskId;
         const prevTask = tasksById[id];
@@ -445,6 +467,25 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
           setTaskModal({ open: false });
           return;
         }
+
+        emitEvent({
+          entity: { type: 'task', id: id },
+          action: 'update',
+          diff: {
+            before: {
+              title: prevTask.title,
+              statusId: prevTask.statusId,
+              stakeholderId: prevTask.stakeholderId,
+              epicId: prevTask.epicId,
+            },
+            after: {
+              title: payload.title,
+              epicId: payload.epicId,
+              statusId: payload.statusId,
+              stakeholderId: payload.stakeholderId,
+            },
+          },
+        });
 
         const prevStatus = prevTask.statusId;
         const nextStatus = payload.statusId;
@@ -518,6 +559,14 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
         setTaskModal({ open: false });
         return;
       }
+
+      emitEvent({
+        entity: { type: 'task', id: taskId },
+        action: 'delete',
+        diff: {
+          before: { ...tasksById[taskId] },
+        },
+      });
 
       setTasksById((prev) => {
         const next = { ...prev };
