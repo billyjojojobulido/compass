@@ -73,6 +73,8 @@ type Task = {
 type TasksById = Record<TaskId, Task>;
 type TaskOrderByEpic = Record<EpicId, TaskId[]>;
 
+type DragOrigin = { taskId: string; epicId: string; index: number };
+
 /** dnd ids (avoid conflicts with epic/task id) */
 const epicDndId = (id: EpicId) => `epic:${id}`;
 const taskDndId = (id: TaskId) => `task:${id}`;
@@ -181,6 +183,8 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
       taskOrderRef.current = taskOrderByEpic;
     }, [taskOrderByEpic]);
 
+    const dragOriginRef = useRef<DragOrigin | null>(null);
+
     /** ---- modal states ---- */
     const [epicModal, setEpicModal] = useState<EpicModalState>({ open: false });
     const [taskModal, setTaskModal] = useState<TaskModalState>({ open: false });
@@ -249,7 +253,15 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
     }
 
     function onDragStart(e: DragStartEvent) {
-      setActiveId(e.active.id);
+      const sid = String(e.active.id);
+      if (!isTaskDndId(sid)) return;
+
+      const taskId = parseTaskId(sid);
+      const epicId = findEpicContainerByDndId(e.active.id);
+      if (!epicId) return;
+
+      const list = taskOrderRef.current[epicId] ?? [];
+      dragOriginRef.current = { taskId, epicId, index: list.indexOf(taskId) };
     }
 
     function onDragOver(e: DragOverEvent) {
@@ -305,43 +317,46 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
     function onDragEnd(e: DragEndEvent) {
       const { active, over } = e;
       setActiveId(null);
-      if (!over) return;
+
+      const origin = dragOriginRef.current;
+      dragOriginRef.current = null;
+      if (!over || !origin) return;
 
       const activeSid = String(active.id);
       const overSid = String(over.id);
       if (!isTaskDndId(activeSid)) return;
 
+      const taskId = parseTaskId(activeSid);
+
+      const toEpicId = findEpicContainerByDndId(over.id);
+      if (!toEpicId) return;
+
+      const toList = taskOrderRef.current[toEpicId] ?? [];
+      const toIndex = toList.indexOf(taskId);
+
       const epicId = findEpicContainerByDndId(active.id);
       const overEpicId = findEpicContainerByDndId(over.id);
       if (!epicId || !overEpicId) return;
 
-      // same epic: reorder
-      if (epicId === overEpicId && isTaskDndId(overSid)) {
-        const taskId = parseTaskId(activeSid);
-        const overTaskId = parseTaskId(overSid);
+      const movedEpic = origin.epicId !== toEpicId;
+      const movedIndex = origin.index !== toIndex;
 
-        // baocheng notes:
-        // now use ref to read current order, whcih is safer to
-        // calc index (warning: don't do side effect in setState updater)
-        const list = [...(taskOrderRef.current[epicId] ?? [])];
-        const oldIndex = list.indexOf(taskId);
-        const newIndex = list.indexOf(overTaskId);
-        if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
-
-        setTaskOrderByEpic((prev) => ({
-          ...prev,
-          [epicId]: arrayMove(list, oldIndex, newIndex),
-        }));
-
+      if (movedEpic) {
+        emitEvent({
+          entity: { type: 'task', id: taskId },
+          action: 'move',
+          meta: {
+            fromEpicId: origin.epicId,
+            toEpicId,
+            fromIndex: origin.index,
+            toIndex,
+          },
+        });
+      } else if (movedIndex) {
         emitEvent({
           entity: { type: 'task', id: taskId },
           action: 'reorder',
-          meta: {
-            epicId,
-            fromIndex: oldIndex,
-            toIndex: newIndex,
-            overTaskId,
-          },
+          meta: { epicId: toEpicId, fromIndex: origin.index, toIndex },
         });
       }
     }
