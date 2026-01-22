@@ -642,7 +642,7 @@ function EpicColumn(props: {
             aria-label="Edit Epic"
             title="Edit Epic"
           >
-            ✒️
+            ⋮
           </button>
         </div>
 
