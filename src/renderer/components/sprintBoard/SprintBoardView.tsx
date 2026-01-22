@@ -3,8 +3,12 @@ import React, {
   useState,
   useImperativeHandle,
   forwardRef,
+  useRef,
 } from 'react';
 import './sprintboard.css';
+import { InMemoryEventStore } from '@/domain/eventStore';
+import { nowISO, uid } from '@/domain/utils';
+import type { SprintEvent } from '@/domain/event';
 
 import {
   DndContext,
@@ -180,6 +184,30 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
     }
     function openEditTask(taskId: TaskId) {
       setTaskModal({ open: true, mode: 'edit', taskId });
+    }
+
+    /* ---- event engine ---- */
+    const eventStoreRef = useRef<InMemoryEventStore | null>(null);
+
+    if (!eventStoreRef.current) {
+      eventStoreRef.current = new InMemoryEventStore();
+    }
+
+    const eventStore = eventStoreRef.current;
+
+    function emitEvent(e: Omit<SprintEvent, 'id' | 'ts'>) {
+      const full: SprintEvent = {
+        ...e,
+        id: uid(),
+        ts: nowISO(),
+      };
+
+      eventStore.append(full);
+
+      // Dev 模式可视化
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[SPRINT EVENT]', full);
+      }
     }
 
     // expose set methods to Outer Components;
