@@ -4,6 +4,7 @@ import React, {
   useImperativeHandle,
   forwardRef,
   useRef,
+  useEffect,
 } from 'react';
 import './sprintboard.css';
 import { InMemoryEventStore } from '@/domain/eventStore';
@@ -175,6 +176,11 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
       return [...epics].sort((a, b) => rank(a.priorityId) - rank(b.priorityId));
     }, [epics]);
 
+    const taskOrderRef = useRef(taskOrderByEpic);
+    useEffect(() => {
+      taskOrderRef.current = taskOrderByEpic;
+    }, [taskOrderByEpic]);
+
     /** ---- modal states ---- */
     const [epicModal, setEpicModal] = useState<EpicModalState>({ open: false });
     const [taskModal, setTaskModal] = useState<TaskModalState>({ open: false });
@@ -261,16 +267,6 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
       if (!fromEpicId || !toEpicId) return;
       if (fromEpicId === toEpicId) return;
 
-      emitEvent({
-        entity: { type: 'task', id: activeSid },
-        action: 'move',
-        meta: {
-          fromEpicId: fromEpicId,
-          toEpicId: toEpicId,
-          overId: String(over.id),
-        },
-      });
-
       const taskId = parseTaskId(activeSid);
 
       setTaskOrderByEpic((prev) => {
@@ -324,13 +320,28 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
         const taskId = parseTaskId(activeSid);
         const overTaskId = parseTaskId(overSid);
 
-        setTaskOrderByEpic((prev) => {
-          const list = [...(prev[epicId] ?? [])];
-          const oldIndex = list.indexOf(taskId);
-          const newIndex = list.indexOf(overTaskId);
-          if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex)
-            return prev;
-          return { ...prev, [epicId]: arrayMove(list, oldIndex, newIndex) };
+        // baocheng notes:
+        // now use ref to read current order, whcih is safer to
+        // calc index (warning: don't do side effect in setState updater)
+        const list = [...(taskOrderRef.current[epicId] ?? [])];
+        const oldIndex = list.indexOf(taskId);
+        const newIndex = list.indexOf(overTaskId);
+        if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
+
+        setTaskOrderByEpic((prev) => ({
+          ...prev,
+          [epicId]: arrayMove(list, oldIndex, newIndex),
+        }));
+
+        emitEvent({
+          entity: { type: 'task', id: taskId },
+          action: 'reorder',
+          meta: {
+            epicId,
+            fromIndex: oldIndex,
+            toIndex: newIndex,
+            overTaskId,
+          },
         });
       }
     }
