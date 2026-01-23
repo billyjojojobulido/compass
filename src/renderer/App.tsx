@@ -4,7 +4,7 @@ import AppShell from './components/core/AppShell';
 /* -- Provider -- */
 import { SprintProvider } from '@/domain/sprintStore';
 import type { SprintState } from '@/domain/types';
-import { sprintConfig } from '@/config/sprintConfig';
+import { sprintConfig } from '@/config/sprintConfig.ts';
 /* -- Styles -- */
 import '@/styles/global.css';
 import '@/styles/layout.css';
@@ -83,6 +83,8 @@ const mockTaskOrderByEpic = {
 
 // TODO: in future config loading
 // const config = await ipcRenderer.invoke("read-sprint-config");
+
+console.log('baocheng', sprintConfig);
 
 const initialState: SprintState = {
   config: sprintConfig,
