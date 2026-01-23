@@ -43,3 +43,6 @@ export function byId<T extends { id: string }>(arr: T[]) {
   for (const x of arr) m.set(x.id, x);
   return m;
 }
+
+const sprintConfig = loadSprintConfig();
+export { sprintConfig };
