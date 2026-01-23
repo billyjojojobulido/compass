@@ -19,7 +19,6 @@ type Actions = ReturnType<typeof createActions>;
 type SprintContextValue = {
   state: SprintState;
   actions: Actions;
-  selectors: ReturnType<typeof createSelectors>;
 };
 
 const SprintContext = createContext<SprintContextValue | null>(null);
@@ -33,11 +32,10 @@ export function SprintProvider({
 }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const selectors = useMemo(() => createSelectors(state), [state]);
   const actions = useMemo(() => createActions(state, dispatch), [state]);
 
   return (
-    <SprintContext.Provider value={{ state, actions, selectors }}>
+    <SprintContext.Provider value={{ state, actions }}>
       {children}
     </SprintContext.Provider>
   );
@@ -370,67 +368,5 @@ function createActions(
         event,
       });
     },
-  };
-}
-
-/** ---------- selectors/projections ---------- */
-
-function createSelectors(state: SprintState) {
-  const statusMap = new Map(state.config.statuses.map((s) => [s.id, s]));
-  const priorityMap = new Map(state.config.priorities.map((p) => [p.id, p]));
-
-  const isClosedStatus = (statusId: string) =>
-    statusMap.get(statusId)?.toClose === true;
-
-  function getEpicProgress(epicId: string) {
-    const ids = state.taskOrderByEpic[epicId] ?? [];
-    const total = ids.length;
-    const closed = ids.reduce(
-      (acc, tid) =>
-        acc + (isClosedStatus(state.tasksById[tid]?.statusId) ? 1 : 0),
-      0,
-    );
-    return { closed, total };
-  }
-
-  function getEpicBlockers(epicId: string) {
-    const ids = state.taskOrderByEpic[epicId] ?? [];
-    const counts = new Map<string, number>();
-    for (const tid of ids) {
-      const t = state.tasksById[tid];
-      if (!t) continue;
-      if (isClosedStatus(t.statusId)) continue;
-      const key = t.stakeholderId ?? 'UNASSIGNED';
-      counts.set(key, (counts.get(key) ?? 0) + 1);
-    }
-    return counts;
-  }
-
-  function getPriorityRank(priorityId: string) {
-    return priorityMap.get(priorityId)?.rank ?? 9999;
-  }
-
-  function getPriorityIcon(priorityId: string) {
-    return priorityMap.get(priorityId)?.icon ?? '';
-  }
-
-  function selectEpicsByPriority() {
-    const epics = [...state.epics];
-    epics.sort((a, b) => {
-      const ap = a.pinned ? -1 : 0;
-      const bp = b.pinned ? -1 : 0;
-      if (ap !== bp) return ap - bp;
-      return getPriorityRank(a.priorityId) - getPriorityRank(b.priorityId);
-    });
-    return epics;
-  }
-
-  return {
-    isClosedStatus,
-    getEpicProgress,
-    getEpicBlockers,
-    getPriorityRank,
-    getPriorityIcon,
-    selectEpicsByPriority,
   };
 }
