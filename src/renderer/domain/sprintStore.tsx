@@ -1,0 +1,436 @@
+import React, { createContext, useContext, useMemo, useReducer } from 'react';
+import type {
+  Epic,
+  SprintConfig,
+  SprintEvent,
+  SprintState,
+  Task,
+} from './types';
+
+function nowISO() {
+  return new Date().toISOString();
+}
+function uid() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+type Actions = ReturnType<typeof createActions>;
+
+type SprintContextValue = {
+  state: SprintState;
+  actions: Actions;
+  selectors: ReturnType<typeof createSelectors>;
+};
+
+const SprintContext = createContext<SprintContextValue | null>(null);
+
+export function SprintProvider({
+  initialState,
+  children,
+}: {
+  initialState: SprintState;
+  children: React.ReactNode;
+}) {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const selectors = useMemo(() => createSelectors(state), [state]);
+  const actions = useMemo(() => createActions(state, dispatch), [state]);
+
+  return (
+    <SprintContext.Provider value={{ state, actions, selectors }}>
+      {children}
+    </SprintContext.Provider>
+  );
+}
+
+export function useSprint() {
+  const ctx = useContext(SprintContext);
+  if (!ctx) throw new Error('useSprint must be used within SprintProvider');
+  return ctx;
+}
+
+/** ---------- reducer + action types ---------- */
+
+type DispatchAction =
+  | { type: 'EPIC_CREATE'; epic: Epic; event: SprintEvent }
+  | {
+      type: 'EPIC_UPDATE';
+      epicId: string;
+      patch: Partial<Epic>;
+      event: SprintEvent;
+    }
+  | { type: 'EPIC_DELETE'; epicId: string; event: SprintEvent }
+  | { type: 'TASK_CREATE'; task: Task; event: SprintEvent }
+  | {
+      type: 'TASK_UPDATE';
+      taskId: string;
+      patch: Partial<Task>;
+      event: SprintEvent;
+      meta?: { autoCloseBottom?: boolean };
+    }
+  | { type: 'TASK_DELETE'; taskId: string; event: SprintEvent }
+  | {
+      type: 'TASK_MOVE';
+      taskId: string;
+      fromEpicId: string;
+      toEpicId: string;
+      toIndex: number;
+      event: SprintEvent;
+    }
+  | {
+      type: 'TASK_REORDER';
+      taskId: string;
+      epicId: string;
+      toIndex: number;
+      event: SprintEvent;
+    };
+
+function reducer(state: SprintState, a: DispatchAction): SprintState {
+  switch (a.type) {
+    case 'EPIC_CREATE': {
+      return {
+        ...state,
+        epics: [...state.epics, a.epic],
+        events: [...state.events, a.event],
+      };
+    }
+    case 'EPIC_UPDATE': {
+      return {
+        ...state,
+        epics: state.epics.map((e) =>
+          e.id === a.epicId ? { ...e, ...a.patch } : e,
+        ),
+        events: [...state.events, a.event],
+      };
+    }
+    case 'EPIC_DELETE': {
+      const epicId = a.epicId;
+      const order = state.taskOrderByEpic[epicId] ?? [];
+      const tasksById = { ...state.tasksById };
+      for (const tid of order) delete tasksById[tid];
+
+      const taskOrderByEpic = { ...state.taskOrderByEpic };
+      delete taskOrderByEpic[epicId];
+
+      return {
+        ...state,
+        epics: state.epics.filter((e) => e.id !== epicId),
+        tasksById,
+        taskOrderByEpic,
+        events: [...state.events, a.event],
+      };
+    }
+    case 'TASK_CREATE': {
+      const t = a.task;
+      const list = [...(state.taskOrderByEpic[t.epicId] ?? [])].filter(
+        (x) => x !== t.id,
+      );
+      list.push(t.id);
+      return {
+        ...state,
+        tasksById: { ...state.tasksById, [t.id]: t },
+        taskOrderByEpic: { ...state.taskOrderByEpic, [t.epicId]: list },
+        events: [...state.events, a.event],
+      };
+    }
+    case 'TASK_UPDATE': {
+      const prev = state.tasksById[a.taskId];
+      if (!prev) return state;
+      const next: Task = { ...prev, ...a.patch };
+
+      let taskOrderByEpic = state.taskOrderByEpic;
+
+      // epic change: remove from old list, append to new list
+      if (next.epicId !== prev.epicId) {
+        const fromList = [...(taskOrderByEpic[prev.epicId] ?? [])].filter(
+          (x) => x !== next.id,
+        );
+        const toList = [...(taskOrderByEpic[next.epicId] ?? [])].filter(
+          (x) => x !== next.id,
+        );
+        toList.push(next.id);
+        taskOrderByEpic = {
+          ...taskOrderByEpic,
+          [prev.epicId]: fromList,
+          [next.epicId]: toList,
+        };
+      }
+
+      // auto close bottom (optional)
+      if (a.meta?.autoCloseBottom) {
+        const list = [...(taskOrderByEpic[next.epicId] ?? [])].filter(
+          (x) => x !== next.id,
+        );
+        list.push(next.id);
+        taskOrderByEpic = { ...taskOrderByEpic, [next.epicId]: list };
+      }
+
+      return {
+        ...state,
+        tasksById: { ...state.tasksById, [next.id]: next },
+        taskOrderByEpic,
+        events: [...state.events, a.event],
+      };
+    }
+    case 'TASK_DELETE': {
+      const prev = state.tasksById[a.taskId];
+      if (!prev) return state;
+      const list = [...(state.taskOrderByEpic[prev.epicId] ?? [])].filter(
+        (x) => x !== prev.id,
+      );
+      const tasksById = { ...state.tasksById };
+      delete tasksById[prev.id];
+      return {
+        ...state,
+        tasksById,
+        taskOrderByEpic: { ...state.taskOrderByEpic, [prev.epicId]: list },
+        events: [...state.events, a.event],
+      };
+    }
+    case 'TASK_MOVE': {
+      const prev = state.tasksById[a.taskId];
+      if (!prev) return state;
+
+      const fromList = [...(state.taskOrderByEpic[a.fromEpicId] ?? [])].filter(
+        (x) => x !== a.taskId,
+      );
+      const toListRaw = [...(state.taskOrderByEpic[a.toEpicId] ?? [])].filter(
+        (x) => x !== a.taskId,
+      );
+      const idx = Math.max(0, Math.min(a.toIndex, toListRaw.length));
+      toListRaw.splice(idx, 0, a.taskId);
+
+      return {
+        ...state,
+        tasksById: {
+          ...state.tasksById,
+          [a.taskId]: { ...prev, epicId: a.toEpicId },
+        },
+        taskOrderByEpic: {
+          ...state.taskOrderByEpic,
+          [a.fromEpicId]: fromList,
+          [a.toEpicId]: toListRaw,
+        },
+        events: [...state.events, a.event],
+      };
+    }
+    case 'TASK_REORDER': {
+      const listRaw = [...(state.taskOrderByEpic[a.epicId] ?? [])].filter(
+        (x) => x !== a.taskId,
+      );
+      const idx = Math.max(0, Math.min(a.toIndex, listRaw.length));
+      listRaw.splice(idx, 0, a.taskId);
+      return {
+        ...state,
+        taskOrderByEpic: { ...state.taskOrderByEpic, [a.epicId]: listRaw },
+        events: [...state.events, a.event],
+      };
+    }
+    default:
+      return state;
+  }
+}
+
+/** ---------- actions (domain operations) ---------- */
+
+function createActions(
+  state: SprintState,
+  dispatch: React.Dispatch<DispatchAction>,
+) {
+  const statusMap = new Map(state.config.statuses.map((s) => [s.id, s]));
+  const isClosedStatus = (statusId: string) =>
+    statusMap.get(statusId)?.toClose === true;
+
+  function emit(base: Omit<SprintEvent, 'id' | 'ts'>): SprintEvent {
+    return { ...base, id: uid(), ts: nowISO() };
+  }
+
+  return {
+    isClosedStatus,
+
+    createEpic(input: {
+      id: string;
+      title: string;
+      priorityId: string;
+      pinned?: boolean;
+    }) {
+      const epic: Epic = {
+        id: input.id,
+        title: input.title,
+        priorityId: input.priorityId,
+        pinned: input.pinned,
+      };
+      const event = emit({
+        entity: { type: 'epic', id: epic.id },
+        action: 'create',
+        diff: { after: epic as any },
+      });
+      dispatch({ type: 'EPIC_CREATE', epic, event });
+    },
+
+    updateEpic(epicId: string, patch: Partial<Epic>) {
+      const prev = state.epics.find((e) => e.id === epicId);
+      if (!prev) return;
+      const after = { ...prev, ...patch };
+      const event = emit({
+        entity: { type: 'epic', id: epicId },
+        action: 'update',
+        diff: { before: prev as any, after: after as any },
+      });
+      dispatch({ type: 'EPIC_UPDATE', epicId, patch, event });
+    },
+
+    deleteEpic(epicId: string) {
+      const prev = state.epics.find((e) => e.id === epicId);
+      const event = emit({
+        entity: { type: 'epic', id: epicId },
+        action: 'delete',
+        diff: { before: prev as any },
+        meta: { removedTasks: (state.taskOrderByEpic[epicId] ?? []).length },
+      });
+      dispatch({ type: 'EPIC_DELETE', epicId, event });
+    },
+
+    createTask(input: Task) {
+      const event = emit({
+        entity: { type: 'task', id: input.id },
+        action: 'create',
+        diff: { after: input as any },
+      });
+      dispatch({ type: 'TASK_CREATE', task: input, event });
+    },
+
+    updateTask(taskId: string, patch: Partial<Task>) {
+      const prev = state.tasksById[taskId];
+      if (!prev) return;
+      const next = { ...prev, ...patch };
+
+      // if state move to closed
+      // auto sinks to bottom:: only do reorder in reducer
+      const prevClosed = isClosedStatus(prev.statusId);
+      const nextClosed = isClosedStatus(next.statusId);
+      const autoCloseBottom = prevClosed !== nextClosed && nextClosed;
+
+      const event = emit({
+        entity: { type: 'task', id: taskId },
+        action: 'update',
+        diff: { before: prev as any, after: next as any },
+        meta: autoCloseBottom ? { reason: 'auto-close-bottom' } : undefined,
+      });
+
+      dispatch({
+        type: 'TASK_UPDATE',
+        taskId,
+        patch,
+        event,
+        meta: { autoCloseBottom },
+      });
+    },
+
+    deleteTask(taskId: string) {
+      const prev = state.tasksById[taskId];
+      const event = emit({
+        entity: { type: 'task', id: taskId },
+        action: 'delete',
+        diff: { before: prev as any },
+      });
+      dispatch({ type: 'TASK_DELETE', taskId, event });
+    },
+
+    moveTask(args: {
+      taskId: string;
+      fromEpicId: string;
+      toEpicId: string;
+      toIndex: number;
+    }) {
+      const event = emit({
+        entity: { type: 'task', id: args.taskId },
+        action: 'move',
+        meta: { ...args, reason: 'user-dnd' },
+      });
+      dispatch({ type: 'TASK_MOVE', ...args, event });
+    },
+
+    reorderTask(args: {
+      taskId: string;
+      epicId: string;
+      toIndex: number;
+      fromIndex?: number;
+    }) {
+      const event = emit({
+        entity: { type: 'task', id: args.taskId },
+        action: 'reorder',
+        meta: { ...args, reason: 'user-dnd' },
+      });
+      dispatch({
+        type: 'TASK_REORDER',
+        taskId: args.taskId,
+        epicId: args.epicId,
+        toIndex: args.toIndex,
+        event,
+      });
+    },
+  };
+}
+
+/** ---------- selectors/projections ---------- */
+
+function createSelectors(state: SprintState) {
+  const statusMap = new Map(state.config.statuses.map((s) => [s.id, s]));
+  const priorityMap = new Map(state.config.priorities.map((p) => [p.id, p]));
+
+  const isClosedStatus = (statusId: string) =>
+    statusMap.get(statusId)?.toClose === true;
+
+  function getEpicProgress(epicId: string) {
+    const ids = state.taskOrderByEpic[epicId] ?? [];
+    const total = ids.length;
+    const closed = ids.reduce(
+      (acc, tid) =>
+        acc + (isClosedStatus(state.tasksById[tid]?.statusId) ? 1 : 0),
+      0,
+    );
+    return { closed, total };
+  }
+
+  function getEpicBlockers(epicId: string) {
+    const ids = state.taskOrderByEpic[epicId] ?? [];
+    const counts = new Map<string, number>();
+    for (const tid of ids) {
+      const t = state.tasksById[tid];
+      if (!t) continue;
+      if (isClosedStatus(t.statusId)) continue;
+      const key = t.stakeholderId ?? 'UNASSIGNED';
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return counts;
+  }
+
+  function getPriorityRank(priorityId: string) {
+    return priorityMap.get(priorityId)?.rank ?? 9999;
+  }
+
+  function getPriorityIcon(priorityId: string) {
+    return priorityMap.get(priorityId)?.icon ?? '';
+  }
+
+  function selectEpicsByPriority() {
+    const epics = [...state.epics];
+    epics.sort((a, b) => {
+      const ap = a.pinned ? -1 : 0;
+      const bp = b.pinned ? -1 : 0;
+      if (ap !== bp) return ap - bp;
+      return getPriorityRank(a.priorityId) - getPriorityRank(b.priorityId);
+    });
+    return epics;
+  }
+
+  return {
+    isClosedStatus,
+    getEpicProgress,
+    getEpicBlockers,
+    getPriorityRank,
+    getPriorityIcon,
+    selectEpicsByPriority,
+  };
+}
