@@ -31,25 +31,13 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { loadSprintConfig, byId } from '@/config/sprintConfig.ts';
+import { useSprint } from '@/domain/sprintStore';
+import { byId } from '@/config/sprintConfig';
 
 /** ---------------- Config (future: load from file/db) ---------------- */
 type StatusId = string;
 type StakeholderId = string;
 type PriorityId = string;
-
-const CFG = loadSprintConfig();
-const STATUS = CFG.statuses;
-const STAKEHOLDERS = CFG.stakeholders;
-const PRIORITIES = CFG.priorities;
-
-const statusMap = byId(STATUS);
-const stakeholderMap = byId(STAKEHOLDERS);
-const priorityMap = byId(PRIORITIES);
-
-const isClosedStatus = (statusId: string) => {
-  return statusMap.get(statusId)?.toClose === true;
-};
 
 /** ---------------- Data model ---------------- */
 type EpicId = string;
@@ -100,77 +88,19 @@ export type SprintBoardHandle = {
 
 const SprintBoardView = forwardRef<SprintBoardHandle>(
   function SprintBoardView(_props, ref) {
-    /** ---- Hardcoded initial data (future: load) ---- */
-    const [epics, setEpics] = useState<Epic[]>([
-      { id: 'e1', title: 'UIv3', priorityId: 'P0', statusId: 'WIP' },
-      { id: 'e2', title: 'Lobby Refresh', priorityId: 'P1', statusId: 'QA' },
-      {
-        id: 'e3',
-        title: 'Tech Debt Cleanup',
-        priorityId: 'P2',
-        statusId: 'TODO',
-      },
-    ]);
+    const { state, actions } = useSprint();
+    const { epics, tasksById, taskOrderByEpic, config } = state;
 
-    const [tasksById, setTasksById] = useState<TasksById>({
-      t1: {
-        id: 't1',
-        epicId: 'e1',
-        title: 'Game Of Queen – Implement core UI',
-        statusId: 'WIP',
-        stakeholderId: 'ME',
-      },
-      t2: {
-        id: 't2',
-        epicId: 'e1',
-        title:
-          'Game Of King – Waiting for final art assets (icons + background)',
-        statusId: 'BLOCKED',
-        stakeholderId: 'ART',
-      },
-      t3: {
-        id: 't3',
-        epicId: 'e1',
-        title: 'Integrate i18n copy',
-        statusId: 'TODO',
-        stakeholderId: 'COPY',
-      },
+    const STATUS = config.statuses;
+    const STAKEHOLDERS = config.stakeholders;
+    const PRIORITIES = config.priorities;
 
-      t4: {
-        id: 't4',
-        epicId: 'e2',
-        title: 'Lobby layout polish',
-        statusId: 'QA',
-        stakeholderId: 'QA',
-      },
-      t5: {
-        id: 't5',
-        epicId: 'e2',
-        title: 'Fix iPad scaling regression when rotating device orientation',
-        statusId: 'WIP',
-        stakeholderId: 'DEV',
-      },
-      t6: {
-        id: 't6',
-        epicId: 'e2',
-        title: 'Main menu animation cleanup',
-        statusId: 'DONE',
-      },
+    const statusMap = useMemo(() => byId(STATUS), [STATUS]);
+    const stakeholderMap = useMemo(() => byId(STAKEHOLDERS), [STAKEHOLDERS]);
+    const priorityMap = useMemo(() => byId(PRIORITIES), [PRIORITIES]);
 
-      t7: {
-        id: 't7',
-        epicId: 'e3',
-        title: 'Remove redundant getComponent calls via @property injection',
-        statusId: 'TODO',
-        stakeholderId: 'ME',
-      },
-    });
-
-    const [taskOrderByEpic, setTaskOrderByEpic] = useState<TaskOrderByEpic>({
-      e1: ['t1', 't2', 't3'],
-      e2: ['t4', 't5', 't6'],
-      e3: ['t7'],
-    });
+    const isClosedStatus = (statusId: string) =>
+      statusMap.get(statusId)?.toClose === true;
 
     /** ---- sort epics by priority (higher => left) ---- */
     const sortedEpics = useMemo(() => {
@@ -194,30 +124,6 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
     }
     function openEditTask(taskId: TaskId) {
       setTaskModal({ open: true, mode: 'edit', taskId });
-    }
-
-    /* ---- event engine ---- */
-    const eventStoreRef = useRef<InMemoryEventStore | null>(null);
-
-    if (!eventStoreRef.current) {
-      eventStoreRef.current = new InMemoryEventStore();
-    }
-
-    const eventStore = eventStoreRef.current;
-
-    function emitEvent(e: Omit<SprintEvent, 'id' | 'ts'>) {
-      const full: SprintEvent = {
-        ...e,
-        id: uid(),
-        ts: nowISO(),
-      };
-
-      eventStore.append(full);
-
-      // Dev 模式可视化
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('[SPRINT EVENT]', full);
-      }
     }
 
     // expose set methods to Outer Components;
@@ -469,6 +375,7 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
           statusId: payload.statusId,
           stakeholderId,
         };
+
         setTasksById((prev) => ({ ...prev, [id]: t }));
         setTaskOrderByEpic((prev) => ({
           ...prev,
