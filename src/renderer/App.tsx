@@ -95,7 +95,9 @@ const initialState: SprintState = {
 };
 
 export default function App() {
-  <SprintProvider initialState={initialState}>
-    <AppShell />
-  </SprintProvider>;
+  return (
+    <SprintProvider initialState={initialState}>
+      <AppShell />
+    </SprintProvider>
+  );
 }
