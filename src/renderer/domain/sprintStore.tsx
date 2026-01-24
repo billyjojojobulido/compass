@@ -81,6 +81,13 @@ type DispatchAction =
       epicId: string;
       toIndex: number;
       event: SprintEvent;
+    }
+  | {
+      type: 'TASK_PREVIEW_MOVE';
+      taskId: string;
+      fromEpicId: string;
+      toEpicId: string;
+      toIndex: number;
     };
 
 function reducer(state: SprintState, a: DispatchAction): SprintState {
@@ -224,6 +231,36 @@ function reducer(state: SprintState, a: DispatchAction): SprintState {
         events: [...state.events, a.event],
       };
     }
+    case 'TASK_PREVIEW_MOVE': {
+      const prev = state.tasksById[a.taskId];
+      if (!prev) return state;
+
+      // remove from 'from' list
+      const fromList = [...(state.taskOrderByEpic[a.fromEpicId] ?? [])].filter(
+        (x) => x !== a.taskId,
+      );
+
+      // insert into 'to' list (remove before insert to avoid duplicate)
+      const toList = [...(state.taskOrderByEpic[a.toEpicId] ?? [])].filter(
+        (x) => x !== a.taskId,
+      );
+
+      const idx = Math.max(0, Math.min(a.toIndex, toList.length));
+      toList.splice(idx, 0, a.taskId);
+
+      return {
+        ...state,
+        tasksById: {
+          ...state.tasksById,
+          [a.taskId]: { ...prev, epicId: a.toEpicId },
+        },
+        taskOrderByEpic: {
+          ...state.taskOrderByEpic,
+          [a.fromEpicId]: fromList,
+          [a.toEpicId]: toList,
+        },
+      };
+    }
     default:
       return state;
   }
@@ -250,12 +287,14 @@ function createActions(
       id: string;
       title: string;
       priorityId: string;
+      statusId: string;
       pinned?: boolean;
     }) {
       const epic: Epic = {
         id: input.id,
         title: input.title,
         priorityId: input.priorityId,
+        statusId: input.statusId,
         pinned: input.pinned,
       };
       const event = emit({
@@ -367,6 +406,15 @@ function createActions(
         toIndex: args.toIndex,
         event,
       });
+    },
+
+    previewMoveTask(args: {
+      taskId: string;
+      fromEpicId: string;
+      toEpicId: string;
+      toIndex: number;
+    }) {
+      dispatch({ type: 'TASK_PREVIEW_MOVE', ...args });
     },
   };
 }

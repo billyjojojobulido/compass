@@ -35,6 +35,7 @@ export type Epic = {
   id: string;
   title: string;
   priorityId: string;
+  statusId: string;
   pinned?: boolean;
 };
 
