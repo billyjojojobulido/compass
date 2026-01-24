@@ -7,9 +7,6 @@ import React, {
   useEffect,
 } from 'react';
 import './sprintboard.css';
-import { InMemoryEventStore } from '@/domain/eventStore';
-import { nowISO, uid } from '@/domain/utils';
-import type { SprintEvent } from '@/domain/event';
 
 import {
   DndContext,
@@ -32,7 +29,8 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useSprint } from '@/domain/sprintStore';
-import { byId } from '@/config/sprintConfig';
+import { byId } from '@/config/sprintConfig.ts';
+import { PriorityDef, StakeholderDef, StatusDef } from '@/domain/types';
 
 /** ---------------- Config (future: load from file/db) ---------------- */
 type StatusId = string;
@@ -57,9 +55,6 @@ type Task = {
   statusId: StatusId;
   stakeholderId?: StakeholderId; // not required if DONE
 };
-
-type TasksById = Record<TaskId, Task>;
-type TaskOrderByEpic = Record<EpicId, TaskId[]>;
 
 type DragOrigin = { taskId: string; epicId: string; index: number };
 
@@ -187,36 +182,21 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
 
       const taskId = parseTaskId(activeSid);
 
-      setTaskOrderByEpic((prev) => {
-        const next = { ...prev };
-        const fromList = [...(next[fromEpicId] ?? [])];
-        const toList = [...(next[toEpicId] ?? [])];
+      const toList = taskOrderRef.current[toEpicId] ?? [];
 
-        const fromIndex = fromList.indexOf(taskId);
-        if (fromIndex === -1) return prev;
+      // insert position: if hovering a task -> before it; if hovering epic container -> end
+      let insertIndex = toList.length;
+      if (isTaskDndId(overSid)) {
+        const overTaskId = parseTaskId(overSid);
+        const idx = toList.indexOf(overTaskId);
+        if (idx >= 0) insertIndex = idx;
+      }
 
-        fromList.splice(fromIndex, 1);
-
-        // insert position: if hovering a task -> before it; if hovering epic container -> end
-        let insertIndex = toList.length;
-        if (isTaskDndId(overSid)) {
-          const overTaskId = parseTaskId(overSid);
-          const idx = toList.indexOf(overTaskId);
-          if (idx >= 0) insertIndex = idx;
-        }
-        toList.splice(insertIndex, 0, taskId);
-
-        next[fromEpicId] = fromList;
-        next[toEpicId] = toList;
-        return next;
-      });
-
-      // update task epicId
-      setTasksById((prev) => {
-        const t = prev[taskId];
-        if (!t) return prev;
-        if (t.epicId === toEpicId) return prev;
-        return { ...prev, [taskId]: { ...t, epicId: toEpicId } };
+      actions.previewMoveTask({
+        taskId,
+        fromEpicId,
+        toEpicId,
+        toIndex: insertIndex,
       });
     }
 
@@ -248,21 +228,18 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
       const movedIndex = origin.index !== toIndex;
 
       if (movedEpic) {
-        emitEvent({
-          entity: { type: 'task', id: taskId },
-          action: 'move',
-          meta: {
-            fromEpicId: origin.epicId,
-            toEpicId,
-            fromIndex: origin.index,
-            toIndex,
-          },
+        actions.moveTask({
+          taskId,
+          fromEpicId: origin.epicId,
+          toEpicId,
+          toIndex,
         });
       } else if (movedIndex) {
-        emitEvent({
-          entity: { type: 'task', id: taskId },
-          action: 'reorder',
-          meta: { epicId: toEpicId, fromIndex: origin.index, toIndex },
+        actions.reorderTask({
+          taskId,
+          epicId: toEpicId,
+          toIndex,
+          fromIndex: origin.index,
         });
       }
     }
@@ -282,50 +259,26 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
       statusId: StatusId;
     }) {
       if (epicModal.open && epicModal.mode === 'create') {
-        const id = `e${Date.now()}`;
-        const newEpic: Epic = {
-          id,
+        actions.createEpic({
+          id: `e${Date.now()}`,
           title: payload.title,
           priorityId: payload.priorityId,
           statusId: payload.statusId,
-        };
-        setEpics((prev) => [...prev, newEpic]);
-        setTaskOrderByEpic((prev) => ({ ...prev, [id]: [] }));
+        });
       } else if (epicModal.open && epicModal.mode === 'edit') {
         const id = epicModal.epicId;
-        setEpics((prev) =>
-          prev.map((e) =>
-            e.id === id
-              ? {
-                  ...e,
-                  title: payload.title,
-                  priorityId: payload.priorityId,
-                  statusId: payload.statusId,
-                }
-              : e,
-          ),
-        );
+        actions.updateEpic(id, {
+          title: payload.title,
+          priorityId: payload.priorityId,
+          statusId: payload.statusId,
+        });
       }
       setEpicModal({ open: false });
     }
 
     function deleteEpic(epicId: EpicId) {
       // delete epic + its tasks (simple strategy)
-      setEpics((prev) => prev.filter((e) => e.id !== epicId));
-
-      const taskIds = taskOrderByEpic[epicId] ?? [];
-      setTasksById((prev) => {
-        const next = { ...prev };
-        taskIds.forEach((tid) => delete next[tid]);
-        return next;
-      });
-
-      setTaskOrderByEpic((prev) => {
-        const next = { ...prev };
-        delete next[epicId];
-        return next;
-      });
-
+      actions.deleteEpic(epicId);
       setEpicModal({ open: false });
     }
 
@@ -367,119 +320,25 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
       const stakeholderId = isDone ? undefined : payload.stakeholderId;
 
       if (taskModal.open && taskModal.mode === 'create') {
-        const id = `t${Date.now()}`;
-        const t: Task = {
-          id,
+        actions.createTask({
+          id: `t${Date.now()}`,
           epicId: payload.epicId,
           title: payload.title,
           statusId: payload.statusId,
-          stakeholderId,
-        };
-
-        setTasksById((prev) => ({ ...prev, [id]: t }));
-        setTaskOrderByEpic((prev) => ({
-          ...prev,
-          [payload.epicId]: [...(prev[payload.epicId] ?? []), id],
-        }));
-        emitEvent({
-          entity: { type: 'task', id: id },
-          action: 'create',
-          diff: {
-            after: {
-              title: t.title,
-              epicId: t.epicId,
-              statusId: t.statusId,
-              stakeholderId: t.stakeholderId,
-            },
-          },
+          stakeholderId: isClosedStatus(payload.statusId)
+            ? undefined
+            : payload.stakeholderId,
         });
       } else if (taskModal.open && taskModal.mode === 'edit') {
         const id = taskModal.taskId;
-        const prevTask = tasksById[id];
-        if (!prevTask) {
-          setTaskModal({ open: false });
-          return;
-        }
 
-        emitEvent({
-          entity: { type: 'task', id: id },
-          action: 'update',
-          diff: {
-            before: {
-              title: prevTask.title,
-              statusId: prevTask.statusId,
-              stakeholderId: prevTask.stakeholderId,
-              epicId: prevTask.epicId,
-            },
-            after: {
-              title: payload.title,
-              epicId: payload.epicId,
-              statusId: payload.statusId,
-              stakeholderId: payload.stakeholderId,
-            },
-          },
-        });
-
-        const prevStatus = prevTask.statusId;
-        const nextStatus = payload.statusId;
-
-        const prevEpicId = prevTask.epicId;
-        const nextEpicId = payload.epicId;
-
-        // if epic changed, move order lists
-        if (prevEpicId !== nextEpicId) {
-          setTaskOrderByEpic((prev) => {
-            const next = { ...prev };
-            next[prevEpicId] = (next[prevEpicId] ?? []).filter((x) => x !== id);
-            next[nextEpicId] = [...(next[nextEpicId] ?? []), id]; // append frist
-            return next;
-          });
-        }
-
-        // then update tasksById (state change first)
-        setTasksById((prev) => {
-          const nextTasks = {
-            ...prev,
-            [id]: {
-              ...prev[id],
-              epicId: nextEpicId,
-              title: payload.title,
-              statusId: nextStatus,
-              stakeholderId,
-            },
-          };
-
-          setTaskOrderByEpic((prevOrder) => {
-            const nextOrder = { ...prevOrder };
-
-            // make sure it is already in the nextEpicId list
-            // if epic is changed, can do the moving first
-            if (prevEpicId !== nextEpicId) {
-              nextOrder[prevEpicId] = (nextOrder[prevEpicId] ?? []).filter(
-                (x) => x !== id,
-              );
-              nextOrder[nextEpicId] = [...(nextOrder[nextEpicId] ?? []), id];
-            }
-
-            if (prevStatus !== nextStatus) {
-              if (nextStatus === 'DONE') {
-                nextOrder[nextEpicId] = moveToBottom(
-                  nextOrder[nextEpicId] ?? [],
-                  id,
-                );
-              } else if (prevStatus === 'DONE') {
-                nextOrder[nextEpicId] = moveToEndOfNonDone(
-                  nextOrder[nextEpicId] ?? [],
-                  id,
-                  nextTasks,
-                );
-              }
-            }
-
-            return nextOrder;
-          });
-
-          return nextTasks;
+        actions.updateTask(id, {
+          epicId: payload.epicId,
+          title: payload.title,
+          statusId: payload.statusId,
+          stakeholderId: isClosedStatus(payload.statusId)
+            ? undefined
+            : payload.stakeholderId,
         });
       }
 
@@ -493,24 +352,7 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
         return;
       }
 
-      emitEvent({
-        entity: { type: 'task', id: taskId },
-        action: 'delete',
-        diff: {
-          before: { ...tasksById[taskId] },
-        },
-      });
-
-      setTasksById((prev) => {
-        const next = { ...prev };
-        delete next[taskId];
-        return next;
-      });
-
-      setTaskOrderByEpic((prev) => ({
-        ...prev,
-        [t.epicId]: (prev[t.epicId] ?? []).filter((x) => x !== taskId),
-      }));
+      actions.deleteTask(taskId);
 
       setTaskModal({ open: false });
     }
@@ -543,12 +385,17 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
                   onCreateTask={() => openCreateTask(epic.id)}
                   totalCount={totalCount}
                   closedCount={closedCount}
+                  priorityMap={priorityMap}
+                  statusMap={statusMap}
                 >
                   {ids.map((tid) => (
                     <SortableTaskCard
                       key={tid}
                       task={tasksById[tid]}
                       onOpen={() => openEditTask(tid)}
+                      isClosedStatus={isClosedStatus}
+                      statusMap={statusMap}
+                      stakeholderMap={stakeholderMap}
                     />
                   ))}
                 </EpicColumn>
@@ -557,7 +404,14 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
           </div>
 
           <DragOverlay dropAnimation={null}>
-            {activeTask ? <TaskCard task={activeTask} overlay /> : null}
+            {activeTask ? (
+              <TaskCard
+                task={activeTask}
+                statusMap={statusMap}
+                stakeholderMap={stakeholderMap}
+                overlay
+              />
+            ) : null}
           </DragOverlay>
         </DndContext>
 
@@ -573,6 +427,8 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
             onClose={() => setEpicModal({ open: false })}
             onSave={(v) => saveEpic(v)}
             onDelete={(epicId) => deleteEpic(epicId)}
+            priorities={PRIORITIES}
+            statuses={STATUS}
           />
         ) : null}
 
@@ -591,6 +447,9 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
             onClose={() => setTaskModal({ open: false })}
             onSave={(v) => saveTask(v)}
             onDelete={(taskId) => deleteTask(taskId)}
+            statuses={STATUS}
+            stakeholders={STAKEHOLDERS}
+            isClosedStatus={isClosedStatus}
           />
         ) : null}
       </div>
@@ -610,6 +469,8 @@ function EpicColumn(props: {
   onCreateTask: () => void;
   totalCount: number;
   closedCount: number;
+  priorityMap: Map<string, PriorityDef>;
+  statusMap: Map<string, StatusDef>;
 }) {
   const {
     epic,
@@ -619,6 +480,8 @@ function EpicColumn(props: {
     onCreateTask,
     totalCount,
     closedCount,
+    priorityMap,
+    statusMap,
   } = props;
 
   // column droppable for “drop to empty space”
@@ -683,9 +546,15 @@ function EpicColumn(props: {
   );
 }
 
-function SortableTaskCard(props: { task: Task; onOpen: () => void }) {
+function SortableTaskCard(props: {
+  task: Task;
+  onOpen: () => void;
+  isClosedStatus: (id: string) => boolean;
+  statusMap: Map<string, any>;
+  stakeholderMap: Map<string, any>;
+}) {
   const dndId = taskDndId(props.task.id);
-  const isClosed = isClosedStatus(props.task.statusId);
+  const isClosed = props.isClosedStatus(props.task.statusId);
 
   const {
     attributes,
@@ -716,6 +585,8 @@ function SortableTaskCard(props: { task: Task; onOpen: () => void }) {
         // if task is DONE then don't bind handle to drag
         dragDisabled={isClosed}
         closed={isClosed}
+        statusMap={props.statusMap}
+        stakeholderMap={props.stakeholderMap}
       />
     </div>
   );
@@ -729,6 +600,8 @@ function TaskCard(props: {
   dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
   dragDisabled?: boolean;
   closed?: boolean;
+  statusMap: Map<string, StatusDef>;
+  stakeholderMap: Map<string, StakeholderDef>;
 }) {
   const {
     task,
@@ -738,6 +611,8 @@ function TaskCard(props: {
     dragHandleProps,
     dragDisabled,
     closed,
+    statusMap,
+    stakeholderMap,
   } = props;
 
   const st = statusMap.get(task.statusId);
@@ -800,6 +675,8 @@ function EpicModal(props: {
     statusId: StatusId;
   }) => void;
   onDelete: (epicId: EpicId) => void;
+  priorities: { id: string; label: string }[];
+  statuses: { id: string; label: string }[];
 }) {
   const isEdit = props.mode === 'edit';
   const [title, setTitle] = useState(props.epic?.title ?? '');
@@ -832,7 +709,7 @@ function EpicModal(props: {
           value={priorityId}
           onChange={(e) => setPriorityId(e.target.value)}
         >
-          {PRIORITIES.map((p) => (
+          {props.priorities.map((p) => (
             <option key={p.id} value={p.id}>
               {p.label}
             </option>
@@ -847,7 +724,7 @@ function EpicModal(props: {
           value={statusId}
           onChange={(e) => setStatusId(e.target.value)}
         >
-          {STATUS.map((s) => (
+          {props.statuses.map((s) => (
             <option key={s.id} value={s.id}>
               {s.label}
             </option>
@@ -905,6 +782,9 @@ function TaskModal(props: {
     stakeholderId?: StakeholderId;
   }) => void;
   onDelete: (taskId: TaskId) => void;
+  statuses: { id: string; label: string }[];
+  stakeholders: { id: string; label: string }[];
+  isClosedStatus: (id: string) => boolean;
 }) {
   const isEdit = props.mode === 'edit';
 
@@ -919,7 +799,7 @@ function TaskModal(props: {
     props.task?.stakeholderId ?? 'ME',
   );
 
-  const isClosed = isClosedStatus(statusId);
+  const isClosed = props.isClosedStatus(statusId);
 
   return (
     <ModalShell
@@ -958,7 +838,7 @@ function TaskModal(props: {
           value={statusId}
           onChange={(e) => setStatusId(e.target.value)}
         >
-          {STATUS.map((s) => (
+          {props.statuses.map((s) => (
             <option key={s.id} value={s.id}>
               {s.label}
             </option>
@@ -975,7 +855,7 @@ function TaskModal(props: {
           disabled={isClosed}
           title={isClosed ? 'Closed tasks do not require stakeholder' : ''}
         >
-          {STAKEHOLDERS.map((p) => (
+          {props.stakeholders.map((p) => (
             <option key={p.id} value={p.id}>
               {p.label}
             </option>
