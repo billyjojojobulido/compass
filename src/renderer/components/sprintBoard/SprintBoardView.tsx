@@ -101,7 +101,7 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
     const sortedEpics = useMemo(() => {
       const rank = (p: PriorityId) => priorityMap.get(p)?.rank ?? 999;
       return [...epics].sort((a, b) => rank(a.priorityId) - rank(b.priorityId));
-    }, [epics]);
+    }, [epics, priorityMap]);
 
     const taskOrderRef = useRef(taskOrderByEpic);
     useEffect(() => {
@@ -156,7 +156,7 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
     function onDragStart(e: DragStartEvent) {
       const sid = String(e.active.id);
       if (!isTaskDndId(sid)) return;
-
+      setActiveId(e.active.id);
       const taskId = parseTaskId(sid);
       const epicId = findEpicContainerByDndId(e.active.id);
       if (!epicId) return;
