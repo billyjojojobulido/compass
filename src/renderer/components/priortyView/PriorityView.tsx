@@ -155,7 +155,15 @@ function PriorityLane(props: {
     <section className={`pvLane ${tone}`} aria-label={group.label}>
       <div className="pvLaneHeader">
         <div className="pvLaneLeft">
-          <span className="pvLaneBadge">!</span>
+          <span className="pvLaneBadge">
+            {tone === 'p0'
+              ? '🚨'
+              : tone === 'p1'
+                ? '⚠️'
+                : tone === 'p2'
+                  ? '👀'
+                  : '😴'}
+          </span>
           <span className="pvLaneTitle">{group.label}</span>
           <span className="pvLaneCount">{group.epics.length}</span>
         </div>

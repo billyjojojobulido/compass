@@ -40,7 +40,7 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1fr 340px; /* ladder + drawer */
+  grid-template-columns: 1fr 240px; /* ladder + drawer */
   gap: 14px;
 }
 
@@ -91,7 +91,7 @@
 
 .pvLaneTitle {
   font-weight: 700;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .pvLaneCount {
