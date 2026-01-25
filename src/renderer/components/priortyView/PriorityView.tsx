@@ -211,7 +211,6 @@ function EpicCard(props: {
       title={epic.title}
     >
       <div className="pvEpicTop">
-        <div className="pvEpicIcon" aria-hidden />
         <div className="pvEpicTitleClamp">{epic.title}</div>
 
         <button
@@ -247,6 +246,7 @@ function EpicCard(props: {
             e.stopPropagation();
             props.onEdit();
           }}
+          style={{ height: 34 }}
         >
           调整优先级
         </button>
@@ -367,7 +367,11 @@ function EpicDrawer(props: {
           )}
 
           <div className="pvActionsRight">
-            <button className="pvBtnGhost" onClick={props.onClose}>
+            <button
+              className="pvBtnGhost"
+              onClick={props.onClose}
+              style={{ height: 34 }}
+            >
               Cancel
             </button>
             <button

@@ -147,20 +147,13 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.pvEpicIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.08);
-  flex: 0 0 auto;
-}
-
 .pvEpicTitleClamp {
   flex: 1;
   min-width: 0;
   font-weight: 800;
   line-height: 1.15;
   display: -webkit-box;
+  line-clamp: 1;
   -webkit-line-clamp: 2; /* two lines + ellipsis */
   -webkit-box-orient: vertical;
   overflow: hidden;
