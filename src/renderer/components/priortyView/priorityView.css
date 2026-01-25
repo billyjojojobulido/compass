@@ -78,14 +78,14 @@
 }
 
 .pvLaneBadge {
-  width: 26px;
-  height: 18px;
+  width: 34px;
+  height: 23.5px;
   border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 12px;
+  font-size: 15px;
   background: rgba(255, 255, 255, 0.14);
 }
 
