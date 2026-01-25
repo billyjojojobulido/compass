@@ -85,19 +85,6 @@ export default function PriorityView() {
 
   return (
     <div className="pvRoot">
-      <div className="pvHeader">
-        <div>
-          <div className="pvTitle">优先级管理</div>
-          <div className="pvSub">Decision Board</div>
-        </div>
-
-        <div className="pvHeaderActions">
-          <button className="pvBtnPrimary" onClick={openCreate}>
-            + New Epic
-          </button>
-        </div>
-      </div>
-
       <div className="pvLayout">
         {/* LEFT: ladder */}
         <div className="pvLadder" aria-label="Priority ladder">
