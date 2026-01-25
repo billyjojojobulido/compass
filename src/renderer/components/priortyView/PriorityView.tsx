@@ -15,7 +15,11 @@ type DrawerMode =
   | { open: true; mode: 'edit'; epicId: string }
   | { open: true; mode: 'create' };
 
-export default function PriorityView() {
+export default function PriorityView({
+  onRedirect,
+}: {
+  onRedirect: (string) => void;
+}) {
   const { state, actions } = useSprint();
   const { epics, config } = state;
 
@@ -95,6 +99,9 @@ export default function PriorityView() {
               selectedEpicId={selectedEpicId}
               onSelect={(id) => setSelectedEpicId(id)}
               onEdit={(id) => openEdit(id)}
+              onRedirect={(id) => {
+                onRedirect('待做事项');
+              }}
             />
           ))}
         </div>
@@ -138,6 +145,7 @@ function PriorityLane(props: {
   selectedEpicId: string | null;
   onSelect: (id: string) => void;
   onEdit: (id: string) => void;
+  onRedirect: (id: string) => void;
 }) {
   const { group } = props;
 
@@ -185,6 +193,7 @@ function PriorityLane(props: {
                 selected={props.selectedEpicId === e.epicId}
                 onClick={() => props.onSelect(e.epicId)}
                 onEdit={() => props.onEdit(e.epicId)}
+                onRedirect={() => props.onRedirect(e.epicId)}
               />
             ))
           )}
@@ -199,6 +208,7 @@ function EpicCard(props: {
   selected: boolean;
   onClick: () => void;
   onEdit: () => void;
+  onRedirect: () => void;
 }) {
   const { epic } = props;
 
@@ -217,7 +227,7 @@ function EpicCard(props: {
           className="pvIconBtn"
           onClick={(e) => {
             e.stopPropagation();
-            props.onEdit();
+            props.onRedirect();
           }}
           aria-label="Edit Epic"
           title="Edit Epic"
