@@ -222,7 +222,7 @@ function EpicCard(props: {
           aria-label="Edit Epic"
           title="Edit Epic"
         >
-          ⋮
+          ›
         </button>
       </div>
 
@@ -236,23 +236,6 @@ function EpicCard(props: {
           <span className="pvVal">
             {epic.blockedText.replace('Blocked: ', '')}
           </span>
-        </div>
-      </div>
-
-      <div className="pvEpicFooter">
-        <button
-          className="pvBtnGhost"
-          onClick={(e) => {
-            e.stopPropagation();
-            props.onEdit();
-          }}
-          style={{ height: 34 }}
-        >
-          调整优先级
-        </button>
-
-        <div className="pvChevron" aria-hidden>
-          ›
         </div>
       </div>
     </div>
