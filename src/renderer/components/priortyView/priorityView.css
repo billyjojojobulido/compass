@@ -1,0 +1,387 @@
+/* src/views/PriorityView/priorityView.css */
+
+.pvRoot {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+
+.pvHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 2px 6px;
+}
+
+.pvTitle {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.pvSub {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+.pvHeaderActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* layout */
+.pvLayout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 240px; /* ladder + drawer */
+  gap: 14px;
+}
+
+/* ladder */
+.pvLadder {
+  min-height: 0;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+/* lane */
+.pvLane {
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+}
+
+.pvLaneHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pvLaneLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pvLaneBadge {
+  width: 34px;
+  height: 23.5px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.pvLaneTitle {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.pvLaneCount {
+  font-size: 12px;
+  opacity: 0.75;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pvLaneBody {
+  padding: 12px;
+}
+
+/* IMPORTANT: responsive card layout */
+.pvCardRow {
+  display: flex;
+  flex-wrap: wrap; /* <-- no squeezing */
+  gap: 12px;
+  align-items: stretch;
+}
+
+.pvEmpty {
+  opacity: 0.7;
+  font-size: 12px;
+  padding: 8px 2px;
+}
+
+/* epic card */
+.pvEpicCard {
+  width: 280px; /* stable card width */
+  max-width: 100%; /* allow shrink when narrow */
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  color: rgba(0, 0, 0, 0.86);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.pvEpicCard.selected {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+
+.pvEpicTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.pvEpicTitleClamp {
+  flex: 1;
+  min-width: 0;
+  font-weight: 800;
+  line-height: 1.15;
+  display: -webkit-box;
+  line-clamp: 1;
+  -webkit-line-clamp: 2; /* two lines + ellipsis */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pvIconBtn {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+}
+
+.pvEpicMeta {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.pvEpicLine {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pvKey {
+  opacity: 0.65;
+}
+
+.pvVal {
+  font-weight: 700;
+}
+
+.pvEpicFooter {
+  margin-top: auto;
+  padding: 10px 12px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pvChevron {
+  font-size: 22px;
+  opacity: 0.55;
+}
+
+/* buttons */
+.pvBtnPrimary {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+}
+.pvBtnGhost {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+}
+
+.pvBtnDanger {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 0, 0, 0.25);
+  background: rgba(255, 0, 0, 0.12);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+}
+
+/* drawer */
+.pvDrawer {
+  min-height: 0;
+  position: relative;
+}
+
+.pvDrawerInner {
+  position: sticky;
+  top: 10px;
+}
+
+.pvDrawerEmpty {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pvDrawerEmptyTitle {
+  font-weight: 800;
+}
+
+.pvDrawerEmptyDesc {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.pvDrawerCard {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.pvDrawerHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pvDrawerTitle {
+  font-weight: 900;
+}
+
+.pvDrawerSub {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+.pvDrawerBody {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pvField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pvFieldGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.pvLabel {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.pvInput,
+.pvSelect {
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 0 10px;
+  outline: none;
+}
+
+.pvDrawerActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.pvActionsRight {
+  display: flex;
+  gap: 10px;
+}
+
+/* priority emphasis (visual hierarchy) */
+.pvLane.p0 {
+  background: rgba(255, 60, 60, 0.1);
+  border-color: rgba(255, 90, 90, 0.25);
+}
+.pvLane.p1 {
+  background: rgba(255, 160, 60, 0.08);
+  border-color: rgba(255, 190, 90, 0.18);
+}
+.pvLane.p2 {
+  background: rgba(255, 255, 255, 0.06);
+}
+.pvLane.p3 {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* card urgency hint */
+.pvEpicCard.lvl-heavy {
+  box-shadow: 0 12px 34px rgba(255, 60, 60, 0.18);
+}
+.pvEpicCard.lvl-some {
+  box-shadow: 0 10px 30px rgba(255, 180, 60, 0.16);
+}
+.pvEpicCard.lvl-none {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* responsive: narrow screen -> drawer becomes bottom sheet */
+@media (max-width: 980px) {
+  .pvLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .pvDrawerInner {
+    /* position: fixed; */
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    top: auto;
+    z-index: 50;
+  }
+
+  .pvDrawerCard,
+  .pvDrawerEmpty {
+    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
+  }
+}

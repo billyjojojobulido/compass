@@ -3,6 +3,7 @@ import type { NavKey } from '@/components/core/SideBar';
 import SprintBoardView, {
   SprintBoardHandle,
 } from '@/components/sprintBoard/SprintBoardView';
+import PriorityView from '../priortyView/PriorityView';
 
 export default function Content({ activeNav }: { activeNav: NavKey }) {
   const boardRef = useRef<SprintBoardHandle>(null);
@@ -13,7 +14,11 @@ export default function Content({ activeNav }: { activeNav: NavKey }) {
         <div>
           <div className="contentTitle">{activeNav}</div>
           <div className="contentHint">
-            {activeNav === '待做事项' ? 'Sprint Board' : 'Coming soon'}
+            {activeNav === '待做事项'
+              ? 'Sprint Board'
+              : activeNav === '优先级管理'
+                ? 'Priority View'
+                : 'Coming soon'}
           </div>
         </div>
 
@@ -36,9 +41,7 @@ export default function Content({ activeNav }: { activeNav: NavKey }) {
         ) : null}
       </div>
       {activeNav === '待做事项' && <SprintBoardView ref={boardRef} />}
-      {activeNav === '周总结' && (
-        <div style={{ padding: 12, opacity: 0.75 }}>Weekly placeholder</div>
-      )}
+      {activeNav === '优先级管理' && <PriorityView />}
       {activeNav === '技术债务' && (
         <div style={{ padding: 12, opacity: 0.75 }}>TechDebt placeholder</div>
       )}
