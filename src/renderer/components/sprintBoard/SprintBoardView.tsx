@@ -108,7 +108,29 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
       taskOrderRef.current = taskOrderByEpic;
     }, [taskOrderByEpic]);
 
+    useEffect(() => {
+      const epicId = state.ui?.scrollToEpicId;
+      if (!epicId) return;
+
+      const el = epicElMapRef.current[epicId];
+      if (el) {
+        el.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest',
+        });
+
+        // flash light -> highlight corresponding epic
+        el.classList.add('flashTarget');
+        window.setTimeout(() => el.classList.remove('flashTarget'), 700);
+      }
+
+      actions.clearScrollToEpic();
+    }, [state.ui?.scrollToEpicId]);
+
     const dragOriginRef = useRef<DragOrigin | null>(null);
+
+    const epicElMapRef = useRef<Record<string, HTMLElement | null>>({});
 
     /** ---- modal states ---- */
     const [epicModal, setEpicModal] = useState<EpicModalState>({ open: false });
@@ -387,6 +409,9 @@ const SprintBoardView = forwardRef<SprintBoardHandle>(
                   closedCount={closedCount}
                   priorityMap={priorityMap}
                   statusMap={statusMap}
+                  setColRef={(node) => {
+                    epicElMapRef.current[epic.id] = node;
+                  }}
                 >
                   {ids.map((tid) => (
                     <SortableTaskCard
@@ -471,6 +496,7 @@ function EpicColumn(props: {
   closedCount: number;
   priorityMap: Map<string, PriorityDef>;
   statusMap: Map<string, StatusDef>;
+  setColRef?: (node: HTMLElement | null) => void;
 }) {
   const {
     epic,
@@ -491,7 +517,7 @@ function EpicColumn(props: {
   const st = statusMap.get(epic.statusId);
 
   return (
-    <section className="epicCol" aria-label={epic.title}>
+    <section ref={props.setColRef} className="epicCol" aria-label={epic.title}>
       {/* sticky header */}
       <div className={`epicHeader ${isOver ? 'isOver' : ''}`}>
         <div className="epicHeaderTop">

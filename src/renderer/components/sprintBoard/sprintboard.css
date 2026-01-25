@@ -31,6 +31,13 @@
   min-height: 0;
 }
 
+/* epic highlight */
+.flashTarget {
+  outline: 2px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.08);
+  transition: box-shadow 0.2s ease;
+}
+
 /* sticky header */
 .epicHeader {
   position: sticky;

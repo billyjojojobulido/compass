@@ -15,7 +15,11 @@ type DrawerMode =
   | { open: true; mode: 'edit'; epicId: string }
   | { open: true; mode: 'create' };
 
-export default function PriorityView() {
+export default function PriorityView({
+  onRedirect,
+}: {
+  onRedirect: (string) => void;
+}) {
   const { state, actions } = useSprint();
   const { epics, config } = state;
 
@@ -95,6 +99,9 @@ export default function PriorityView() {
               selectedEpicId={selectedEpicId}
               onSelect={(id) => setSelectedEpicId(id)}
               onEdit={(id) => openEdit(id)}
+              onRedirect={(id) => {
+                onRedirect(id);
+              }}
             />
           ))}
         </div>
@@ -138,6 +145,7 @@ function PriorityLane(props: {
   selectedEpicId: string | null;
   onSelect: (id: string) => void;
   onEdit: (id: string) => void;
+  onRedirect: (id: string) => void;
 }) {
   const { group } = props;
 
@@ -183,8 +191,11 @@ function PriorityLane(props: {
                 key={e.epicId}
                 epic={e}
                 selected={props.selectedEpicId === e.epicId}
-                onClick={() => props.onSelect(e.epicId)}
-                onEdit={() => props.onEdit(e.epicId)}
+                onClick={() => {
+                  props.onSelect(e.epicId);
+                  props.onEdit(e.epicId);
+                }}
+                onRedirect={() => props.onRedirect(e.epicId)}
               />
             ))
           )}
@@ -198,14 +209,17 @@ function EpicCard(props: {
   epic: EpicCardVM;
   selected: boolean;
   onClick: () => void;
-  onEdit: () => void;
+  onRedirect: () => void;
 }) {
   const { epic } = props;
 
   return (
     <div
       className={`pvEpicCard ${props.selected ? 'selected' : ''} lvl-${epic.blockedLevel}`}
-      onClick={props.onClick}
+      onClick={(e) => {
+        e.stopPropagation();
+        props.onClick();
+      }}
       role="button"
       tabIndex={0}
       title={epic.title}
@@ -217,12 +231,13 @@ function EpicCard(props: {
           className="pvIconBtn"
           onClick={(e) => {
             e.stopPropagation();
-            props.onEdit();
+            props.onRedirect();
           }}
           aria-label="Edit Epic"
           title="Edit Epic"
+          style={{ fontWeight: 1000, fontSize: 18 }}
         >
-          ⋮
+          ›
         </button>
       </div>
 
@@ -236,23 +251,6 @@ function EpicCard(props: {
           <span className="pvVal">
             {epic.blockedText.replace('Blocked: ', '')}
           </span>
-        </div>
-      </div>
-
-      <div className="pvEpicFooter">
-        <button
-          className="pvBtnGhost"
-          onClick={(e) => {
-            e.stopPropagation();
-            props.onEdit();
-          }}
-          style={{ height: 34 }}
-        >
-          调整优先级
-        </button>
-
-        <div className="pvChevron" aria-hidden>
-          ›
         </div>
       </div>
     </div>

@@ -175,6 +175,7 @@
   flex-direction: column;
   gap: 6px;
   font-size: 12px;
+  margin-bottom: 10px;
 }
 
 .pvEpicLine {
@@ -189,19 +190,6 @@
 
 .pvVal {
   font-weight: 700;
-}
-
-.pvEpicFooter {
-  margin-top: auto;
-  padding: 10px 12px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.pvChevron {
-  font-size: 22px;
-  opacity: 0.55;
 }
 
 /* buttons */

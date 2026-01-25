@@ -82,7 +82,8 @@ type DispatchAction =
       fromEpicId: string;
       toEpicId: string;
       toIndex: number;
-    };
+    }
+  | { type: 'UI_SCROLL_TO_EPIC'; epicId: string | null };
 
 function reducer(state: SprintState, a: DispatchAction): SprintState {
   switch (a.type) {
@@ -255,6 +256,11 @@ function reducer(state: SprintState, a: DispatchAction): SprintState {
         },
       };
     }
+    case 'UI_SCROLL_TO_EPIC':
+      return {
+        ...state,
+        ui: { ...(state.ui ?? {}), scrollToEpicId: a.epicId },
+      };
     default:
       return state;
   }
@@ -409,6 +415,14 @@ function createActions(
       toIndex: number;
     }) {
       dispatch({ type: 'TASK_PREVIEW_MOVE', ...args });
+    },
+    // [priorityView] scroll to epic id
+    requestScrollToEpic(epicId: string) {
+      dispatch({ type: 'UI_SCROLL_TO_EPIC', epicId });
+    },
+
+    clearScrollToEpic() {
+      dispatch({ type: 'UI_SCROLL_TO_EPIC', epicId: null });
     },
   };
 }

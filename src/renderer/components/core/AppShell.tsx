@@ -25,7 +25,10 @@ export default function AppShell() {
           onRequestClose={() => setSidebarOpen(false)}
         />
 
-        <Content activeNav={activeNav} />
+        <Content
+          activeNav={activeNav}
+          onChangeNav={(nav) => setActiveNav(nav)}
+        />
       </div>
     </div>
   );

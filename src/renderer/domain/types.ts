@@ -47,6 +47,10 @@ export type Task = {
   stakeholderId?: string;
 };
 
+export type SprintUIState = {
+  scrollToEpicId?: string | null;
+};
+
 export type SprintState = {
   config: SprintConfig;
   epics: Epic[];
@@ -55,4 +59,6 @@ export type SprintState = {
 
   // Event log（Stage 4）
   events: SprintEvent[];
+  // scroll to epicId
+  ui?: SprintUIState;
 };
