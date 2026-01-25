@@ -56,6 +56,7 @@ export default function PriorityView(props: Props) {
           <PriorityGroupRow
             key={g.priorityId}
             label={g.label}
+            pid={g.priorityId}
             epics={g.epics.map((e) => ({
               id: e.epicId,
               title: e.title,
@@ -76,6 +77,7 @@ export default function PriorityView(props: Props) {
 
 function PriorityGroupRow(props: {
   label: string;
+  pid: string;
   epics: {
     id: string;
     title: string;
@@ -87,7 +89,9 @@ function PriorityGroupRow(props: {
   onAdjustPriority?: (epicId: string) => void;
 }) {
   return (
-    <div className="pvGroup">
+    <div
+      className={`pvGroup ${props.pid === 'P0' ? 'pvP0' : props.pid === 'P1' ? 'pvP1' : 'pvP2'}`}
+    >
       <div className="pvGroupHeader">
         <div className="pvGroupBadge">
           <span className="pvBadgeIcon">⚠︎</span>

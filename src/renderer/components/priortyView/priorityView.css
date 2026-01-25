@@ -12,14 +12,6 @@
   overflow: hidden; /* IMPORTANT: we don't want outer scroll bar */
 }
 
-/* Header stays simple */
-.pvHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 4px 0;
-}
-
 .pvTitle {
   font-size: 18px;
   font-weight: 800;
@@ -64,19 +56,14 @@
 /* A reusable horizontal scroller row */
 .pvFocusRow,
 .pvCardsRow {
-  position: relative;
   display: flex;
+  flex-wrap: nowrap;
   align-items: stretch;
   gap: 14px;
-
   padding: 12px;
   overflow-x: auto;
   overflow-y: hidden;
-  scroll-behavior: smooth;
-
-  /* nicer scroll */
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+  min-width: 0;
 }
 
 /* Webkit scrollbar */
@@ -128,7 +115,30 @@
 -------------------------- */
 
 .pvGroup {
+  position: relative;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pvGroup.pvP0 {
+  background: rgba(255, 80, 80, 0.1);
+  border-top: 1px solid rgba(255, 80, 80, 0.22);
+}
+.pvGroup.pvP1 {
+  background: rgba(255, 160, 60, 0.08);
+  border-top: 1px solid rgba(255, 160, 60, 0.18);
+}
+.pvGroup.pvP2 {
+  background: rgba(80, 140, 255, 0.06);
+  border-top: 1px solid rgba(80, 140, 255, 0.14);
+}
+
+.pvGroup.pvP0 .pvCard {
+  transform: scale(1.02);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
+}
+
+.pvGroup.pvP2 .pvCard {
+  opacity: 0.92;
 }
 
 .pvGroupHeader {
@@ -182,9 +192,10 @@
 -------------------------- */
 
 .pvCard {
-  width: 340px;
-  min-width: 320px;
-  max-width: 380px;
+  width: clamp(240px, 32vw, 360px);
+  min-width: 240px;
+  max-width: 420px;
+  flex: 0 0 auto;
 
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -312,5 +323,31 @@
 @media (max-width: 760px) {
   .pvArrowHint {
     display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .pvFocusRow,
+  .pvCardsRow {
+    display: grid; /* ✅由横向流改为网格 */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow-x: hidden; /* ✅不需要横向滚 */
+  }
+
+  .pvCard {
+    width: 100%;
+    min-width: 0; /* ✅允许铺满格子 */
+    max-width: none;
+  }
+
+  .pvArrowHint {
+    display: none; /* ✅小窗不显示箭头遮罩 */
+  }
+}
+
+@media (max-width: 620px) {
+  .pvFocusRow,
+  .pvCardsRow {
+    grid-template-columns: 1fr; /* ✅再窄就单列 */
   }
 }
