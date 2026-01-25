@@ -4,6 +4,7 @@ import SprintBoardView, {
   SprintBoardHandle,
 } from '@/components/sprintBoard/SprintBoardView';
 import PriorityView from '../priortyView/PriorityView';
+import { useSprint } from '@/domain/sprintStore';
 
 export default function Content({
   activeNav,
@@ -12,11 +13,13 @@ export default function Content({
   activeNav: NavKey;
   onChangeNav: (nav: NavKey) => void;
 }) {
+  const { actions } = useSprint();
   const boardRef = useRef<SprintBoardHandle>(null);
 
   const jumpToEpic = (epicId: string) => {
     // TODO: expected to scroll to corresponding epic, not just redirect to that view
     onChangeNav('待做事项');
+    actions.requestScrollToEpic(epicId);
   };
 
   return (

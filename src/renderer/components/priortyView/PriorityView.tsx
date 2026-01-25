@@ -100,7 +100,7 @@ export default function PriorityView({
               onSelect={(id) => setSelectedEpicId(id)}
               onEdit={(id) => openEdit(id)}
               onRedirect={(id) => {
-                onRedirect('待做事项');
+                onRedirect(id);
               }}
             />
           ))}
@@ -235,6 +235,7 @@ function EpicCard(props: {
           }}
           aria-label="Edit Epic"
           title="Edit Epic"
+          style={{ fontWeight: 1000, fontSize: 18 }}
         >
           ›
         </button>
