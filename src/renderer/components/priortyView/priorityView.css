@@ -1,63 +1,144 @@
-/* src/renderer/views/priority/priorityView.css */
+/* Priority View - refined for AppShell dark background */
 
+/* Root should NOT paint a big panel.
+   Let AppShell content background show through. */
 .pvRoot {
   height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   padding: 14px;
-  overflow: hidden; /* IMPORTANT: view itself does not scroll */
+  overflow: hidden; /* IMPORTANT: we don't want outer scroll bar */
+}
+
+/* Header stays simple */
+.pvHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 4px 0;
 }
 
 .pvTitle {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 800;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .pvMore {
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
   padding: 6px 10px;
   border-radius: 10px;
   cursor: pointer;
 }
 
+/* Glass section container */
 .pvSection {
-  background: rgba(255, 255, 255, 0.65);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
-  padding: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  overflow: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  overflow: hidden;
+  min-height: 120px;
 }
 
 .pvSectionTitle {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 800;
-  padding: 6px 6px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.pvFocusRow {
-  margin-top: 12px;
+/* -------------------------
+   Horizontal card rows
+-------------------------- */
+
+/* A reusable horizontal scroller row */
+.pvFocusRow,
+.pvCardsRow {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+
+  padding: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+
+  /* nicer scroll */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+/* Webkit scrollbar */
+.pvFocusRow::-webkit-scrollbar,
+.pvCardsRow::-webkit-scrollbar {
+  height: 10px;
+}
+.pvFocusRow::-webkit-scrollbar-track,
+.pvCardsRow::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pvFocusRow::-webkit-scrollbar-thumb,
+.pvCardsRow::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+}
+.pvFocusRow::-webkit-scrollbar-thumb:hover,
+.pvCardsRow::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* Right fade + arrow hint (like design) */
+.pvArrowHint {
+  position: sticky;
+  right: 0;
+  top: 0;
+  height: auto;
+
+  width: 64px;
+  min-width: 64px;
+
   display: flex;
   align-items: center;
-  gap: 14px;
+  justify-content: center;
+
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 28px;
+
+  background: linear-gradient(
+    to left,
+    rgba(10, 18, 30, 0.85),
+    rgba(10, 18, 30, 0)
+  );
+  pointer-events: none; /* do not block scroll */
 }
 
+/* -------------------------
+   Group blocks
+-------------------------- */
+
 .pvGroup {
-  margin-top: 14px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .pvGroupHeader {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 4px 6px 10px;
+  padding: 10px 12px 0;
 }
 
+/* Badge like "P0 / Critical" */
 .pvGroupBadge {
   display: inline-flex;
   align-items: center;
@@ -66,45 +147,52 @@
 
 .pvBadgeIcon {
   display: inline-flex;
-  width: 42px;
-  height: 26px;
+  width: 34px;
+  height: 22px;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  background: rgba(255, 80, 80, 0.15);
-  border: 1px solid rgba(255, 80, 80, 0.25);
+
+  background: rgba(255, 90, 90, 0.22);
+  border: 1px solid rgba(255, 90, 90, 0.32);
+
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 900;
 }
 
 .pvBadgeText {
   display: inline-flex;
-  padding: 4px 10px;
+  padding: 3px 10px;
   border-radius: 8px;
-  background: rgba(255, 80, 80, 0.15);
-  border: 1px solid rgba(255, 80, 80, 0.25);
+
+  background: rgba(255, 90, 90, 0.16);
+  border: 1px solid rgba(255, 90, 90, 0.26);
+
+  color: rgba(255, 255, 255, 0.86);
   font-weight: 800;
+  font-size: 12px;
 }
 
 .pvGroupBody {
-  overflow: hidden;
+  min-height: 0;
 }
 
-.pvCardsRow {
-  display: flex;
-  align-items: stretch;
-  gap: 14px;
-}
+/* -------------------------
+   Card styling
+-------------------------- */
 
-/* card */
 .pvCard {
   width: 340px;
-  min-width: 300px;
-  max-width: 360px;
-  background: rgba(255, 255, 255, 0.9);
+  min-width: 320px;
+  max-width: 380px;
+
+  background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
   overflow: hidden;
+
   display: flex;
   flex-direction: column;
 }
@@ -113,29 +201,31 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 12px 8px;
+
+  padding: 12px 12px 10px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .pvToneIcon {
   width: 34px;
   height: 34px;
-  border-radius: 9px;
+  border-radius: 10px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   font-weight: 900;
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
+/* keep your tone classes */
 .tone-danger {
   background: rgba(255, 80, 80, 0.16);
 }
-
 .tone-warn {
   background: rgba(255, 160, 60, 0.18);
 }
-
 .tone-info {
   background: rgba(80, 140, 255, 0.18);
 }
@@ -145,18 +235,21 @@
   background: transparent;
   cursor: pointer;
   text-align: left;
-  font-size: 18px;
-  font-weight: 900;
   padding: 0;
+
   flex: 1;
+  min-width: 0; /* IMPORTANT for clamp */
+  font-size: 16px;
+  font-weight: 900;
+  color: rgba(0, 0, 0, 0.86);
 }
 
 .pvTitleClamp {
   display: -webkit-box;
-  line-clamp: 1;
-  -webkit-line-clamp: 2; /* two-line cap */
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-height: 1.25;
 }
 
 .pvCardBody {
@@ -173,52 +266,50 @@
 }
 
 .pvLabel {
-  opacity: 0.7;
-  font-weight: 700;
+  opacity: 0.65;
+  font-weight: 800;
+  font-size: 12px;
 }
 
 .pvValue {
   font-weight: 700;
   opacity: 0.9;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.78);
 }
 
 .pvCardFooter {
   display: flex;
   justify-content: flex-end;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .pvAdjustBtn {
   border: 1px solid rgba(0, 0, 0, 0.16);
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   padding: 6px 10px;
   border-radius: 10px;
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 900;
+  font-size: 12px;
 }
 
-.pvArrowHint {
-  width: 46px;
-  min-width: 46px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.35;
-  font-size: 28px;
+.pvAdjustBtn:hover {
+  background: rgba(255, 255, 255, 1);
 }
 
-/* Responsive: stack cards */
+/* -------------------------
+   Responsive
+-------------------------- */
+
 @media (max-width: 980px) {
   .pvCard {
     width: 300px;
-    min-width: 260px;
+    min-width: 280px;
   }
 }
+
 @media (max-width: 760px) {
-  .pvFocusRow,
-  .pvCardsRow {
-    flex-wrap: wrap;
-  }
   .pvArrowHint {
     display: none;
   }
