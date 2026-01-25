@@ -1,353 +1,394 @@
-/* Priority View - refined for AppShell dark background */
+/* src/views/PriorityView/priorityView.css */
 
-/* Root should NOT paint a big panel.
-   Let AppShell content background show through. */
 .pvRoot {
   height: 100%;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   padding: 14px;
-  overflow: hidden; /* IMPORTANT: we don't want outer scroll bar */
+}
+
+.pvHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 2px 6px;
 }
 
 .pvTitle {
   font-size: 18px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.pvMore {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.85);
-  padding: 6px 10px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-/* Glass section container */
-.pvSection {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
-  overflow: hidden;
-  min-height: 120px;
-}
-
-.pvSectionTitle {
-  font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.2px;
-  color: rgba(255, 255, 255, 0.8);
+}
+
+.pvSub {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+.pvHeaderActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* layout */
+.pvLayout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 340px; /* ladder + drawer */
+  gap: 14px;
+}
+
+/* ladder */
+.pvLadder {
+  min-height: 0;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+/* lane */
+.pvLane {
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+}
+
+.pvLaneHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   padding: 10px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* -------------------------
-   Horizontal card rows
--------------------------- */
-
-/* A reusable horizontal scroller row */
-.pvFocusRow,
-.pvCardsRow {
+.pvLaneLeft {
   display: flex;
-  flex-wrap: nowrap;
-  align-items: stretch;
-  gap: 14px;
-  padding: 12px;
-  overflow-x: auto;
-  overflow-y: hidden;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
 }
 
-/* Webkit scrollbar */
-.pvFocusRow::-webkit-scrollbar,
-.pvCardsRow::-webkit-scrollbar {
-  height: 10px;
-}
-.pvFocusRow::-webkit-scrollbar-track,
-.pvCardsRow::-webkit-scrollbar-track {
-  background: transparent;
-}
-.pvFocusRow::-webkit-scrollbar-thumb,
-.pvCardsRow::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 999px;
-}
-.pvFocusRow::-webkit-scrollbar-thumb:hover,
-.pvCardsRow::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.26);
-}
-
-/* Right fade + arrow hint (like design) */
-.pvArrowHint {
-  position: sticky;
-  right: 0;
-  top: 0;
-  height: auto;
-
-  width: 64px;
-  min-width: 64px;
-
-  display: flex;
+.pvLaneBadge {
+  width: 26px;
+  height: 18px;
+  border-radius: 10px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 28px;
-
-  background: linear-gradient(
-    to left,
-    rgba(10, 18, 30, 0.85),
-    rgba(10, 18, 30, 0)
-  );
-  pointer-events: none; /* do not block scroll */
-}
-
-/* -------------------------
-   Group blocks
--------------------------- */
-
-.pvGroup {
-  position: relative;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.pvGroup.pvP0 {
-  background: rgba(255, 80, 80, 0.1);
-  border-top: 1px solid rgba(255, 80, 80, 0.22);
-}
-.pvGroup.pvP1 {
-  background: rgba(255, 160, 60, 0.08);
-  border-top: 1px solid rgba(255, 160, 60, 0.18);
-}
-.pvGroup.pvP2 {
-  background: rgba(80, 140, 255, 0.06);
-  border-top: 1px solid rgba(80, 140, 255, 0.14);
-}
-
-.pvGroup.pvP0 .pvCard {
-  transform: scale(1.02);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
-}
-
-.pvGroup.pvP2 .pvCard {
-  opacity: 0.92;
-}
-
-.pvGroupHeader {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px 0;
-}
-
-/* Badge like "P0 / Critical" */
-.pvGroupBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.pvBadgeIcon {
-  display: inline-flex;
-  width: 34px;
-  height: 22px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-
-  background: rgba(255, 90, 90, 0.22);
-  border: 1px solid rgba(255, 90, 90, 0.32);
-
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 900;
-}
-
-.pvBadgeText {
-  display: inline-flex;
-  padding: 3px 10px;
-  border-radius: 8px;
-
-  background: rgba(255, 90, 90, 0.16);
-  border: 1px solid rgba(255, 90, 90, 0.26);
-
-  color: rgba(255, 255, 255, 0.86);
   font-weight: 800;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.pvLaneTitle {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.pvLaneCount {
+  font-size: 12px;
+  opacity: 0.75;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pvLaneBody {
+  padding: 12px;
+}
+
+/* IMPORTANT: responsive card layout */
+.pvCardRow {
+  display: flex;
+  flex-wrap: wrap; /* <-- no squeezing */
+  gap: 12px;
+  align-items: stretch;
+}
+
+.pvEmpty {
+  opacity: 0.7;
+  font-size: 12px;
+  padding: 8px 2px;
+}
+
+/* epic card */
+.pvEpicCard {
+  width: 280px; /* stable card width */
+  max-width: 100%; /* allow shrink when narrow */
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  color: rgba(0, 0, 0, 0.86);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.pvEpicCard.selected {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+
+.pvEpicTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.pvEpicIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.08);
+  flex: 0 0 auto;
+}
+
+.pvEpicTitleClamp {
+  flex: 1;
+  min-width: 0;
+  font-weight: 800;
+  line-height: 1.15;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* two lines + ellipsis */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pvIconBtn {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+}
+
+.pvEpicMeta {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   font-size: 12px;
 }
 
-.pvGroupBody {
-  min-height: 0;
+.pvEpicLine {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-/* -------------------------
-   Card styling
--------------------------- */
+.pvKey {
+  opacity: 0.65;
+}
 
-.pvCard {
-  width: clamp(240px, 32vw, 360px);
-  min-width: 240px;
-  max-width: 420px;
-  flex: 0 0 auto;
+.pvVal {
+  font-weight: 700;
+}
 
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
+.pvEpicFooter {
+  margin-top: auto;
+  padding: 10px 12px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
-  overflow: hidden;
+.pvChevron {
+  font-size: 22px;
+  opacity: 0.55;
+}
 
+/* buttons */
+.pvBtnPrimary {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+}
+.pvBtnGhost {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+}
+
+.pvBtnDanger {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 0, 0, 0.25);
+  background: rgba(255, 0, 0, 0.12);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+}
+
+/* drawer */
+.pvDrawer {
+  min-height: 0;
+  position: relative;
+}
+
+.pvDrawerInner {
+  position: sticky;
+  top: 10px;
+}
+
+.pvDrawerEmpty {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 14px;
   display: flex;
   flex-direction: column;
-}
-
-.pvCardTop {
-  display: flex;
-  align-items: center;
   gap: 10px;
-
-  padding: 12px 12px 10px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.pvToneIcon {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  font-weight: 900;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+.pvDrawerEmptyTitle {
+  font-weight: 800;
 }
 
-/* keep your tone classes */
-.tone-danger {
-  background: rgba(255, 80, 80, 0.16);
-}
-.tone-warn {
-  background: rgba(255, 160, 60, 0.18);
-}
-.tone-info {
-  background: rgba(80, 140, 255, 0.18);
+.pvDrawerEmptyDesc {
+  font-size: 12px;
+  opacity: 0.8;
 }
 
-.pvCardTitle {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  text-align: left;
-  padding: 0;
-
-  flex: 1;
-  min-width: 0; /* IMPORTANT for clamp */
-  font-size: 16px;
-  font-weight: 900;
-  color: rgba(0, 0, 0, 0.86);
-}
-
-.pvTitleClamp {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.pvDrawerCard {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
   overflow: hidden;
-  line-height: 1.25;
 }
 
-.pvCardBody {
-  padding: 10px 12px 12px;
+.pvDrawerHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pvDrawerTitle {
+  font-weight: 900;
+}
+
+.pvDrawerSub {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+.pvDrawerBody {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pvField {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.pvLine {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
+.pvFieldGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 .pvLabel {
-  opacity: 0.65;
-  font-weight: 800;
   font-size: 12px;
+  opacity: 0.8;
 }
 
-.pvValue {
-  font-weight: 700;
-  opacity: 0.9;
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.78);
+.pvInput,
+.pvSelect {
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 0 10px;
+  outline: none;
 }
 
-.pvCardFooter {
+.pvDrawerActions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
   margin-top: 8px;
 }
 
-.pvAdjustBtn {
-  border: 1px solid rgba(0, 0, 0, 0.16);
-  background: rgba(255, 255, 255, 0.92);
-  padding: 6px 10px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 900;
-  font-size: 12px;
+.pvActionsRight {
+  display: flex;
+  gap: 10px;
 }
 
-.pvAdjustBtn:hover {
-  background: rgba(255, 255, 255, 1);
+/* priority emphasis (visual hierarchy) */
+.pvLane.p0 {
+  background: rgba(255, 60, 60, 0.1);
+  border-color: rgba(255, 90, 90, 0.25);
+}
+.pvLane.p1 {
+  background: rgba(255, 160, 60, 0.08);
+  border-color: rgba(255, 190, 90, 0.18);
+}
+.pvLane.p2 {
+  background: rgba(255, 255, 255, 0.06);
+}
+.pvLane.p3 {
+  background: rgba(255, 255, 255, 0.04);
 }
 
-/* -------------------------
-   Responsive
--------------------------- */
+/* card urgency hint */
+.pvEpicCard.lvl-heavy {
+  box-shadow: 0 12px 34px rgba(255, 60, 60, 0.18);
+}
+.pvEpicCard.lvl-some {
+  box-shadow: 0 10px 30px rgba(255, 180, 60, 0.16);
+}
+.pvEpicCard.lvl-none {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
 
+/* responsive: narrow screen -> drawer becomes bottom sheet */
 @media (max-width: 980px) {
-  .pvCard {
-    width: 300px;
-    min-width: 280px;
-  }
-}
-
-@media (max-width: 760px) {
-  .pvArrowHint {
-    display: none;
-  }
-}
-
-@media (max-width: 900px) {
-  .pvFocusRow,
-  .pvCardsRow {
-    display: grid; /* ✅由横向流改为网格 */
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    overflow-x: hidden; /* ✅不需要横向滚 */
+  .pvLayout {
+    grid-template-columns: 1fr;
   }
 
-  .pvCard {
-    width: 100%;
-    min-width: 0; /* ✅允许铺满格子 */
-    max-width: none;
+  .pvDrawerInner {
+    /* position: fixed; */
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    top: auto;
+    z-index: 50;
   }
 
-  .pvArrowHint {
-    display: none; /* ✅小窗不显示箭头遮罩 */
-  }
-}
-
-@media (max-width: 620px) {
-  .pvFocusRow,
-  .pvCardsRow {
-    grid-template-columns: 1fr; /* ✅再窄就单列 */
+  .pvDrawerCard,
+  .pvDrawerEmpty {
+    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
   }
 }
