@@ -9,13 +9,6 @@
   overflow: hidden; /* IMPORTANT: view itself does not scroll */
 }
 
-.pvHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 12px 6px;
-}
-
 .pvTitle {
   font-size: 22px;
   font-weight: 800;

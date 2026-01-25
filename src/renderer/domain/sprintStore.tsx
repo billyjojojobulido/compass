@@ -1,11 +1,5 @@
 import React, { createContext, useContext, useMemo, useReducer } from 'react';
-import type {
-  Epic,
-  SprintConfig,
-  SprintEvent,
-  SprintState,
-  Task,
-} from './types';
+import type { Epic, SprintEvent, SprintState, Task } from './types';
 
 function nowISO() {
   return new Date().toISOString();

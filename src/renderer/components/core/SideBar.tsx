@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-export type NavKey = '技术债务' | '待做事项' | '周总结';
+export type NavKey = '技术债务' | '待做事项' | '优先级管理' | '周总结';
 
 type WeekItem = { id: string; label: string };
 
@@ -56,10 +56,10 @@ export default function Sidebar({
               onClick={() => onChangeNav('待做事项')}
             />
             <NavButton
-              active={activeNav === '周总结'}
-              label="周总结"
+              active={activeNav === '优先级管理'}
+              label="优先级管理"
               icon="📝"
-              onClick={() => onChangeNav('周总结')}
+              onClick={() => onChangeNav('优先级管理')}
             />
           </section>
 

@@ -14,7 +14,11 @@ export default function Content({ activeNav }: { activeNav: NavKey }) {
         <div>
           <div className="contentTitle">{activeNav}</div>
           <div className="contentHint">
-            {activeNav === '待做事项' ? 'Sprint Board' : 'Coming soon'}
+            {activeNav === '待做事项'
+              ? 'Sprint Board'
+              : activeNav === '优先级管理'
+                ? 'Priority View'
+                : 'Coming soon'}
           </div>
         </div>
 
@@ -37,7 +41,7 @@ export default function Content({ activeNav }: { activeNav: NavKey }) {
         ) : null}
       </div>
       {activeNav === '待做事项' && <SprintBoardView ref={boardRef} />}
-      {activeNav === '周总结' && <PriorityView />}
+      {activeNav === '优先级管理' && <PriorityView />}
       {activeNav === '技术债务' && (
         <div style={{ padding: 12, opacity: 0.75 }}>TechDebt placeholder</div>
       )}

@@ -25,13 +25,6 @@ export default function PriorityView(props: Props) {
 
   return (
     <div className="pvRoot">
-      <div className="pvHeader">
-        <div className="pvTitle">优先级管理</div>
-        <button className="pvMore" title="More" aria-label="More">
-          •••
-        </button>
-      </div>
-
       {/* Focus */}
       <section className="pvSection">
         <div className="pvSectionTitle">本周 Focus</div>
