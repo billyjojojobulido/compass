@@ -191,8 +191,10 @@ function PriorityLane(props: {
                 key={e.epicId}
                 epic={e}
                 selected={props.selectedEpicId === e.epicId}
-                onClick={() => props.onSelect(e.epicId)}
-                onEdit={() => props.onEdit(e.epicId)}
+                onClick={() => {
+                  props.onSelect(e.epicId);
+                  props.onEdit(e.epicId);
+                }}
                 onRedirect={() => props.onRedirect(e.epicId)}
               />
             ))
@@ -207,7 +209,6 @@ function EpicCard(props: {
   epic: EpicCardVM;
   selected: boolean;
   onClick: () => void;
-  onEdit: () => void;
   onRedirect: () => void;
 }) {
   const { epic } = props;
@@ -215,7 +216,10 @@ function EpicCard(props: {
   return (
     <div
       className={`pvEpicCard ${props.selected ? 'selected' : ''} lvl-${epic.blockedLevel}`}
-      onClick={props.onClick}
+      onClick={(e) => {
+        e.stopPropagation();
+        props.onClick();
+      }}
       role="button"
       tabIndex={0}
       title={epic.title}
