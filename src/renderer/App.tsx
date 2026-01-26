@@ -84,8 +84,6 @@ const mockTaskOrderByEpic = {
 // TODO: in future config loading
 // const config = await ipcRenderer.invoke("read-sprint-config");
 
-console.log('baocheng', sprintConfig);
-
 const initialState: SprintState = {
   config: sprintConfig,
   epics: mockEpics,

@@ -1,5 +1,6 @@
 export type EntityType = 'epic' | 'task' | 'config';
 export type ActionType = 'create' | 'update' | 'delete' | 'move' | 'reorder';
+export type Tone = 'gray' | 'blue' | 'yellow' | 'green' | 'red';
 
 export type SprintEvent = {
   id: string;
@@ -14,15 +15,24 @@ export type SprintEvent = {
 export type PriorityDef = {
   id: string;
   label: string;
-  icon?: string;
   rank: number;
+  icon?: string;
+  theme?: PriorityTheme;
 };
 export type StakeholderDef = { id: string; label: string };
+
 export type StatusDef = {
   id: string;
   label: string;
-  tone?: string;
+  tone: Tone;
   toClose: boolean;
+};
+
+export type PriorityTheme = {
+  bg?: string; // group background
+  border?: string; // group border
+  accent?: string; // left accent bar / highlight
+  cardBg?: string; // optional: task/epic card background override
 };
 
 export type SprintConfig = {

@@ -4,7 +4,6 @@ import './priorityView.css';
 import { useSprint } from '@/domain/sprintStore';
 import {
   selectPriorityGroups,
-  selectBlockedStats,
   selectFocusEpics,
   type PriorityGroupVM,
   type EpicCardVM,
@@ -149,29 +148,20 @@ function PriorityLane(props: {
 }) {
   const { group } = props;
 
-  // Visual emphasis by rank
-  const tone =
-    group.rank <= 0
-      ? 'p0'
-      : group.rank === 1
-        ? 'p1'
-        : group.rank === 2
-          ? 'p2'
-          : 'p3';
+  const theme = group.theme ?? {};
+
+  const laneStyle: React.CSSProperties = {
+    ['--pv-lane-bg' as any]: theme.bg ?? 'rgba(255,255,255,0.12)',
+    ['--pv-lane-border' as any]: theme.border ?? 'rgba(255,255,255,0.12)',
+    ['--pv-lane-accent' as any]: theme.accent ?? 'rgba(255,255,255,0.18)',
+    ['--pv-card-bg' as any]: theme.cardBg ?? 'rgba(255,255,255,0.10)',
+  };
 
   return (
-    <section className={`pvLane ${tone}`} aria-label={group.label}>
+    <section className="pvLane" aria-label={group.label} style={laneStyle}>
       <div className="pvLaneHeader">
         <div className="pvLaneLeft">
-          <span className="pvLaneBadge">
-            {tone === 'p0'
-              ? '🚨'
-              : tone === 'p1'
-                ? '⚠️'
-                : tone === 'p2'
-                  ? '👀'
-                  : '😴'}
-          </span>
+          <span className="pvLaneBadge">{group.icon ? group.icon : '❓'}</span>
           <span className="pvLaneTitle">{group.label}</span>
           <span className="pvLaneCount">{group.epics.length}</span>
         </div>
