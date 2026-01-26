@@ -148,8 +148,17 @@ function PriorityLane(props: {
 }) {
   const { group } = props;
 
+  const theme = group.theme ?? {};
+
+  const laneStyle: React.CSSProperties = {
+    ['--pv-lane-bg' as any]: theme.bg ?? 'rgba(255,255,255,0.06)',
+    ['--pv-lane-border' as any]: theme.border ?? 'rgba(255,255,255,0.12)',
+    ['--pv-lane-accent' as any]: theme.accent ?? 'rgba(255,255,255,0.18)',
+    ['--pv-card-bg' as any]: theme.cardBg ?? 'rgba(255,255,255,0.10)',
+  };
+
   return (
-    <section className="pvLane" aria-label={group.label}>
+    <section className="pvLane" aria-label={group.label} style={laneStyle}>
       <div className="pvLaneHeader">
         <div className="pvLaneLeft">
           <span className="pvLaneBadge">{group.icon ? group.icon : '❓'}</span>

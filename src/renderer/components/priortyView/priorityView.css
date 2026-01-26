@@ -53,12 +53,24 @@
 
 /* lane */
 .pvLane {
+  background: var(--pv-lane-bg);
+  border: 1px solid var(--pv-lane-border);
   border-radius: 14px;
+  position: relative;
   overflow: hidden;
   margin-bottom: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(8px);
+}
+
+.pvLane::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  background: var(--pv-lane-accent);
+  border-radius: 4px;
+  opacity: 0.9;
 }
 
 .pvLaneHeader {
