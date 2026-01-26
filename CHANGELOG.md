@@ -4,6 +4,34 @@ Updates in minor version will be recorded in this file.
 
 ---
 
+## [0.1.1] - 2026-01-27
+
+### Added
+
+- 🚀 Priority View as a standalone, projection-driven decision panel
+- 🚀 priority grouping projection (selectPriorityGroups) for lane-based epic visualization
+- 🚀 priority lane counts and visual emphasis by rank
+- 🚀 epic redirect action from Priority View to Sprint Board
+- config-driven priority theming (backgrounds, accents, and card styling via PriorityDef)
+- focus/decision projection (selectFocusEpics) for surfacing high-impact epics
+- blocked/health stats projection (selectBlockedStats) for epic risk awareness
+- responsive lane layout with adaptive card grid and glass-layer styling
+
+### Changed
+
+- 🚀 Priority View UI now consumes projections only (no direct state mutation)
+- 🚀 AppShell layout adjusted to support fixed sidebar width with responsive content scaling
+- epic cards refactored into reusable, theme-aware presentation components
+- selection and navigation logic centralized at the Content/AppShell level
+- priority color, tone, and visual semantics moved from CSS to config
+
+### Fixed
+
+- improved visual separation between priority lanes and epic cards (contrast, elevation, and glass layering)
+- resolved non-responsive lane/card behavior on window resize
+- corrected inconsistent epic counts and progress display across priority groups
+- removed hardcoded priority rank → UI mappings from the view layer
+
 ## [0.1.0] - 2026-01-25
 
 ### Added
