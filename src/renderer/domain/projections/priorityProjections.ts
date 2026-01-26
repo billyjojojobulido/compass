@@ -1,6 +1,5 @@
 // src/domain/projections/priorityProjections.ts
-import { PriorityDef } from '@/config/sprintConfig';
-import type { SprintState } from '@/domain/types';
+import type { SprintState, PriorityDef } from '@/domain/types';
 
 export type BlockedStats = {
   totalOpen: number;

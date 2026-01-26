@@ -4,12 +4,10 @@ import './priorityView.css';
 import { useSprint } from '@/domain/sprintStore';
 import {
   selectPriorityGroups,
-  selectBlockedStats,
   selectFocusEpics,
   type PriorityGroupVM,
   type EpicCardVM,
 } from '@/domain/projections/priorityProjections';
-import { PriorityDef } from '@/config/sprintConfig';
 
 type DrawerMode =
   | { open: false }

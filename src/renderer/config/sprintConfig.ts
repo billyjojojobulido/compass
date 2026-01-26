@@ -1,34 +1,5 @@
 import raw from '@/config/sprintConfig.json';
-
-export type Tone = 'gray' | 'blue' | 'yellow' | 'green' | 'red';
-
-export type StatusDef = {
-  id: string;
-  label: string;
-  tone: Tone;
-  toClose: boolean;
-};
-export type StakeholderDef = { id: string; label: string };
-
-export type PriorityTheme = {
-  bg?: string; // group background
-  border?: string; // group border
-  accent?: string; // left accent bar / highlight
-  cardBg?: string; // optional: task/epic card background override
-};
-
-export type PriorityDef = {
-  id: string;
-  label: string;
-  rank: number;
-  theme?: PriorityTheme;
-};
-
-export type SprintConfig = {
-  priorities: PriorityDef[];
-  statuses: StatusDef[];
-  stakeholders: StakeholderDef[];
-};
+import { SprintConfig } from '@/domain/types';
 
 function assertUniqueIds(list: { id: string }[], name: string) {
   const seen = new Set<string>();
