@@ -134,21 +134,22 @@
 
 /* epic card */
 .pvEpicCard {
-  width: 280px; /* stable card width */
+  width: 250px; /* stable card width */
   max-width: 100%; /* allow shrink when narrow */
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.92);
-  color: rgba(0, 0, 0, 0.86);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  color: rgba(0, 0, 0, 0.93);
   display: flex;
   flex-direction: column;
   cursor: pointer;
+  background: var(--pv-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
 }
 
 .pvEpicCard.selected {
   outline: 2px solid rgba(255, 255, 255, 0.45);
   outline-offset: 2px;
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .pvEpicTop {
