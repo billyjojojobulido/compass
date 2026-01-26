@@ -1,4 +1,5 @@
 // src/domain/projections/priorityProjections.ts
+import { PriorityDef } from '@/config/sprintConfig';
 import type { SprintState } from '@/domain/types';
 
 export type BlockedStats = {
@@ -21,6 +22,8 @@ export type PriorityGroupVM = {
   label: string;
   rank: number;
   epics: EpicCardVM[];
+  icon?: string;
+  theme?: PriorityDef['theme'];
 };
 
 function byId<T extends { id: string }>(arr: T[]) {
@@ -84,6 +87,7 @@ export function selectPriorityGroups(state: SprintState): PriorityGroupVM[] {
 
   const rankOf = (pid: string) => priorityMap.get(pid)?.rank ?? 999;
   const labelOf = (pid: string) => priorityMap.get(pid)?.label ?? pid;
+  const iconOf = (pid: string) => priorityMap.get(pid)?.icon ?? pid;
 
   // Group epics by priorityId
   const grouped = new Map<string, string[]>();
@@ -151,6 +155,7 @@ export function selectPriorityGroups(state: SprintState): PriorityGroupVM[] {
       priorityId,
       label: labelOf(priorityId),
       rank: rankOf(priorityId),
+      icon: iconOf(priorityId),
       epics: epicsVm,
     });
   }

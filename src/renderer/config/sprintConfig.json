@@ -1,9 +1,48 @@
 {
   "priorities": [
-    { "id": "P0", "label": "Critical", "icon": "🚨", "rank": 0 },
-    { "id": "P1", "label": "High", "icon": "⚠️", "rank": 1 },
-    { "id": "P2", "label": "Normal", "icon": "👀", "rank": 2 },
-    { "id": "P3", "label": "Low", "icon": "💤", "rank": 3 }
+    {
+      "id": "P0",
+      "label": "Critical",
+      "icon": "🚨",
+      "rank": 0,
+      "theme": {
+        "bg": "rgba(120, 40, 60, 0.55)",
+        "border": "rgba(255, 80, 120, 0.35)",
+        "accent": "rgba(255, 80, 120, 0.9)",
+        "cardBg": "rgba(255,255,255,0.08)"
+      }
+    },
+    {
+      "id": "P1",
+      "label": "High",
+      "icon": "⚠️",
+      "rank": 1,
+      "theme": {
+        "bg": "rgba(120, 90, 30, 0.40)",
+        "border": "rgba(255, 200, 80, 0.30)",
+        "accent": "rgba(255, 200, 80, 0.85)"
+      }
+    },
+    {
+      "id": "P2",
+      "label": "Normal",
+      "icon": "👀",
+      "rank": 2,
+      "theme": {
+        "bg": "rgba(60, 90, 130, 0.40)",
+        "border": "rgba(120, 170, 255, 0.28)"
+      }
+    },
+    {
+      "id": "P3",
+      "label": "Low",
+      "icon": "😴",
+      "rank": 3,
+      "theme": {
+        "bg": "rgba(40, 60, 90, 0.35)",
+        "border": "rgba(160, 200, 255, 0.20)"
+      }
+    }
   ],
   "stakeholders": [
     { "id": "ME", "label": "Me" },

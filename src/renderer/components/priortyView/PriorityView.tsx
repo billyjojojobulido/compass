@@ -9,6 +9,7 @@ import {
   type PriorityGroupVM,
   type EpicCardVM,
 } from '@/domain/projections/priorityProjections';
+import { PriorityDef } from '@/config/sprintConfig';
 
 type DrawerMode =
   | { open: false }
@@ -149,29 +150,11 @@ function PriorityLane(props: {
 }) {
   const { group } = props;
 
-  // Visual emphasis by rank
-  const tone =
-    group.rank <= 0
-      ? 'p0'
-      : group.rank === 1
-        ? 'p1'
-        : group.rank === 2
-          ? 'p2'
-          : 'p3';
-
   return (
-    <section className={`pvLane ${tone}`} aria-label={group.label}>
+    <section className="pvLane" aria-label={group.label}>
       <div className="pvLaneHeader">
         <div className="pvLaneLeft">
-          <span className="pvLaneBadge">
-            {tone === 'p0'
-              ? '🚨'
-              : tone === 'p1'
-                ? '⚠️'
-                : tone === 'p2'
-                  ? '👀'
-                  : '😴'}
-          </span>
+          <span className="pvLaneBadge">{group.icon ? group.icon : '❓'}</span>
           <span className="pvLaneTitle">{group.label}</span>
           <span className="pvLaneCount">{group.epics.length}</span>
         </div>

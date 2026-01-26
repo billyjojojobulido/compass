@@ -9,7 +9,20 @@ export type StatusDef = {
   toClose: boolean;
 };
 export type StakeholderDef = { id: string; label: string };
-export type PriorityDef = { id: string; label: string; rank: number };
+
+export type PriorityTheme = {
+  bg?: string; // group background
+  border?: string; // group border
+  accent?: string; // left accent bar / highlight
+  cardBg?: string; // optional: task/epic card background override
+};
+
+export type PriorityDef = {
+  id: string;
+  label: string;
+  rank: number;
+  theme?: PriorityTheme;
+};
 
 export type SprintConfig = {
   priorities: PriorityDef[];
