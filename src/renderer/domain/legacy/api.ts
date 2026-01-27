@@ -1,13 +1,13 @@
 // renderer/domain/legacy/api.ts
-export type LegacyIndexItem = {
+export type LegacyWeekItem = {
   fileName: string;
   title: string; // "Week 72 (2026-01-19)"
   weekNo?: number;
   weekStart?: string;
 };
 
-export async function listLegacyWeekly(): Promise<LegacyIndexItem[]> {
-  return window.electron.ipcRenderer.invoke<LegacyIndexItem[]>(
+export async function listLegacyWeekly(): Promise<LegacyWeekItem[]> {
+  return window.electron.ipcRenderer.invoke<LegacyWeekItem[]>(
     'list-legacy-weekly',
   );
 }

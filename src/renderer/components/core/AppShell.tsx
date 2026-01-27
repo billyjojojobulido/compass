@@ -2,14 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import TopBar from './TopBar';
 import Sidebar, { NavKey } from './SideBar';
 import Content from '@/components/core/Content';
-import { LegacyIndexItem, listLegacyWeekly } from '@/domain/legacy/api';
+import { LegacyWeekItem, listLegacyWeekly } from '@/domain/legacy/api';
 import { parseWeekTitle } from '@/domain/legacy/parse';
 
 export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav, setActiveNav] = useState<NavKey>('待做事项');
   /* history week log index + week log that is currently chosen */
-  const [legacyIndex, setLegacyIndex] = useState<LegacyIndexItem[]>([]);
+  const [legacyIndex, setLegacyIndex] = useState<LegacyWeekItem[]>([]);
   const [activeWeekFile, setActiveWeekFile] = useState<string | null>(null);
 
   /* read legacy weekly report list when launch */
@@ -20,7 +20,7 @@ export default function AppShell() {
       const raw = await listLegacyWeekly(); // [{fileName,title}]
       if (!alive) return;
 
-      const normalized: LegacyIndexItem[] = raw.map((it) => {
+      const normalized: LegacyWeekItem[] = raw.map((it) => {
         const parsed = parseWeekTitle(it.title);
         return {
           ...it,
