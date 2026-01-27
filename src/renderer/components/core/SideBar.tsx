@@ -2,8 +2,6 @@ import React, { useMemo } from 'react';
 
 export type NavKey = '技术债务' | '待做事项' | '优先级管理' | '周总结';
 
-type WeekItem = { id: string; label: string };
-
 type Props = {
   sidebarOpen: boolean;
   activeNav: NavKey;
@@ -55,8 +53,14 @@ export default function Sidebar({
             <NavButton
               active={activeNav === '优先级管理'}
               label="优先级管理"
-              icon="📝"
+              icon="⚡️"
               onClick={() => onChangeNav('优先级管理')}
+            />{' '}
+            <NavButton
+              active={activeNav === '周总结'}
+              label="周总结"
+              icon="📝"
+              onClick={() => onChangeNav('周总结')}
             />
           </section>
 
@@ -66,18 +70,28 @@ export default function Sidebar({
             <div className="sectionTitle">Weekly Reports</div>
 
             <div className="weekList" role="list">
-              {legacyWeeks.map((w, i) => (
-                <div
-                  className={`weekRow ${i === 0 ? 'active' : ''}`}
-                  key={w.weekNo}
-                  role="listitem"
-                >
-                  <span className="weekLabel">{w.title}</span>
-                  <span className="weekChevron" aria-hidden>
-                    ›
-                  </span>
-                </div>
-              ))}
+              {legacyWeeks.length === 0 ? (
+                <div className="weekEmpty">No weekly reports found</div>
+              ) : (
+                legacyWeeks.map((w) => {
+                  const isActive = w.fileName === activeWeekFile;
+
+                  return (
+                    <div
+                      className={`weekRow ${isActive ? 'active' : ''}`}
+                      key={w.fileName}
+                      role="listitem"
+                      onClick={() => onSelectWeek(w.fileName)}
+                      title={w.title}
+                    >
+                      <span className="weekLabel">{w.title}</span>
+                      <span className="weekChevron" aria-hidden>
+                        ›
+                      </span>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </section>
 
