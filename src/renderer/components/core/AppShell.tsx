@@ -64,22 +64,24 @@ export default function AppShell() {
           activeNav={activeNav}
           onChangeNav={(nav) => {
             setActiveNav(nav);
-            if (nav !== '周总结') setActiveWeekFile(null);
+            if (nav !== '历史周总结') setActiveWeekFile(null);
           }}
           onRequestClose={() => setSidebarOpen(false)}
           legacyWeeks={legacyIndexSorted}
           activeWeekFile={activeWeekFile}
           onSelectWeek={(fileName) => {
             setActiveWeekFile(fileName);
-            setActiveNav('周总结'); // 你希望点周报就显示在 Content
+            setActiveNav('历史周总结'); // click on week row => goes to history log page
           }}
         />
 
         <Content
           activeNav={activeNav}
-          onChangeNav={(nav) => setActiveNav(nav)}
-          // activeWeekFile={activeWeekFile}
-          // onClearActiveWeek={() => setActiveWeekFile(null)}
+          onChangeNav={(nav) => {
+            setActiveNav(nav);
+            if (nav !== '历史周总结') setActiveWeekFile(null);
+          }}
+          activeWeekFile={activeWeekFile}
         />
       </div>
     </div>
