@@ -22,6 +22,8 @@ import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import i18nInit from '../renderer/services/i18nInit';
 import windowStateKeeper from 'electron-window-state';
+import fs from 'fs/promises';
+import os from 'os';
 
 class AppUpdater {
   constructor() {
@@ -33,10 +35,32 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
+/* legacy weekly log related */
+const legacyReportBaseDir = path.join(
+  os.homedir(),
+  'SprintBoardData',
+  'legacy-weekly',
+);
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
+});
+
+ipcMain.handle('list-legacy-weekly', async () => {
+  try {
+    const names = await fs.readdir(legacyReportBaseDir);
+    const mdFiles = names.filter((n) => n.toLowerCase().endsWith('.md'));
+
+    console.log('🦁 ', mdFiles);
+
+    return mdFiles.map((fileName) => ({
+      fileName,
+      title: fileName.replace(/\.md$/i, ''),
+    }));
+  } catch {
+    return [];
+  }
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -266,6 +290,7 @@ app
       //#region --- IPC Main Handlers ---
       ipcMain.on('show-main-window', showApp);
       ipcMain.on('relaunch-app', reloadApp);
+
       //#endregion
 
       //#region --- Process Event Handler

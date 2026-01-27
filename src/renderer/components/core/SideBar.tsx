@@ -2,13 +2,19 @@ import React, { useMemo } from 'react';
 
 export type NavKey = '技术债务' | '待做事项' | '优先级管理' | '周总结';
 
-type WeekItem = { id: string; label: string };
-
 type Props = {
   sidebarOpen: boolean;
   activeNav: NavKey;
   onChangeNav: (nav: NavKey) => void;
   onRequestClose: () => void; // click backdrop to close
+  legacyWeeks: {
+    fileName: string;
+    title: string;
+    weekNo?: number;
+    weekStart?: string;
+  }[];
+  activeWeekFile: string | null;
+  onSelectWeek: (fileName: string) => void;
 };
 
 export default function Sidebar({
@@ -16,21 +22,10 @@ export default function Sidebar({
   activeNav,
   onChangeNav,
   onRequestClose,
+  legacyWeeks,
+  activeWeekFile,
+  onSelectWeek,
 }: Props) {
-  // TODO: mock data
-  const weeks: WeekItem[] = useMemo(
-    () => [
-      { id: 'w2', label: 'Week 2 (26-01-19)' },
-      { id: 'w1', label: 'Week 1 (19-01-12)' },
-      { id: 'w52', label: 'Week 52 (18-12-29)' },
-      { id: 'w51', label: 'Week 51 (18-12-22)' },
-      { id: 'w50', label: 'Week 50 (18-12-15)' },
-      { id: 'w49', label: 'Week 49 (18-12-08)' },
-      { id: 'w48', label: 'Week 48 (18-12-01)' },
-    ],
-    [],
-  );
-
   return (
     <>
       {/* mobile backdrop */}
@@ -58,8 +53,14 @@ export default function Sidebar({
             <NavButton
               active={activeNav === '优先级管理'}
               label="优先级管理"
-              icon="📝"
+              icon="⚡️"
               onClick={() => onChangeNav('优先级管理')}
+            />{' '}
+            <NavButton
+              active={activeNav === '周总结'}
+              label="周总结"
+              icon="📝"
+              onClick={() => onChangeNav('周总结')}
             />
           </section>
 
@@ -69,18 +70,28 @@ export default function Sidebar({
             <div className="sectionTitle">Weekly Reports</div>
 
             <div className="weekList" role="list">
-              {weeks.map((w, i) => (
-                <div
-                  className={`weekRow ${i === 0 ? 'active' : ''}`}
-                  key={w.id}
-                  role="listitem"
-                >
-                  <span className="weekLabel">{w.label}</span>
-                  <span className="weekChevron" aria-hidden>
-                    ›
-                  </span>
-                </div>
-              ))}
+              {legacyWeeks.length === 0 ? (
+                <div className="weekEmpty">No weekly reports found</div>
+              ) : (
+                legacyWeeks.map((w) => {
+                  const isActive = w.fileName === activeWeekFile;
+
+                  return (
+                    <div
+                      className={`weekRow ${isActive ? 'active' : ''}`}
+                      key={w.fileName}
+                      role="listitem"
+                      onClick={() => onSelectWeek(w.fileName)}
+                      title={w.title}
+                    >
+                      <span className="weekLabel">{w.title}</span>
+                      <span className="weekChevron" aria-hidden>
+                        ›
+                      </span>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </section>
 

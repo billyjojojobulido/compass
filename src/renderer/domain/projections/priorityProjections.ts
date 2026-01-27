@@ -166,9 +166,9 @@ export function selectPriorityGroups(state: SprintState): PriorityGroupVM[] {
 }
 
 /**
- * 决策面板用：默认展开哪些优先级、默认选中哪个 epic
- * - 先选 rank 最小且有 epics 的那个 priority
- * - 再选该 priority 里的第一个 epic
+ * which priorty is shown & which epic is chosen by default
+ * - 1. choose the priority that has the smallest rank & has epics
+ * - 2. then choose the first epic under this priority
  */
 export function selectFocusEpics(
   _events: SprintState['events'],
