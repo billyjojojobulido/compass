@@ -131,9 +131,13 @@
   background: rgba(255, 255, 255, 0.06);
   border-color: var(--stroke);
 }
+.weekRow:active {
+  transform: translateY(0.5px);
+}
 .weekRow.active {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.16);
+  outline: 1px solid rgba(255, 255, 255, 0.18);
 }
 .weekRow * {
   user-select: none;
