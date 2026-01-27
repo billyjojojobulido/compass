@@ -1,6 +1,11 @@
 import React, { useMemo } from 'react';
 
-export type NavKey = '技术债务' | '待做事项' | '优先级管理' | '周总结';
+export type NavKey =
+  | '技术债务'
+  | '待做事项'
+  | '优先级管理'
+  | '周总结'
+  | '历史周总结';
 
 type Props = {
   sidebarOpen: boolean;

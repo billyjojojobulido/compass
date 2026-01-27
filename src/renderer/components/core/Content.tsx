@@ -6,34 +6,57 @@ import SprintBoardView, {
 import PriorityView from '../priortyView/PriorityView';
 import { useSprint } from '@/domain/sprintStore';
 
+function CurrentWeeklyReportView() {
+  return (
+    <div style={{ padding: 12, opacity: 0.75 }}>
+      Current Week template (TODO)
+    </div>
+  );
+}
+
+function LegacyWeeklyReportView({ fileName }: { fileName: string }) {
+  return (
+    <div style={{ padding: 12, opacity: 0.75 }}>
+      History Weekly Report: {fileName} (TODO)
+    </div>
+  );
+}
+
 export default function Content({
   activeNav,
   onChangeNav,
+  activeWeekFile,
 }: {
   activeNav: NavKey;
   onChangeNav: (nav: NavKey) => void;
+  activeWeekFile: string | null;
 }) {
   const { actions } = useSprint();
   const boardRef = useRef<SprintBoardHandle>(null);
 
   const jumpToEpic = (epicId: string) => {
-    // TODO: expected to scroll to corresponding epic, not just redirect to that view
     onChangeNav('待做事项');
     actions.requestScrollToEpic(epicId);
   };
+
+  const hint =
+    activeNav === '待做事项'
+      ? 'Sprint Board'
+      : activeNav === '优先级管理'
+        ? 'Priority View'
+        : activeNav === '周总结'
+          ? 'This Week'
+          : activeNav === '历史周总结'
+            ? 'History Weekly Reports'
+            : 'Coming soon';
 
   return (
     <main className="content">
       <div className="contentHeader">
         <div>
           <div className="contentTitle">{activeNav}</div>
-          <div className="contentHint">
-            {activeNav === '待做事项'
-              ? 'Sprint Board'
-              : activeNav === '优先级管理'
-                ? 'Priority View'
-                : 'Coming soon'}
-          </div>
+
+          <div className="contentHint">{hint}</div>
         </div>
 
         {/* button area on Top Right */}
@@ -53,9 +76,44 @@ export default function Content({
             </button>
           </div>
         ) : null}
+        {activeNav === '周总结' ? (
+          <div className="contentActions">
+            <button
+              className="btnPrimary"
+              onClick={() => console.log('Archive (TODO)')}
+            >
+              Archive
+            </button>
+            <button
+              className="btnGhost"
+              onClick={() => console.log('Carry over last week (TODO)')}
+            >
+              Carry Over
+            </button>
+          </div>
+        ) : null}
+
+        {activeNav === '历史周总结' ? (
+          <div className="contentActions">
+            <button className="btnGhost" onClick={() => onChangeNav('周总结')}>
+              Back to This Week
+            </button>
+          </div>
+        ) : null}
       </div>
       {activeNav === '待做事项' && <SprintBoardView ref={boardRef} />}
       {activeNav === '优先级管理' && <PriorityView onRedirect={jumpToEpic} />}
+      {activeNav === '周总结' && <CurrentWeeklyReportView />}
+
+      {activeNav === '历史周总结' &&
+        (activeWeekFile ? (
+          <LegacyWeeklyReportView fileName={activeWeekFile} />
+        ) : (
+          <div style={{ padding: 12, opacity: 0.75 }}>
+            Please select a week from sidebar.
+          </div>
+        ))}
+
       {activeNav === '技术债务' && (
         <div style={{ padding: 12, opacity: 0.75 }}>TechDebt placeholder</div>
       )}

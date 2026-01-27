@@ -35,3 +35,31 @@ To package apps for the local platform:
 ```bash
 npm run package
 ```
+
+## Architecture
+
+<pre>
+[ UI Views ]
+  ├─ SprintBoard
+  ├─ PriorityView
+  ├─ CurrentWeeklyReport
+  └─ HistoryWeeklyReport
+        ↑
+[ Projections Layer ]
+  ├─ selectDailyReport(events, state, date)
+  ├─ selectWeeklyReport(events, state, weekId)
+  ├─ selectCarryOverTasks(prevWeekReport)
+  └─ selectLegacyWeekList(fsIndex)
+        ↑
+[ Domain Store ]
+  ├─ SprintState
+  ├─ SprintEvents[]
+  └─ Actions (emit events)
+        ↑
+[ Persistence Layer ]
+  ├─ Event Log Files
+  ├─ Weekly Report Files
+  └─ Legacy Import Files
+        ↑
+[ Electron IPC / FS ]
+</pre>
