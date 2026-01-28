@@ -56,7 +56,6 @@ export function listLegacyWeekly(): LegacyWeekItem[] {
   ensureCompassDirs();
   const dir = legacyWeeklyDir();
 
-  console.log('🦁, ', dir);
   if (!fs.existsSync(dir)) return [];
 
   const files = fs
