@@ -4,6 +4,29 @@ Updates in minor version will be recorded in this file.
 
 ---
 
+## [0.1.2] - 2026-01-28
+
+### Added
+
+- 🚀 Legacy Weekly Log support (file-based import of historical reports)
+- 🚀 LegacyWeekView component for rendering historical week reports
+- sidebar integration for browsing historical weeks (Week 1 → current)
+- content routing for separating Current Week Summary vs Historical Week View
+- redid time utility layer (time.ts) for local-day and local-week range calculations
+
+### Changed
+
+- 🚀 introduced a dual-report architecture:
+  - Daily Snapshot (event-driven, structured data)
+  - Weekly Report (Markdown, human-readable artifact)
+- 🚀 navigation model extended to distinguish between Sprint/Views and Historical Reports
+- 🚀 domain events positioned as the upstream source for future report generation
+
+### Fixed
+
+- resolved layout issues when displaying large historical reports inside the Content shell
+- eliminated text selection artifacts in sidebar week rows for cleaner navigation UX
+
 ## [0.1.1] - 2026-01-27
 
 ### Added
