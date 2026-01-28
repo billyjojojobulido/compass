@@ -18,8 +18,6 @@ Clone the repo and install dependencies:
 npm install
 ```
 
-**Having issues installing? See our [debugging guide](https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/400)**
-
 ## Starting Development
 
 Start the app in the `dev` environment:
@@ -37,6 +35,8 @@ npm run package
 ```
 
 ## Architecture
+
+### System Breakdown
 
 <pre>
 [ UI Views ]
@@ -62,4 +62,18 @@ npm run package
   └─ Legacy Import Files
         ↑
 [ Electron IPC / FS ]
+</pre>
+
+### Data Pipelines
+
+<pre>
+SprintStore + Events
+        ↓
+Daily Snapshot (State Layer / Cold Data)
+        ↓
+Weekly Projection
+        ↓
+Weekly Report (Presentation Layer / Human Readable)
+        ↓
+Sidebar History View
 </pre>

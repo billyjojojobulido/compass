@@ -7,14 +7,9 @@ export type LegacyWeekItem = {
 };
 
 export async function listLegacyWeekly(): Promise<LegacyWeekItem[]> {
-  return window.electron.ipcRenderer.invoke<LegacyWeekItem[]>(
-    'list-legacy-weekly',
-  );
+  return window.compass.invoke('compass:legacy:list');
 }
 
-export async function readLegacyWeekly(fileName: string): Promise<{
-  fileName: string;
-  markdown: string;
-}> {
-  return window.electron.ipcRenderer.invoke('read-legacy-weekly', fileName);
+export async function readLegacyWeekly(fileName: string): Promise<string> {
+  return window.compass.invoke('compass:legacy:read', { fileName });
 }

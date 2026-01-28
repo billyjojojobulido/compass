@@ -72,3 +72,42 @@ export type SprintState = {
   // scroll to epicId
   ui?: SprintUIState;
 };
+
+export type DailySnapshot = {
+  version: 1;
+  date: string; // "YYYY-MM-DD" (local day key)
+  generatedAt: string; // ISO UTC
+  timezone?: string; // TODO: optional, e.g. "Australia/Sydney" leave to future
+
+  // SprintStore core states
+  epics: Array<{
+    id: string;
+    title: string;
+    priorityId: string;
+    statusId: string;
+    pinned?: boolean;
+  }>;
+
+  tasksById: Record<
+    string,
+    {
+      id: string;
+      epicId: string;
+      title: string;
+      statusId: string;
+      stakeholderId?: string;
+    }
+  >;
+
+  taskOrderByEpic: Record<string, string[]>;
+
+  /*
+    optional: used to incrementally generate weekly report
+    keep record of the events offset when last carry over on that day
+  */
+  eventCursor?: {
+    monthFile: string; // "2026-01.ndjson"
+    byteOffset?: number; // TODO: optional :: leave placeholder here in case gets too complex in future
+    lastEventId?: string; // MVP can use lastEventId
+  };
+};
