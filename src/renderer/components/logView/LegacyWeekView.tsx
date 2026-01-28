@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import './legacyWeekView.css';
 import { readLegacyWeekly } from '@/domain/legacy/api';
 
@@ -29,7 +31,26 @@ export default function LegacyWeekView({ fileName }: { fileName: string }) {
 
   return (
     <div className="legacyWeekRoot">
-      <pre className="legacyWeekPre">{md}</pre>
+      {/* <pre className="legacyWeekPre">{md}</pre> */}
+
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          // customize checkbox styles to look similar to MacOS Notes app
+          input({ checked, ...props }) {
+            return (
+              <input
+                type="checkbox"
+                checked={checked}
+                readOnly
+                className="memoCheckbox"
+              />
+            );
+          },
+        }}
+      >
+        {md}
+      </ReactMarkdown>
     </div>
   );
 }

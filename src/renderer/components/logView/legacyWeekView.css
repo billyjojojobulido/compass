@@ -4,8 +4,25 @@
   overflow: auto;
 }
 
-.legacyWeekPre {
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
+.memoStyle {
+  background: #fafaf8;
+  border-radius: 12px;
+  padding: 16px 20px;
+  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+}
+
+.memoStyle h1,
+.memoStyle h2 {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding-bottom: 4px;
+}
+
+.memoStyle ul {
+  padding-left: 20px;
+}
+
+.memoCheckbox {
+  margin-right: 8px;
+  accent-color: #f4c430; /* similar to MacOS notes */
 }
