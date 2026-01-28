@@ -1,6 +1,7 @@
 .legacyWeekRoot {
   padding: 12px;
   opacity: 0.95;
+  overflow: auto;
 }
 
 .legacyWeekPre {
