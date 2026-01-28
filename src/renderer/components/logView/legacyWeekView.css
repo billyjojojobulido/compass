@@ -1,0 +1,10 @@
+.legacyWeekRoot {
+  padding: 12px;
+  opacity: 0.95;
+}
+
+.legacyWeekPre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

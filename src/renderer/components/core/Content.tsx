@@ -3,21 +3,14 @@ import type { NavKey } from '@/components/core/SideBar';
 import SprintBoardView, {
   SprintBoardHandle,
 } from '@/components/sprintBoard/SprintBoardView';
-import PriorityView from '../priortyView/PriorityView';
+import PriorityView from '@/components/priortyView/PriorityView';
 import { useSprint } from '@/domain/sprintStore';
+import LegacyWeekView from '@/components/logView/LegacyWeekView';
 
 function CurrentWeeklyReportView() {
   return (
     <div style={{ padding: 12, opacity: 0.75 }}>
       Current Week template (TODO)
-    </div>
-  );
-}
-
-function LegacyWeeklyReportView({ fileName }: { fileName: string }) {
-  return (
-    <div style={{ padding: 12, opacity: 0.75 }}>
-      History Weekly Report: {fileName} (TODO)
     </div>
   );
 }
@@ -107,7 +100,7 @@ export default function Content({
 
       {activeNav === '历史周总结' &&
         (activeWeekFile ? (
-          <LegacyWeeklyReportView fileName={activeWeekFile} />
+          <LegacyWeekView fileName={activeWeekFile} />
         ) : (
           <div style={{ padding: 12, opacity: 0.75 }}>
             Please select a week from sidebar.
