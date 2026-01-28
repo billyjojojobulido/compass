@@ -73,7 +73,7 @@ export type SprintState = {
   ui?: SprintUIState;
 };
 
-export type DailySnapshotV1 = {
+export type DailySnapshot = {
   version: 1;
   date: string; // "YYYY-MM-DD" (local day key)
   generatedAt: string; // ISO UTC

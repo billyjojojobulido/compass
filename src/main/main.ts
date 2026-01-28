@@ -22,8 +22,7 @@ import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import i18nInit from '../renderer/services/i18nInit';
 import windowStateKeeper from 'electron-window-state';
-import fs from 'fs/promises';
-import { LegacyWeekItem } from '@/domain/legacy/api';
+import { registerCompassIpc } from './compassIpc';
 
 class AppUpdater {
   constructor() {
@@ -34,63 +33,6 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
-
-/* legacy weekly log related */
-
-const LEGACY_DIR = path.join(app.getPath('userData'), 'legacy-weekly');
-
-/* so users won't have to create dir themselves */
-async function ensureDir() {
-  await fs.mkdir(LEGACY_DIR, { recursive: true });
-}
-
-function parseMetaFromTitle(title: string): {
-  weekNo?: number;
-  weekStart?: string;
-} {
-  // title example: "Week 72 (2026-01-19)"
-  const m = /^Week\s+(\d+)\s+\((\d{4}-\d{2}-\d{2})\)/.exec(title.trim());
-  if (!m) return {};
-  return { weekNo: Number(m[1]), weekStart: m[2] };
-}
-
-ipcMain.handle('list-legacy-weekly', async (): Promise<LegacyWeekItem[]> => {
-  await ensureDir();
-  const names = await fs.readdir(LEGACY_DIR);
-
-  const items: LegacyWeekItem[] = [];
-  for (const fileName of names) {
-    // can only recognize .md/txt
-    if (!/\.(md|txt)$/i.test(fileName)) continue;
-
-    const full = path.join(LEGACY_DIR, fileName);
-    const content = await fs.readFile(full, 'utf-8');
-
-    const firstLine = content.split(/\r?\n/)[0]?.trim() ?? '';
-    const title = firstLine || fileName.replace(/\.(md|txt)$/i, '');
-    const meta = parseMetaFromTitle(title);
-
-    items.push({ fileName, title, ...meta });
-  }
-
-  // sorting: weekNo desc (last in, first out)
-  items.sort((a, b) => (b.weekNo ?? -1) - (a.weekNo ?? -1));
-  return items;
-});
-
-ipcMain.handle(
-  'read-legacy-weekly',
-  async (
-    _e,
-    fileName: string,
-  ): Promise<{ fileName: string; content: string }> => {
-    await ensureDir();
-    const safeName = path.basename(fileName); // just in case ../
-    const full = path.join(LEGACY_DIR, safeName);
-    const content = await fs.readFile(full, 'utf-8');
-    return { fileName: safeName, content };
-  },
-);
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -309,8 +251,11 @@ app
   .whenReady()
   .then(() => {
     return i18nInit().then((i18n) => {
-      appI18N = i18n;
+      //#region Compass IPC register
+      registerCompassIpc();
+      //#endregion
 
+      appI18N = i18n;
       createWindow(i18n);
 
       i18n.on('languageChanged', (lng) => {

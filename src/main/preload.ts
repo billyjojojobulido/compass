@@ -5,6 +5,21 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
 export type Channels = 'ipc-example';
 
+export type CompassChannel =
+  | 'compass:config:read'
+  | 'compass:config:write'
+  | 'compass:events:append'
+  | 'compass:events:read'
+  | 'compass:snapshot:write'
+  | 'compass:snapshot:read'
+  | 'compass:snapshot:list'
+  | 'compass:report:write'
+  | 'compass:report:read'
+  | 'compass:report:list'
+  | 'compass:legacy:list'
+  | 'compass:legacy:read'
+  | 'compass:legacy:write';
+
 export type InvokeChannels = 'list-legacy-weekly' | 'read-legacy-weekly';
 
 const electronHandler = {
@@ -41,6 +56,13 @@ const electronHandler = {
   },
 };
 
+const compassHandler = {
+  invoke: (channel: string, payload?: unknown) =>
+    ipcRenderer.invoke(channel, payload),
+};
+
 contextBridge.exposeInMainWorld('electron', electronHandler);
+contextBridge.exposeInMainWorld('compass', compassHandler);
 
 export type ElectronHandler = typeof electronHandler;
+export type CompassHandler = typeof compassHandler;
