@@ -1,3 +1,4 @@
+import { DailySnapshot } from '@/domain/types';
 import { app } from 'electron';
 import fs from 'fs';
 import path from 'path';
@@ -25,6 +26,7 @@ export function ensureCompassDirs() {
   return root;
 }
 
+//#region ---- Legacy Week Log -----
 export function legacyWeeklyDir() {
   return path.join(getDataRoot(), 'legacy-weekly');
 }
@@ -80,3 +82,113 @@ export function readLegacyWeekly(fileName: string): string {
   if (!fs.existsSync(full)) throw new Error(`Legacy weekly not found: ${safe}`);
   return fs.readFileSync(full, 'utf-8');
 }
+//#endregion
+
+//#region ---- Daily Snapshot -----
+export function dailySnapshotYearDir(year: string) {
+  return path.join(getDataRoot(), 'snapshots', 'daily', year);
+}
+
+export function dailySnapshotPath(date: string) {
+  // date: "YYYY-MM-DD"
+  const year = date.slice(0, 4);
+  return path.join(dailySnapshotYearDir(year), `${date}.snapshot.json`);
+}
+
+function assertDayKey(date: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    throw new Error(`Invalid day key: ${date}`);
+  }
+}
+
+function atomicWriteFileSync(fullPath: string, content: string) {
+  const dir = path.dirname(fullPath);
+  const tmp = `${fullPath}.tmp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+  // step 1: write to temporary file
+  fs.writeFileSync(tmp, content, 'utf-8');
+
+  // step 2: rename to override :: overwrite on the same disk can be atomic
+  // if target exists on windows, renaming may fail in some scenes
+  // so unlink before rename
+  try {
+    fs.renameSync(tmp, fullPath);
+  } catch (e) {
+    try {
+      if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+      fs.renameSync(tmp, fullPath);
+    } finally {
+      // if still fail :: just make sure tmp is fully cleaned up
+      if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
+    }
+  }
+}
+
+function assertDailySnapshotShape(x: any, expectedDate: string) {
+  // MVP: only do checking for the most important 2~3 fields
+  if (!x || typeof x !== 'object')
+    throw new Error('Invalid snapshot: not an object');
+  if (x.schemaVersion !== 1)
+    throw new Error(`Invalid snapshot: schemaVersion=${x.schemaVersion}`);
+  if (x.date !== expectedDate)
+    throw new Error(
+      `Invalid snapshot: date mismatch (${x.date} != ${expectedDate})`,
+    );
+  if (!Array.isArray(x.epics))
+    throw new Error('Invalid snapshot: epics must be array');
+  if (!x.tasksById || typeof x.tasksById !== 'object')
+    throw new Error('Invalid snapshot: tasksById must be object');
+  if (!x.taskOrderByEpic || typeof x.taskOrderByEpic !== 'object')
+    throw new Error('Invalid snapshot: taskOrderByEpic must be object');
+}
+
+export function writeDailySnapshot(date: string, snapshot: DailySnapshot) {
+  ensureCompassDirs();
+  assertDayKey(date);
+
+  if (snapshot.date !== date) {
+    throw new Error(
+      `Snapshot.date (${snapshot.date}) must match date param (${date})`,
+    );
+  }
+
+  const full = dailySnapshotPath(date);
+  const dir = path.dirname(full);
+
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  // pretty JSON for human-readable
+  const json = JSON.stringify(snapshot, null, 2);
+  atomicWriteFileSync(full, json);
+
+  return { ok: true, path: full };
+}
+
+export function readDailySnapshot(date: string) {
+  ensureCompassDirs();
+  assertDayKey(date);
+
+  const full = dailySnapshotPath(date);
+  if (!fs.existsSync(full))
+    throw new Error(`Daily snapshot not found: ${date}`);
+  const raw = fs.readFileSync(full, 'utf-8');
+  const parsed = JSON.parse(raw);
+
+  assertDailySnapshotShape(parsed, date);
+  return parsed as DailySnapshot;
+}
+
+export function listDailySnapshots(year?: string): string[] {
+  ensureCompassDirs();
+  const y = year ?? String(new Date().getFullYear());
+  const dir = dailySnapshotYearDir(y);
+
+  if (!fs.existsSync(dir)) return [];
+
+  return fs
+    .readdirSync(dir)
+    .filter((f) => /\.snapshot\.json$/i.test(f))
+    .map((f) => f.replace(/\.snapshot\.json$/i, ''))
+    .sort(); // asc by date
+}
+//#endregion

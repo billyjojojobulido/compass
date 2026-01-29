@@ -4,6 +4,16 @@ Updates in minor version will be recorded in this file.
 
 ---
 
+## [0.1.3] - 2026-01-28
+
+### Added
+
+- 🚀 new dependencies `react-markdown` & `remark-gfm`
+
+### Changed
+
+- 🚀 updated the styling of legacy week logs markdown rendering to make it looks more like MacOS notes app style.
+
 ## [0.1.2] - 2026-01-28
 
 ### Added

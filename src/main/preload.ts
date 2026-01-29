@@ -1,9 +1,28 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
 import { LegacyWeekItem } from '@/domain/legacy/api';
+import { DailySnapshot } from '@/domain/types';
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
 export type Channels = 'ipc-example';
+
+export type CompassHandler = {
+  invoke<T = unknown>(channel: CompassChannel, payload?: unknown): Promise<T>;
+
+  legacyWeekly: {
+    list(): Promise<LegacyWeekItem[]>;
+    read(fileName: string): Promise<string>; // 建议直接返回 content string 更简单
+  };
+
+  snapshot: {
+    writeDaily(
+      date: string,
+      snapshot: DailySnapshot,
+    ): Promise<{ ok: true; path: string }>;
+    readDaily(date: string): Promise<DailySnapshot>;
+    listDaily(year?: string): Promise<string[]>;
+  };
+};
 
 export type CompassChannel =
   | 'compass:config:read'
@@ -56,13 +75,27 @@ const electronHandler = {
   },
 };
 
-const compassHandler = {
+const compassHandler: CompassHandler = {
   invoke: (channel: string, payload?: unknown) =>
     ipcRenderer.invoke(channel, payload),
+
+  legacyWeekly: {
+    list: () => ipcRenderer.invoke('compass:legacy:list'),
+    read: (fileName: string) =>
+      ipcRenderer.invoke('compass:legacy:read', { fileName }),
+  },
+
+  snapshot: {
+    writeDaily: (date: string, snapshot: DailySnapshot) =>
+      ipcRenderer.invoke('compass:snapshot:write', { date, snapshot }),
+    readDaily: (date: string) =>
+      ipcRenderer.invoke('compass:snapshot:read', { date }),
+    listDaily: (year: string) =>
+      ipcRenderer.invoke('compass:snapshot:list', { year }),
+  },
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);
 contextBridge.exposeInMainWorld('compass', compassHandler);
 
 export type ElectronHandler = typeof electronHandler;
-export type CompassHandler = typeof compassHandler;
