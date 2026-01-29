@@ -25,6 +25,7 @@ export function ensureCompassDirs() {
   return root;
 }
 
+//#region ---- Legacy Week Log -----
 export function legacyWeeklyDir() {
   return path.join(getDataRoot(), 'legacy-weekly');
 }
@@ -80,3 +81,61 @@ export function readLegacyWeekly(fileName: string): string {
   if (!fs.existsSync(full)) throw new Error(`Legacy weekly not found: ${safe}`);
   return fs.readFileSync(full, 'utf-8');
 }
+//#endregion
+
+//#region ---- Daily Snapshot -----
+export function dailySnapshotYearDir(year: string) {
+  return path.join(getDataRoot(), 'snapshots', 'daily', year);
+}
+
+export function dailySnapshotPath(date: string) {
+  // date: "YYYY-MM-DD"
+  const year = date.slice(0, 4);
+  return path.join(dailySnapshotYearDir(year), `${date}.snapshot.json`);
+}
+
+function assertDayKey(date: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    throw new Error(`Invalid day key: ${date}`);
+  }
+}
+
+export function writeDailySnapshot(date: string, snapshot: unknown) {
+  ensureCompassDirs();
+  assertDayKey(date);
+
+  const full = dailySnapshotPath(date);
+  const dir = path.dirname(full);
+
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  // pretty JSON for human-readable
+  fs.writeFileSync(full, JSON.stringify(snapshot, null, 2), 'utf-8');
+  return { ok: true, path: full };
+}
+
+export function readDailySnapshot(date: string) {
+  ensureCompassDirs();
+  assertDayKey(date);
+
+  const full = dailySnapshotPath(date);
+  if (!fs.existsSync(full))
+    throw new Error(`Daily snapshot not found: ${date}`);
+  const raw = fs.readFileSync(full, 'utf-8');
+  return JSON.parse(raw);
+}
+
+export function listDailySnapshots(year?: string): string[] {
+  ensureCompassDirs();
+  const y = year ?? String(new Date().getFullYear());
+  const dir = dailySnapshotYearDir(y);
+
+  if (!fs.existsSync(dir)) return [];
+
+  return fs
+    .readdirSync(dir)
+    .filter((f) => /\.snapshot\.json$/i.test(f))
+    .map((f) => f.replace(/\.snapshot\.json$/i, ''))
+    .sort(); // asc by date
+}
+//#endregion
