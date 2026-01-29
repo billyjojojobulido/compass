@@ -1,3 +1,4 @@
+import { DailySnapshot } from '@/domain/types';
 import { app } from 'electron';
 import fs from 'fs';
 import path from 'path';
@@ -100,9 +101,33 @@ function assertDayKey(date: string) {
   }
 }
 
-export function writeDailySnapshot(date: string, snapshot: unknown) {
+function assertDailySnapshotShape(x: any, expectedDate: string) {
+  // MVP: only do checking for the most important 2~3 fields
+  if (!x || typeof x !== 'object')
+    throw new Error('Invalid snapshot: not an object');
+  if (x.schemaVersion !== 1)
+    throw new Error(`Invalid snapshot: schemaVersion=${x.schemaVersion}`);
+  if (x.date !== expectedDate)
+    throw new Error(
+      `Invalid snapshot: date mismatch (${x.date} != ${expectedDate})`,
+    );
+  if (!Array.isArray(x.epics))
+    throw new Error('Invalid snapshot: epics must be array');
+  if (!x.tasksById || typeof x.tasksById !== 'object')
+    throw new Error('Invalid snapshot: tasksById must be object');
+  if (!x.taskOrderByEpic || typeof x.taskOrderByEpic !== 'object')
+    throw new Error('Invalid snapshot: taskOrderByEpic must be object');
+}
+
+export function writeDailySnapshot(date: string, snapshot: DailySnapshot) {
   ensureCompassDirs();
   assertDayKey(date);
+
+  if (snapshot.date !== date) {
+    throw new Error(
+      `Snapshot.date (${snapshot.date}) must match date param (${date})`,
+    );
+  }
 
   const full = dailySnapshotPath(date);
   const dir = path.dirname(full);
@@ -122,7 +147,10 @@ export function readDailySnapshot(date: string) {
   if (!fs.existsSync(full))
     throw new Error(`Daily snapshot not found: ${date}`);
   const raw = fs.readFileSync(full, 'utf-8');
-  return JSON.parse(raw);
+  const parsed = JSON.parse(raw);
+
+  assertDailySnapshotShape(parsed, date);
+  return parsed as DailySnapshot;
 }
 
 export function listDailySnapshots(year?: string): string[] {
