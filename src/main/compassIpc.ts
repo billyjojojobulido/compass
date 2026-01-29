@@ -21,21 +21,21 @@ export function registerCompassIpc() {
   );
 
   ipcMain.handle(
-    'compass:snapshot:daily:write',
+    'compass:snapshot:write',
     async (_e, payload: { date: string; snapshot: DailySnapshot }) => {
       return writeDailySnapshot(payload.date, payload.snapshot);
     },
   );
 
   ipcMain.handle(
-    'compass:snapshot:daily:read',
+    'compass:snapshot:read',
     async (_e, payload: { date: string }) => {
       return readDailySnapshot(payload.date);
     },
   );
 
   ipcMain.handle(
-    'compass:snapshot:daily:list',
+    'compass:snapshot:list',
     async (_e, payload?: { year?: string }) => {
       return listDailySnapshots(payload?.year);
     },
