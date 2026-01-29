@@ -74,11 +74,17 @@ export type SprintState = {
 };
 
 export type DailySnapshot = {
-  version: 1;
+  schemaVersion: 1;
+
   date: string; // "YYYY-MM-DD" (local day key)
   generatedAt: string; // ISO UTC
   timezone?: string; // TODO: optional, e.g. "Australia/Sydney" leave to future
 
+  // Optional but very useful for weekly grouping
+  range?: {
+    startISO: string;
+    endISO: string;
+  };
   // SprintStore core states
   epics: Array<{
     id: string;
@@ -109,5 +115,12 @@ export type DailySnapshot = {
     monthFile: string; // "2026-01.ndjson"
     byteOffset?: number; // TODO: optional :: leave placeholder here in case gets too complex in future
     lastEventId?: string; // MVP can use lastEventId
+  };
+
+  // Debug / future-proofing
+  meta?: {
+    appVersion?: string;
+    configHash?: string;
+    note?: string;
   };
 };
