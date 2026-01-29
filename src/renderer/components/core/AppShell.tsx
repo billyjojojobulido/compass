@@ -16,25 +16,13 @@ export default function AppShell() {
     listLegacyWeekly()
       .then((items) => {
         setLegacyWeeks(items);
-        // 默认不自动选中；你也可以默认选最新一周
+        // default to select nothing
         // setActiveWeekFile(items[0]?.fileName ?? null);
       })
       .catch((err) => {
         console.error('[legacyWeeks] load failed', err);
         setLegacyWeeks([]);
       });
-
-    // let mounted = true;
-    // window.electron.legacyWeekly
-    //   .list()
-    //   .then((items) => {
-    //     if (!mounted) return;
-    //     setLegacyWeeks(items);
-    //   })
-    //   .catch((err) => console.error('list legacy weekly failed', err));
-    // return () => {
-    //   mounted = false;
-    // };
   }, []);
 
   return (
