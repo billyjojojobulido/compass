@@ -91,6 +91,7 @@ export function dailySnapshotYearDir(year: string) {
 
 export function dailySnapshotPath(date: string) {
   // date: "YYYY-MM-DD"
+  assertDayKey(date);
   const year = date.slice(0, 4);
   return path.join(dailySnapshotYearDir(year), `${date}.snapshot.json`);
 }
@@ -178,17 +179,38 @@ export function readDailySnapshot(date: string) {
   return parsed as DailySnapshot;
 }
 
-export function listDailySnapshots(year?: string): string[] {
+function assertYear(y: string) {
+  if (!/^\d{4}$/.test(y)) throw new Error(`Invalid year: ${y}`);
+}
+
+/*
+optional params for customize: opts {order: asc | desc} default -> desc
+*/
+export function listDailySnapshots(
+  year?: string,
+  opts?: { order?: 'asc' | 'desc'; limit?: number },
+): string[] {
   ensureCompassDirs();
+  /* [guardian] year validation */
   const y = year ?? String(new Date().getFullYear());
+  assertYear(y);
+
   const dir = dailySnapshotYearDir(y);
 
   if (!fs.existsSync(dir)) return [];
 
-  return fs
+  /* [guardian] in case of dirty file name */
+  const dates = fs
     .readdirSync(dir)
     .filter((f) => /\.snapshot\.json$/i.test(f))
     .map((f) => f.replace(/\.snapshot\.json$/i, ''))
-    .sort(); // asc by date
+    .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d));
+
+  dates.sort(); // asc by date (YYYY-MM-DD string works)
+
+  if (opts?.order === 'desc') dates.reverse();
+  if (opts?.limit != null) return dates.slice(0, Math.max(0, opts.limit));
+
+  return dates;
 }
 //#endregion
