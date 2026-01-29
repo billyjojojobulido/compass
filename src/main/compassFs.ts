@@ -101,6 +101,29 @@ function assertDayKey(date: string) {
   }
 }
 
+function atomicWriteFileSync(fullPath: string, content: string) {
+  const dir = path.dirname(fullPath);
+  const tmp = `${fullPath}.tmp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+  // step 1: write to temporary file
+  fs.writeFileSync(tmp, content, 'utf-8');
+
+  // step 2: rename to override :: overwrite on the same disk can be atomic
+  // if target exists on windows, renaming may fail in some scenes
+  // so unlink before rename
+  try {
+    fs.renameSync(tmp, fullPath);
+  } catch (e) {
+    try {
+      if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+      fs.renameSync(tmp, fullPath);
+    } finally {
+      // if still fail :: just make sure tmp is fully cleaned up
+      if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
+    }
+  }
+}
+
 function assertDailySnapshotShape(x: any, expectedDate: string) {
   // MVP: only do checking for the most important 2~3 fields
   if (!x || typeof x !== 'object')
@@ -135,7 +158,9 @@ export function writeDailySnapshot(date: string, snapshot: DailySnapshot) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
   // pretty JSON for human-readable
-  fs.writeFileSync(full, JSON.stringify(snapshot, null, 2), 'utf-8');
+  const json = JSON.stringify(snapshot, null, 2);
+  atomicWriteFileSync(full, json);
+
   return { ok: true, path: full };
 }
 
