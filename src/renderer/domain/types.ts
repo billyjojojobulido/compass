@@ -122,5 +122,6 @@ export type DailySnapshot = {
     appVersion?: string;
     configHash?: string;
     note?: string;
+    source?: string;
   };
 };
