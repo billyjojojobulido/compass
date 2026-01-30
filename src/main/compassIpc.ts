@@ -5,6 +5,9 @@ import {
   writeDailySnapshot,
   readDailySnapshot,
   listDailySnapshots,
+  listWeeklyReports,
+  readWeeklyReport,
+  writeWeeklyReport,
 } from './compassFs';
 import { DailySnapshot } from '@/domain/types';
 
@@ -38,6 +41,24 @@ export function registerCompassIpc() {
     'compass:snapshot:list',
     async (_e, payload?: { year?: string }) => {
       return listDailySnapshots(payload?.year);
+    },
+  );
+
+  ipcMain.handle('compass:report:list', async () => {
+    return listWeeklyReports();
+  });
+
+  ipcMain.handle(
+    'compass:report:read',
+    async (_e, payload: { fileName: string }) => {
+      return readWeeklyReport(payload.fileName);
+    },
+  );
+
+  ipcMain.handle(
+    'compass:report:write',
+    async (_e, payload: { weekStart: string; content: string }) => {
+      return writeWeeklyReport(payload.weekStart, payload.content);
     },
   );
 }

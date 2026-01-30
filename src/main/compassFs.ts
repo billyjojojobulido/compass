@@ -214,3 +214,73 @@ export function listDailySnapshots(
   return dates;
 }
 //#endregion
+
+//#region ---- Weekly Reports -----
+
+export function weeklyReportDir() {
+  return path.join(getDataRoot(), 'reports');
+}
+
+export type WeeklyReportItem = {
+  fileName: string;
+  title: string;
+  weekStart?: string;
+  generated?: boolean; // legacy = false, generated = true
+};
+
+function parseWeeklyTitle(fileName: string): WeeklyReportItem {
+  // Week 73 (2026-01-26).md
+  const base = fileName.replace(/\.md$/i, '');
+  const m = base.match(/Week\s*(\d+)\s*\((\d{4}-\d{2}-\d{2})\)/i);
+  if (m) {
+    return {
+      fileName,
+      title: `Week ${m[1]} (${m[2]})`,
+      weekStart: m[2],
+      generated: true,
+    };
+  }
+  return { fileName, title: base, generated: true };
+}
+
+export function writeWeeklyReport(weekStart: string, content: string) {
+  ensureCompassDirs();
+  const dir = weeklyReportDir();
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  const year = weekStart.slice(0, 4);
+  const weekNo = Math.ceil(
+    (new Date(weekStart).getTime() - new Date(`${year}-01-01`).getTime()) /
+      (7 * 24 * 3600 * 1000),
+  );
+
+  const fileName = `Week ${weekNo} (${weekStart}).md`;
+  const full = path.join(dir, fileName);
+
+  fs.writeFileSync(full, content, 'utf-8');
+
+  return { ok: true, fileName, path: full };
+}
+
+export function listWeeklyReports(): WeeklyReportItem[] {
+  ensureCompassDirs();
+  const dir = weeklyReportDir();
+  if (!fs.existsSync(dir)) return [];
+
+  const files = fs
+    .readdirSync(dir)
+    .filter((f) => /\.md$/i.test(f))
+    .sort((a, b) => b.localeCompare(a)); // newest first
+
+  return files.map(parseWeeklyTitle);
+}
+
+export function readWeeklyReport(fileName: string) {
+  ensureCompassDirs();
+  const safe = path.basename(fileName);
+  const full = path.join(weeklyReportDir(), safe);
+  if (!fs.existsSync(full)) throw new Error(`Weekly report not found: ${safe}`);
+  return fs.readFileSync(full, 'utf-8');
+}
+
+//#endregion
