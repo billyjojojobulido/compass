@@ -1,0 +1,293 @@
+/* src/components/week/currentWeekView.css */
+
+.cwRoot {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cwHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cwTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.cwSub {
+  margin-top: 2px;
+  font-size: 12px;
+  opacity: 0.72;
+}
+
+.cwWeekKey {
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.cwHeaderActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.cwBtnPrimary {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 650;
+  backdrop-filter: blur(10px);
+}
+
+.cwBtnPrimary:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.cwBtnPrimary.disabled,
+.cwBtnPrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cwGrid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 14px;
+}
+
+@media (max-width: 1100px) {
+  .cwGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* LEFT */
+.cwLeft {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cwPanel {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.cwPanelHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cwPanelTitle {
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cwPanelHint {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-left: 8px;
+}
+
+.cwPanelActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.cwIconBtn {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92);
+  border-radius: 10px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.cwIconBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.cwTextarea {
+  width: 100%;
+  min-height: 180px;
+  border: none;
+  outline: none;
+  resize: vertical;
+  padding: 12px 14px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.55;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  white-space: pre-wrap;
+}
+
+.cwPre {
+  padding: 12px 14px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: pre-wrap;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  line-height: 1.55;
+}
+
+/* RIGHT */
+.cwRight {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cwRightHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cwRightTitle {
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cwRightHint {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.cwAccordion {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* day item */
+.cwDay {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+}
+
+.cwDayHeader {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.cwDayHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.cwDayLabel {
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.cwDayMeta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cwDayHeaderRight {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.cwPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.cwPill.ok {
+  background: rgba(120, 255, 170, 0.1);
+  border-color: rgba(120, 255, 170, 0.18);
+}
+
+.cwPill.pending {
+  background: rgba(255, 210, 120, 0.1);
+  border-color: rgba(255, 210, 120, 0.18);
+}
+
+.cwPill.outline {
+  background: transparent;
+}
+
+.cwDayBody {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cwDayBlock {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cwBlockTitle {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cwEmptyHint,
+.cwOffHint {
+  padding: 10px 12px;
+  opacity: 0.75;
+  line-height: 1.5;
+}

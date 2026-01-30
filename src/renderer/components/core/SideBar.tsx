@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { LegacyWeekItem, WeeklyReportItem } from 'src/main/compassFs';
 
 export type NavKey =
   | '技术债务'
@@ -12,12 +13,9 @@ type Props = {
   activeNav: NavKey;
   onChangeNav: (nav: NavKey) => void;
   onRequestClose: () => void; // click backdrop to close
-  legacyWeeks: {
-    fileName: string;
-    title: string;
-    weekNo?: number;
-    weekStart?: string;
-  }[];
+  legacyWeeks: LegacyWeekItem[];
+  weeklyReports: WeeklyReportItem[];
+
   activeWeekFile: string | null;
   onSelectWeek: (fileName: string) => void;
 };
@@ -28,6 +26,7 @@ export default function Sidebar({
   onChangeNav,
   onRequestClose,
   legacyWeeks,
+  weeklyReports,
   activeWeekFile,
   onSelectWeek,
 }: Props) {
@@ -75,28 +74,24 @@ export default function Sidebar({
             <div className="sectionTitle">Weekly Reports</div>
 
             <div className="weekList" role="list">
-              {legacyWeeks.length === 0 ? (
-                <div className="weekEmpty">No weekly reports found</div>
-              ) : (
-                legacyWeeks.map((w) => {
-                  const isActive = w.fileName === activeWeekFile;
-
-                  return (
-                    <div
-                      className={`weekRow ${isActive ? 'active' : ''}`}
-                      key={w.fileName}
-                      role="listitem"
-                      onClick={() => onSelectWeek(w.fileName)}
-                      title={w.title}
-                    >
-                      <span className="weekLabel">{w.title}</span>
-                      <span className="weekChevron" aria-hidden>
-                        ›
-                      </span>
-                    </div>
-                  );
-                })
-              )}
+              {[...weeklyReports, ...legacyWeeks].map((w) => (
+                <div
+                  className={`weekRow ${
+                    activeWeekFile === w.fileName ? 'active' : ''
+                  }`}
+                  key={w.fileName}
+                  role="listitem"
+                  onClick={() => onSelectWeek(w.fileName)}
+                >
+                  <span className="weekLabel">
+                    {w.hasOwnProperty('generated') && w['generated']
+                      ? '📄 '
+                      : '🕰️ '}
+                    {w.title}
+                  </span>
+                  <span className="weekChevron">›</span>
+                </div>
+              ))}
             </div>
           </section>
 

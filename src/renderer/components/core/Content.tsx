@@ -7,6 +7,7 @@ import PriorityView from '@/components/priortyView/PriorityView';
 import { useSprint } from '@/domain/sprintStore';
 import LegacyWeekView from '@/components/logView/LegacyWeekView';
 import { archiveTodaySnapshot } from '@/domain/snapshot/snapshotService';
+import CurrentWeekView from '../curWeekView/CurrentWeekView';
 
 export default function Content({
   activeNav,
@@ -103,18 +104,8 @@ export default function Content({
       </div>
       {activeNav === '待做事项' && <SprintBoardView ref={boardRef} />}
       {activeNav === '优先级管理' && <PriorityView onRedirect={jumpToEpic} />}
-      {activeNav === '周总结' ? (
-        <div className="contentActions">
-          <button
-            className="btnPrimary"
-            onClick={onArchiveToday}
-            disabled={savingSnap}
-            title="Write today's DailySnapshot to disk"
-          >
-            {savingSnap ? 'Archiving…' : 'Archive Today'}
-          </button>
-        </div>
-      ) : null}
+
+      {activeNav === '周总结' && <CurrentWeekView />}
 
       {activeNav === '历史周总结' &&
         (activeWeekFile ? (
