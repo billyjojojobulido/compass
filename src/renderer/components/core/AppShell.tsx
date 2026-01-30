@@ -3,26 +3,20 @@ import TopBar from './TopBar';
 import Sidebar, { NavKey } from './SideBar';
 import Content from '@/components/core/Content';
 import { LegacyWeekItem, listLegacyWeekly } from '@/domain/legacy/api';
+import { WeeklyReportItem } from 'src/main/compassFs';
 
 export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav, setActiveNav] = useState<NavKey>('待做事项');
+  const [weeklyReports, setWeeklyReports] = useState<WeeklyReportItem[]>([]);
   /* history week log index + week log that is currently chosen */
   const [legacyWeeks, setLegacyWeeks] = useState<LegacyWeekItem[]>([]);
   const [activeWeekFile, setActiveWeekFile] = useState<string | null>(null);
 
-  /* read legacy weekly report list when launch */
+  /* read generated & legacy weekly report list when launch */
   useEffect(() => {
-    listLegacyWeekly()
-      .then((items) => {
-        setLegacyWeeks(items);
-        // default to select nothing
-        // setActiveWeekFile(items[0]?.fileName ?? null);
-      })
-      .catch((err) => {
-        console.error('[legacyWeeks] load failed', err);
-        setLegacyWeeks([]);
-      });
+    window.compass.invoke('compass:legacy:list').then(setLegacyWeeks);
+    window.compass.invoke('compass:report:list').then(setWeeklyReports);
   }, []);
 
   return (
@@ -45,6 +39,7 @@ export default function AppShell() {
           }}
           onRequestClose={() => setSidebarOpen(false)}
           legacyWeeks={legacyWeeks}
+          weeklyReports={weeklyReports}
           activeWeekFile={activeWeekFile}
           onSelectWeek={(fileName) => {
             setActiveWeekFile(fileName);
