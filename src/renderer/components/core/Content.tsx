@@ -37,53 +37,8 @@ export default function Content({
     }
   }
 
-  const hint =
-    activeNav === '待做事项'
-      ? 'Sprint Board'
-      : activeNav === '优先级管理'
-        ? 'Priority View'
-        : activeNav === '周总结'
-          ? 'This Week'
-          : activeNav === '历史周总结'
-            ? 'History Weekly Reports'
-            : 'Coming soon';
-
   return (
     <main className="content">
-      <div className="contentHeader">
-        <div>
-          <div className="contentTitle">{activeNav}</div>
-
-          <div className="contentHint">{hint}</div>
-        </div>
-
-        {/* button area on Top Right */}
-
-        {activeNav === '周总结' ? (
-          <div className="contentActions">
-            <button
-              className="btnPrimary"
-              onClick={() => console.log('Archive (TODO)')}
-            >
-              Archive
-            </button>
-            <button
-              className="btnGhost"
-              onClick={() => console.log('Carry over last week (TODO)')}
-            >
-              Carry Over
-            </button>
-          </div>
-        ) : null}
-
-        {activeNav === '历史周总结' ? (
-          <div className="contentActions">
-            <button className="btnGhost" onClick={() => onChangeNav('周总结')}>
-              Back to This Week
-            </button>
-          </div>
-        ) : null}
-      </div>
       {activeNav === '待做事项' && <SprintBoardView />}
       {activeNav === '优先级管理' && <PriorityView onRedirect={jumpToEpic} />}
 
@@ -91,7 +46,7 @@ export default function Content({
 
       {activeNav === '历史周总结' &&
         (activeWeekFile ? (
-          <LegacyWeekView fileName={activeWeekFile} />
+          <LegacyWeekView fileName={activeWeekFile} onChangeNav={onChangeNav} />
         ) : (
           <div style={{ padding: 12, opacity: 0.75 }}>
             Please select a week from sidebar.

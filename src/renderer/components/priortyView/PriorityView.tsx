@@ -87,53 +87,61 @@ export default function PriorityView({
   }
 
   return (
-    <div className="pvRoot">
-      <div className="pvLayout">
-        {/* LEFT: ladder */}
-        <div className="pvLadder" aria-label="Priority ladder">
-          {groups.map((g) => (
-            <PriorityLane
-              key={g.priorityId}
-              group={g}
-              selectedEpicId={selectedEpicId}
-              onSelect={(id) => setSelectedEpicId(id)}
-              onEdit={(id) => openEdit(id)}
-              onRedirect={(id) => {
-                onRedirect(id);
-              }}
-            />
-          ))}
+    <>
+      <div className="contentHeader">
+        <div>
+          <div className="contentTitle">优先级管理</div>
+          <div className="contentHint">Priority View</div>
         </div>
-
-        {/* RIGHT: drawer */}
-        <aside className={`pvDrawer ${drawer.open ? 'open' : ''}`}>
-          <div className="pvDrawerInner">
-            {drawer.open ? (
-              <EpicDrawer
-                mode={drawer.mode}
-                epic={drawer.mode === 'edit' ? selectedEpic : null}
-                priorities={config.priorities}
-                statuses={config.statuses}
-                priorityLabel={(id) => priorityMap.get(id)?.label ?? id}
-                onClose={closeDrawer}
-                onSave={handleSaveEpic}
-                onDelete={handleDeleteEpic}
-              />
-            ) : (
-              <div className="pvDrawerEmpty">
-                <div className="pvDrawerEmptyTitle">选择一个 Epic</div>
-                <div className="pvDrawerEmptyDesc">
-                  点击左侧卡片打开编辑；或创建一个新的 Epic。
-                </div>
-                <button className="pvBtnPrimary" onClick={openCreate}>
-                  + New Epic
-                </button>
-              </div>
-            )}
-          </div>
-        </aside>
       </div>
-    </div>
+      <div className="pvRoot">
+        <div className="pvLayout">
+          {/* LEFT: ladder */}
+          <div className="pvLadder" aria-label="Priority ladder">
+            {groups.map((g) => (
+              <PriorityLane
+                key={g.priorityId}
+                group={g}
+                selectedEpicId={selectedEpicId}
+                onSelect={(id) => setSelectedEpicId(id)}
+                onEdit={(id) => openEdit(id)}
+                onRedirect={(id) => {
+                  onRedirect(id);
+                }}
+              />
+            ))}
+          </div>
+
+          {/* RIGHT: drawer */}
+          <aside className={`pvDrawer ${drawer.open ? 'open' : ''}`}>
+            <div className="pvDrawerInner">
+              {drawer.open ? (
+                <EpicDrawer
+                  mode={drawer.mode}
+                  epic={drawer.mode === 'edit' ? selectedEpic : null}
+                  priorities={config.priorities}
+                  statuses={config.statuses}
+                  priorityLabel={(id) => priorityMap.get(id)?.label ?? id}
+                  onClose={closeDrawer}
+                  onSave={handleSaveEpic}
+                  onDelete={handleDeleteEpic}
+                />
+              ) : (
+                <div className="pvDrawerEmpty">
+                  <div className="pvDrawerEmptyTitle">选择一个 Epic</div>
+                  <div className="pvDrawerEmptyDesc">
+                    点击左侧卡片打开编辑；或创建一个新的 Epic。
+                  </div>
+                  <button className="pvBtnPrimary" onClick={openCreate}>
+                    + New Epic
+                  </button>
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
+      </div>
+    </>
   );
 }
 

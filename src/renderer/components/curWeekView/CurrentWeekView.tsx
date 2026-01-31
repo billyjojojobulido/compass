@@ -280,224 +280,227 @@ export default function CurrentWeekView(props: {
     !allArchived && (!todayIsWorkday || !todayIsInThisWeek);
 
   return (
-    <div className="cwRoot">
-      <div className="cwHeader">
+    <>
+      <div className="contentHeader">
         <div>
-          <div className="cwTitle">周总结</div>
-          <div className="cwSub">Current Week</div>
+          <div className="contentTitle">周总结</div>
+          <div className="contentHint">Current Week Log</div>
           <div className="cwWeekKey">{leftTitle}</div>
         </div>
 
-        <div className="cwHeaderActions">
+        {/* button area on Top Right */}
+        <div className="contentActions">
           <button
-            className={`cwBtnPrimary ${archiveDisabled ? 'disabled' : ''}`}
+            className={`btnPrimary ${archiveDisabled ? 'disabled' : ''}`}
             onClick={archiveTodayOrWeek}
             disabled={archiveDisabled}
-            title={
-              allArchived
-                ? 'Generate & save weekly report'
-                : !todayIsWorkday
-                  ? 'Weekend: no need to archive'
-                  : !todayIsInThisWeek
-                    ? 'Not in current week'
-                    : 'Save today snapshot'
-            }
           >
-            {archiveBtnLabel}
+            Archive
+          </button>
+          <button
+            className="btnGhost"
+            onClick={() => console.log('Carry over last week (TODO)')}
+          >
+            Carry Over
           </button>
         </div>
       </div>
-
-      <div className="cwGrid">
-        {/* LEFT: subjective panels */}
-        <section className="cwLeft">
-          <div className="cwPanel">
-            <div className="cwPanelHeader">
-              <div className="cwPanelTitle">技术债务</div>
-              <div className="cwPanelActions">
-                <button
-                  className="cwIconBtn"
-                  onClick={() => setDraftEdit((v) => !v)}
-                  title={draftEdit ? 'Exit edit' : 'Edit'}
-                >
-                  {draftEdit ? '✅' : '✏️'}
-                </button>
-              </div>
-            </div>
-
-            {draftEdit ? (
-              <textarea
-                className="cwTextarea"
-                value={draft.techDebtText}
-                onChange={(e) =>
-                  setDraft((p) => ({ ...p, techDebtText: e.target.value }))
-                }
-                placeholder="may just bring over last weeks's debt..."
-              />
-            ) : (
-              <pre className="cwPre">{draft.techDebtText || '（空）'}</pre>
-            )}
-          </div>
-
-          <div className="cwPanel">
-            <div className="cwPanelHeader">
-              <div className="cwPanelTitle">优先级 </div>
-              <div className="cwPanelHint">
-                HINT: can add events not in Sprint, e.g. mentorship/ appraisal /
-                interview, etc
-              </div>
-            </div>
-
-            {draftEdit ? (
-              <textarea
-                className="cwTextarea"
-                value={draft.priorityText}
-                onChange={(e) =>
-                  setDraft((p) => ({ ...p, priorityText: e.target.value }))
-                }
-                placeholder="写下本周优先级补充..."
-              />
-            ) : (
-              <pre className="cwPre">{draft.priorityText || '（空）'}</pre>
-            )}
-          </div>
-        </section>
-
-        {/* RIGHT: Mon-Fri snapshots accordion */}
-        <section className="cwRight">
-          <div className="cwRightHeader">
-            <div className="cwRightTitle">Monday – Friday</div>
-            <div className="cwRightHint">
-              ✏️: Edit Mode (✅ Save / 😴 Leave)
-            </div>
-          </div>
-
-          <div className="cwAccordion">
-            {dayKeys.map((k, i) => {
-              const label = `${DAY_LABELS[i]?.label ?? 'Day'}  ${k}`;
-              const snap = snapshots[k];
-              const expanded = expandedDay === k;
-              const isEditing = editingDay === k;
-
-              return (
-                <div key={k} className={`cwDay ${expanded ? 'expanded' : ''}`}>
-                  <div
-                    className="cwDayHeader"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => {
-                      setExpandedDay((prev) => (prev === k ? '' : k));
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ')
-                        () => {
-                          setExpandedDay((prev) => (prev === k ? '' : k));
-                        };
-                    }}
+      <div className="cwRoot">
+        <div className="cwGrid">
+          {/* LEFT: subjective panels */}
+          <section className="cwLeft">
+            <div className="cwPanel">
+              <div className="cwPanelHeader">
+                <div className="cwPanelTitle">技术债务</div>
+                <div className="cwPanelActions">
+                  <button
+                    className="cwIconBtn"
+                    onClick={() => setDraftEdit((v) => !v)}
+                    title={draftEdit ? 'Exit edit' : 'Edit'}
                   >
-                    <div className="cwDayHeaderLeft">
-                      <div className="cwDayLabel">{label}</div>
-                      <div className="cwDayMeta">
-                        <span className={`cwPill ${snap ? 'ok' : 'pending'}`}>
-                          {snap ? 'Archived' : 'Pending'}
-                        </span>
-                        <span className="cwPill outline">
-                          {snap ? snapshotSummary(snap) : '—'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div
-                      className="cwDayHeaderRight"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {!isEditing ? (
-                        <button
-                          className="cwIconBtn"
-                          onClick={() => openEditDay(k)}
-                          title="Edit day"
-                        >
-                          ✏️
-                        </button>
-                      ) : (
-                        <>
-                          <button
-                            className="cwIconBtn"
-                            onClick={async () => {
-                              await commitDayEdit(k);
-                            }}
-                            title="Save notes"
-                          >
-                            ✅
-                          </button>
-                          <button
-                            className="cwIconBtn"
-                            onClick={async () => {
-                              // Mark day off + archive snapshot
-                              await saveDayNote(k, dayNoteDraft);
-                              await archiveDay(k, 'off');
-                            }}
-                            title="Day off (archive as off)"
-                          >
-                            😴
-                          </button>
-                          <button
-                            className="cwIconBtn"
-                            onClick={cancelDayEdit}
-                            title="Cancel"
-                          >
-                            ✕
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {expanded ? (
-                    <div className="cwDayBody">
-                      {/* Day note */}
-                      <div className="cwDayBlock">
-                        <div className="cwBlockTitle">每日总结</div>
-                        {isEditing ? (
-                          <textarea
-                            className="cwTextarea"
-                            value={dayNoteDraft}
-                            onChange={(e) => setDayNoteDraft(e.target.value)}
-                            placeholder="code review / meeting / appraisal ..."
-                          />
-                        ) : (
-                          <pre className="cwPre">
-                            {snap?.meta?.dayNote ??
-                              localStorage.getItem(`compass.dayNote.${k}`) ??
-                              '（空）'}
-                          </pre>
-                        )}
-                      </div>
-
-                      {/* Snapshot preview */}
-                      <div className="cwDayBlock">
-                        <div className="cwBlockTitle">Snapshot</div>
-
-                        {!snap ? (
-                          <div className="cwEmptyHint">
-                            HINT: not Archived yet. First, write Day Notes, and
-                            then hits “Archive Today” , or choose 😴 btn here.
-                          </div>
-                        ) : snap.meta?.off ? (
-                          <div className="cwOffHint">😴 On Leave Today</div>
-                        ) : (
-                          <SnapshotPreview snapshot={snap} />
-                        )}
-                      </div>
-                    </div>
-                  ) : null}
+                    {draftEdit ? '✅' : '✏️'}
+                  </button>
                 </div>
-              );
-            })}
-          </div>
-        </section>
+              </div>
+
+              {draftEdit ? (
+                <textarea
+                  className="cwTextarea"
+                  value={draft.techDebtText}
+                  onChange={(e) =>
+                    setDraft((p) => ({ ...p, techDebtText: e.target.value }))
+                  }
+                  placeholder="may just bring over last weeks's debt..."
+                />
+              ) : (
+                <pre className="cwPre">{draft.techDebtText || '（空）'}</pre>
+              )}
+            </div>
+
+            <div className="cwPanel">
+              <div className="cwPanelHeader">
+                <div className="cwPanelTitle">优先级 </div>
+                <div className="cwPanelHint">
+                  HINT: can add events not in Sprint, e.g. mentorship/ appraisal
+                  / interview, etc
+                </div>
+              </div>
+
+              {draftEdit ? (
+                <textarea
+                  className="cwTextarea"
+                  value={draft.priorityText}
+                  onChange={(e) =>
+                    setDraft((p) => ({ ...p, priorityText: e.target.value }))
+                  }
+                  placeholder="写下本周优先级补充..."
+                />
+              ) : (
+                <pre className="cwPre">{draft.priorityText || '（空）'}</pre>
+              )}
+            </div>
+          </section>
+
+          {/* RIGHT: Mon-Fri snapshots accordion */}
+          <section className="cwRight">
+            <div className="cwRightHeader">
+              <div className="cwRightTitle">Monday – Friday</div>
+              <div className="cwRightHint">
+                ✏️: Edit Mode (✅ Save / 😴 Leave)
+              </div>
+            </div>
+
+            <div className="cwAccordion">
+              {dayKeys.map((k, i) => {
+                const label = `${DAY_LABELS[i]?.label ?? 'Day'}  ${k}`;
+                const snap = snapshots[k];
+                const expanded = expandedDay === k;
+                const isEditing = editingDay === k;
+
+                return (
+                  <div
+                    key={k}
+                    className={`cwDay ${expanded ? 'expanded' : ''}`}
+                  >
+                    <div
+                      className="cwDayHeader"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => {
+                        setExpandedDay((prev) => (prev === k ? '' : k));
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ')
+                          () => {
+                            setExpandedDay((prev) => (prev === k ? '' : k));
+                          };
+                      }}
+                    >
+                      <div className="cwDayHeaderLeft">
+                        <div className="cwDayLabel">{label}</div>
+                        <div className="cwDayMeta">
+                          <span className={`cwPill ${snap ? 'ok' : 'pending'}`}>
+                            {snap ? 'Archived' : 'Pending'}
+                          </span>
+                          <span className="cwPill outline">
+                            {snap ? snapshotSummary(snap) : '—'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div
+                        className="cwDayHeaderRight"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {!isEditing ? (
+                          <button
+                            className="cwIconBtn"
+                            onClick={() => openEditDay(k)}
+                            title="Edit day"
+                          >
+                            ✏️
+                          </button>
+                        ) : (
+                          <>
+                            <button
+                              className="cwIconBtn"
+                              onClick={async () => {
+                                await commitDayEdit(k);
+                              }}
+                              title="Save notes"
+                            >
+                              ✅
+                            </button>
+                            <button
+                              className="cwIconBtn"
+                              onClick={async () => {
+                                // Mark day off + archive snapshot
+                                await saveDayNote(k, dayNoteDraft);
+                                await archiveDay(k, 'off');
+                              }}
+                              title="Day off (archive as off)"
+                            >
+                              😴
+                            </button>
+                            <button
+                              className="cwIconBtn"
+                              onClick={cancelDayEdit}
+                              title="Cancel"
+                            >
+                              ✕
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {expanded ? (
+                      <div className="cwDayBody">
+                        {/* Day note */}
+                        <div className="cwDayBlock">
+                          <div className="cwBlockTitle">每日总结</div>
+                          {isEditing ? (
+                            <textarea
+                              className="cwTextarea"
+                              value={dayNoteDraft}
+                              onChange={(e) => setDayNoteDraft(e.target.value)}
+                              placeholder="code review / meeting / appraisal ..."
+                            />
+                          ) : (
+                            <pre className="cwPre">
+                              {snap?.meta?.dayNote ??
+                                localStorage.getItem(`compass.dayNote.${k}`) ??
+                                '（空）'}
+                            </pre>
+                          )}
+                        </div>
+
+                        {/* Snapshot preview */}
+                        <div className="cwDayBlock">
+                          <div className="cwBlockTitle">Snapshot</div>
+
+                          {!snap ? (
+                            <div className="cwEmptyHint">
+                              HINT: not Archived yet. First, write Day Notes,
+                              and then hits “Archive Today” , or choose 😴 btn
+                              here.
+                            </div>
+                          ) : snap.meta?.off ? (
+                            <div className="cwOffHint">😴 On Leave Today</div>
+                          ) : (
+                            <SnapshotPreview snapshot={snap} />
+                          )}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

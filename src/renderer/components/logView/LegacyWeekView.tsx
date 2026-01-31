@@ -4,7 +4,13 @@ import remarkGfm from 'remark-gfm';
 import './legacyWeekView.css';
 import { readLegacyWeekly } from '@/domain/legacy/api';
 
-export default function LegacyWeekView({ fileName }: { fileName: string }) {
+export default function LegacyWeekView({
+  fileName,
+  onChangeNav,
+}: {
+  fileName: string;
+  onChangeNav: (key: string) => void;
+}) {
   const [md, setMd] = useState<string>('Loading...');
 
   useEffect(() => {
@@ -30,27 +36,40 @@ export default function LegacyWeekView({ fileName }: { fileName: string }) {
   }, [fileName]);
 
   return (
-    <div className="legacyWeekRoot">
-      {/* <pre className="legacyWeekPre">{md}</pre> */}
+    <>
+      <div className="contentHeader">
+        <div>
+          <div className="contentTitle">历史周总结</div>
+          <div className="contentHint">History Weekly Reports</div>
+        </div>
 
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          // customize checkbox styles to look similar to MacOS Notes app
-          input({ checked, ...props }) {
-            return (
-              <input
-                type="checkbox"
-                checked={checked}
-                readOnly
-                className="memoCheckbox"
-              />
-            );
-          },
-        }}
-      >
-        {md}
-      </ReactMarkdown>
-    </div>
+        {/* button area on Top Right */}
+        <div className="contentActions">
+          <button className="btnGhost" onClick={() => onChangeNav('周总结')}>
+            Back to This Week
+          </button>
+        </div>
+      </div>
+      <div className="legacyWeekRoot">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            // customize checkbox styles to look similar to MacOS Notes app
+            input({ checked, ...props }) {
+              return (
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  readOnly
+                  className="memoCheckbox"
+                />
+              );
+            },
+          }}
+        >
+          {md}
+        </ReactMarkdown>
+      </div>
+    </>
   );
 }
