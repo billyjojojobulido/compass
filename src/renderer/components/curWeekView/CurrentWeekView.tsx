@@ -344,7 +344,7 @@ export default function CurrentWeekView(props: {
               <div className="cwPanelTitle">优先级 </div>
               <div className="cwPanelHint">
                 HINT: can add events not in Sprint, e.g. mentorship/ appraisal /
-                interview, etc）
+                interview, etc
               </div>
             </div>
 
@@ -381,11 +381,19 @@ export default function CurrentWeekView(props: {
 
               return (
                 <div key={k} className={`cwDay ${expanded ? 'expanded' : ''}`}>
-                  <button
+                  <div
                     className="cwDayHeader"
-                    onClick={() =>
-                      setExpandedDay((prev) => (prev === k ? '' : k))
-                    }
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      setExpandedDay((prev) => (prev === k ? '' : k));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ')
+                        () => {
+                          setExpandedDay((prev) => (prev === k ? '' : k));
+                        };
+                    }}
                   >
                     <div className="cwDayHeaderLeft">
                       <div className="cwDayLabel">{label}</div>
@@ -443,7 +451,7 @@ export default function CurrentWeekView(props: {
                         </>
                       )}
                     </div>
-                  </button>
+                  </div>
 
                   {expanded ? (
                     <div className="cwDayBody">
