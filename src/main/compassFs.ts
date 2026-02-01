@@ -262,23 +262,10 @@ export function writeWeeklyReport(weekStart: string, content: string) {
   return { ok: true, fileName, path: full };
 }
 
-export function listWeeklyReports(): WeeklyReportItem[] {
-  ensureCompassDirs();
-  const dir = weeklyReportDir();
-  if (!fs.existsSync(dir)) return [];
-
-  const files = fs
-    .readdirSync(dir)
-    .filter((f) => /\.md$/i.test(f))
-    .sort((a, b) => b.localeCompare(a)); // newest first
-
-  return files.map(parseWeeklyTitle);
-}
-
 export function readWeeklyReport(fileName: string) {
   ensureCompassDirs();
   const safe = path.basename(fileName);
-  const full = path.join(weeklyReportDir(), safe);
+  const full = path.join(legacyWeeklyDir(), safe);
   if (!fs.existsSync(full)) throw new Error(`Weekly report not found: ${safe}`);
   return fs.readFileSync(full, 'utf-8');
 }

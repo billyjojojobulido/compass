@@ -34,7 +34,6 @@ export type CompassChannel =
   | 'compass:snapshot:list'
   | 'compass:report:write'
   | 'compass:report:read'
-  | 'compass:report:list'
   | 'compass:legacy:list'
   | 'compass:legacy:read'
   | 'compass:legacy:write';

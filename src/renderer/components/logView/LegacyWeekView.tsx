@@ -18,7 +18,7 @@ export default function LegacyWeekView({
 
     setMd('Loading...');
 
-    console.log('fileName: ', fileName);
+    console.log('[LegacyWeekView]: reading fileName: ', fileName);
 
     readLegacyWeekly(fileName)
       .then((txt) => {

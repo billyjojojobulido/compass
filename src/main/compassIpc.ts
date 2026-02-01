@@ -5,7 +5,6 @@ import {
   writeDailySnapshot,
   readDailySnapshot,
   listDailySnapshots,
-  listWeeklyReports,
   readWeeklyReport,
   writeWeeklyReport,
 } from './compassFs';
@@ -43,10 +42,6 @@ export function registerCompassIpc() {
       return listDailySnapshots(payload?.year);
     },
   );
-
-  ipcMain.handle('compass:report:list', async () => {
-    return listWeeklyReports();
-  });
 
   ipcMain.handle(
     'compass:report:read',
