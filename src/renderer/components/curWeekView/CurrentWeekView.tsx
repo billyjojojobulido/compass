@@ -3,7 +3,7 @@ import { useCurrentWeekWorkspace } from './useCurrentWeekWorkspace';
 import { WORKDAYS } from '@/domain/types';
 
 export default function CurrentWeekView() {
-  const { loading, error, ws } = useCurrentWeekWorkspace();
+  const { loading, error, ws, reload } = useCurrentWeekWorkspace();
 
   if (loading)
     return <div style={{ padding: 12, opacity: 0.75 }}>Loading week…</div>;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { weekRangeLocal } from '@/domain/time';
 import type { WeeklyWorkspace, WorkdayKey } from '@/domain/types';
 import { loadCurrentWeekSnapshots } from './weekly/loadCurrentWeekSnapshots';
@@ -15,10 +15,12 @@ function makeTitle(weekKey: string) {
   return `Week (${weekKey})`;
 }
 
-export function useCurrentWeekWorkspace(now: Date = new Date()) {
+export function useCurrentWeekWorkspace(opts?: { now?: Date }) {
+  const nowRef = useRef<Date>(opts?.now ?? new Date());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [ws, setWs] = useState<WeeklyWorkspace | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   const weekKey = useMemo(() => {
     // can get weekey via loadCurrentWeekSnapshots also
@@ -26,6 +28,8 @@ export function useCurrentWeekWorkspace(now: Date = new Date()) {
     // may drop useMemo to optimize
     return '';
   }, []);
+
+  const reload = useCallback(() => setReloadToken((x) => x + 1), []);
 
   useEffect(() => {
     let alive = true;
@@ -35,12 +39,11 @@ export function useCurrentWeekWorkspace(now: Date = new Date()) {
         setLoading(true);
         setError(null);
 
-        const nowLocal = new Date(now);
-        const { weekKey, dayToSnapshot } =
-          await loadCurrentWeekSnapshots(nowLocal);
+        const baseNow = nowRef.current;
 
-        // range：Monday 00:00 -> next Monday 00:00 (exclusive)
-        const r = weekRangeLocal(nowLocal, 1);
+        const { weekKey, dayToSnapshot } =
+          await loadCurrentWeekSnapshots(baseNow);
+        const r = weekRangeLocal(baseNow, 1);
         const title = makeTitle(weekKey);
 
         const workspace = selectWeeklyWorkspace({
@@ -66,7 +69,7 @@ export function useCurrentWeekWorkspace(now: Date = new Date()) {
     return () => {
       alive = false;
     };
-  }, [now]);
+  }, [reloadToken]); // only controlled by reloadToken
 
-  return { loading, error, ws, reload: () => setWs(null) };
+  return { loading, error, ws, reload };
 }
