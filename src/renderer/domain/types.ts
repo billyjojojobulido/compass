@@ -191,4 +191,68 @@ export type DailyChangelog = {
     };
   };
 };
+
+export type WeekKey = string; // "YYYY-MM-DD" (weekStart local day key)
+
+export type WeekRangeISO = {
+  start: string; // ISO
+  end: string; // ISO (exclusive)
+};
+
+export type WorkdayKey = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri';
+export const WORKDAYS: WorkdayKey[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+export type WeeklyWorkspace = {
+  schemaVersion: 1;
+
+  // identity
+  weekKey: WeekKey; // weekStart local day key: "2026-02-02"
+  weekNo?: number; // optional, later can compute from your existing numbering
+  title: string; // fixed format, user cannot edit
+  generatedAt: string; // ISO
+
+  range: WeekRangeISO; // for future cross-timezone stability
+
+  // per day (Mon-Fri only)
+  days: Partial<Record<WorkdayKey, WeeklyDay>>;
+
+  // weekly rollup (derived)
+  rollup: WeeklyRollup;
+
+  // optional notes (if you ever want)
+  notes?: {
+    techDebt?: string[]; // subjective panel (optional if you keep it)
+    priorityNotes?: string[]; // subjective panel
+    weeklySummary?: string; // final summary (optional)
+  };
+
+  meta?: {
+    fromSnapshots?: string[]; // dates used
+  };
+};
+
+export type WeeklyDay = {
+  date: string; // "YYYY-MM-DD" local day key
+  isOff?: boolean; // 😴 day off
+  snapshotExists: boolean;
+
+  // the core content we display
+  changelog: DailyChangelog;
+
+  // optional: allow a small manual appendix (if you later re-add customization)
+  appendix?: string[];
+};
+
+export type WeeklyRollup = {
+  tasksAdded: number;
+  tasksCompleted: number;
+  tasksReopened: number;
+  statusChanges: number;
+  epicMoves: number;
+  priorityChanges: number;
+
+  // nice-to-have rollups for readability
+  topCompleted?: Array<{ epicId: string; epicTitle: string; count: number }>;
+};
+
 //#endregion
