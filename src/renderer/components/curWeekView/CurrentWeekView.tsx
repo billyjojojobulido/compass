@@ -561,19 +561,19 @@ function buildWeeklyMarkdown(args: {
 }) {
   const { weekStart, draft, dayKeys, snapshots } = args;
 
-  const header = `# Week Report (${weekStart})\n\n`;
-  const techDebt = `## 技术债务\n\n${draft.techDebtText?.trim() || '（空）'}\n\n`;
-  const priority = `## 优先级\n\n${draft.priorityText?.trim() || '（空）'}\n\n`;
+  const header = `### Week Report (${weekStart})\n\n`;
+  const techDebt = `#### 技术债务\n\n${draft.techDebtText?.trim() || '（空）'}\n\n`;
+  const priority = `#### 优先级\n\n${draft.priorityText?.trim() || '（空）'}\n\n`;
 
   const days = dayKeys
     .map((k, idx) => {
       const s = snapshots[k];
       const dayName = DAY_LABELS[idx]?.label ?? `Day${idx + 1}`;
-      if (!s) return `## ${dayName} ${k}\n\n（未归档）\n\n`;
+      if (!s) return `##### ${dayName} ${k}\n\n（未归档）\n\n`;
 
       if (s.meta?.off) {
         const note = s.meta?.dayNote?.trim() || '（空）';
-        return `## ${dayName} ${k}\n\n😴 休假\n\n### Day Notes\n\n${note}\n\n`;
+        return `###### ${dayName} ${k}\n\n😴 休假\n\n##### Day Notes\n\n${note}\n\n`;
       }
 
       const note = s.meta?.dayNote?.trim() || '（空）';

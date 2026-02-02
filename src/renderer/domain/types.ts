@@ -125,3 +125,70 @@ export type DailySnapshot = {
     source?: string;
   };
 };
+
+//#region Changelog related types
+export type TaskRef = {
+  id: string;
+  title: string;
+  epicId: string;
+};
+
+export type EpicRef = {
+  id: string;
+  title: string;
+};
+
+export type StatusChange = {
+  task: TaskRef;
+  from: string;
+  to: string;
+};
+
+export type EpicMove = {
+  task: TaskRef;
+  fromEpic: EpicRef;
+  toEpic: EpicRef;
+};
+
+export type PriorityChange = {
+  epic: EpicRef;
+  from: string;
+  to: string;
+};
+
+export type DailyChangelog = {
+  schemaVersion: 1;
+
+  date: string; // "YYYY-MM-DD"
+  generatedAt: string; // ISO
+
+  summary?: string;
+  // optional human-written weekly narrative (used later in WeeklyWorkspace)
+
+  stats: {
+    tasksAdded: number;
+    tasksCompleted: number;
+    tasksReopened: number;
+    statusChanges: number;
+    epicMoves: number;
+    priorityChanges: number;
+  };
+
+  added: TaskRef[];
+  completed: TaskRef[];
+  reopened: TaskRef[];
+
+  statusChanged: StatusChange[];
+  epicMoved: EpicMove[];
+  priorityChanged: PriorityChange[];
+
+  meta?: {
+    snapshotFrom?: string;
+    snapshotTo?: string;
+    eventCursor?: {
+      fromId?: string;
+      toId?: string;
+    };
+  };
+};
+//#endregion
