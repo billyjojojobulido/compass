@@ -4,6 +4,33 @@ Updates in minor version will be recorded in this file.
 
 ---
 
+## [0.1.4] - 2026-02-01
+
+### Added
+
+- 🚀 Daily Snapshot schema and generator (createDailySnapshot)
+- 🚀 Snapshot filesystem structure (snapshots/YYYY/YYYY-MM-DD.snapshot.json)
+- 🚀 IPC API for snapshots (compass:snapshot:write/read/list)
+- 🚀 CurrentWeekView with Monday–Friday accordion layout
+- 🚀 “Archive Today” workflow to persist current sprint state as a daily snapshot
+- 🚀 Legacy weekly log integration (list/read via IPC)
+- Window bridge (window.compass.invoke) for unified domain FS access
+
+### Changed
+
+- 🚀 Sidebar weekly section now supports dynamic history sources (legacy + future reports)
+- 🚀 Navigation model expanded to support current week vs historical week views
+- 🚀 Snapshot generation decoupled from UI state (domain-driven from SprintStore)
+- View components (SprintBoard / Priority / CurrentWeek) now own their own headers and actions
+- deprecaed unnecessary channel compass:report:list
+
+### Fixed
+
+- resolved nested <button> hydration error in CurrentWeek accordion headers
+- improved snapshot directory creation and safe path handling
+- stabilized IPC channel naming between preload and main process
+- corrected drag and navigation side effects after ContentHeader refactor
+
 ## [0.1.3] - 2026-01-28
 
 ### Added
