@@ -1,293 +1,198 @@
-/* src/components/week/currentWeekView.css */
-
-.cwRoot {
-  height: 100%;
+/* right column must be scrollable */
+.cwRight {
+  min-height: 0;
+}
+.cwAccordion {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-}
-
-.cwHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
   gap: 12px;
+  overflow: auto;
+  padding-right: 6px;
+  max-height: calc(100vh - 180px); /* 你可以按 app shell 实际高度调整 */
 }
 
-.cwTitle {
-  font-size: 20px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.cwSub {
-  margin-top: 2px;
-  font-size: 12px;
-  opacity: 0.72;
-}
-
-.cwWeekKey {
-  margin-top: 10px;
-  font-size: 28px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.cwHeaderActions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.cwBtnPrimary {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.92);
-  padding: 10px 14px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 650;
+/* ---- Drawer base ---- */
+.drRoot {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.26);
   backdrop-filter: blur(10px);
 }
 
-.cwBtnPrimary:hover {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.cwBtnPrimary.disabled,
-.cwBtnPrimary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.cwGrid {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
-  gap: 14px;
-}
-
-@media (max-width: 1100px) {
-  .cwGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* LEFT */
-.cwLeft {
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.cwPanel {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-}
-
-.cwPanelHeader {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.cwPanelTitle {
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.cwPanelHint {
-  font-size: 12px;
-  opacity: 0.7;
-  margin-left: 8px;
-}
-
-.cwPanelActions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.cwIconBtn {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.92);
-  border-radius: 10px;
-  padding: 6px 8px;
+.drHeader {
+  padding: 10px 12px;
   cursor: pointer;
+  user-select: none;
 }
 
-.cwIconBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
+.drBody {
+  padding: 10px 12px 12px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.cwTextarea {
-  width: 100%;
-  min-height: 180px;
-  border: none;
-  outline: none;
-  resize: vertical;
-  padding: 12px 14px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.92);
-  line-height: 1.55;
-  font-family:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
-    'Courier New', monospace;
-  white-space: pre-wrap;
-}
-
-.cwPre {
-  padding: 12px 14px;
-  margin: 0;
-  color: rgba(255, 255, 255, 0.92);
-  white-space: pre-wrap;
-  font-family:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
-    'Courier New', monospace;
-  line-height: 1.55;
-}
-
-/* RIGHT */
-.cwRight {
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.cwRightHeader {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.cwRightTitle {
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.cwRightHint {
-  font-size: 12px;
-  opacity: 0.7;
-}
-
-.cwAccordion {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  padding-right: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* day item */
+/* day container - nicer than yellow */
 .cwDay {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  background: rgba(0, 0, 0, 0.18);
-  backdrop-filter: blur(12px);
-  overflow: hidden;
+  background:
+    radial-gradient(
+      1200px 400px at 18% 0%,
+      rgba(124, 58, 237, 0.18),
+      transparent 52%
+    ),
+    radial-gradient(
+      900px 500px at 80% 20%,
+      rgba(236, 72, 153, 0.14),
+      transparent 58%
+    ),
+    rgba(255, 255, 255, 0.035);
 }
 
-.cwDayHeader {
-  width: 100%;
+.cwDayHeaderRow {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  border: none;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
+  gap: 10px;
 }
-
-.cwDayHeaderLeft {
+.cwDayLeft {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-start;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
-
-.cwDayLabel {
-  font-weight: 800;
+.cwDayTitle {
+  font-size: 13px;
+  font-weight: 700;
   color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
 .cwDayMeta {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  align-items: center;
 }
-
-.cwDayHeaderRight {
+.cwDayRight {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 8px;
 }
 
-.cwPill {
-  display: inline-flex;
+.cwCaret {
+  display: inline-block;
+  width: 14px;
+  opacity: 0.8;
+  transition: transform 0.15s ease;
+}
+.cwCaret.open {
+  transform: rotate(90deg);
+}
+
+.cwIconBtn {
+  width: 30px;
+  height: 26px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  user-select: none;
+}
+.cwIconBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cwDayEmpty {
+  padding: 10px 4px;
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+/* epic drawer inside day */
+.cwEpic {
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+  backdrop-filter: blur(8px);
+  margin-top: 10px;
+}
+
+.cwEpicHeaderRow {
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
+}
+.cwEpicTitle {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cwEpicCount {
+  font-size: 11px;
+  opacity: 0.7;
   padding: 2px 8px;
   border-radius: 999px;
-  font-size: 12px;
+  background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.86);
 }
 
-.cwPill.ok {
-  background: rgba(120, 255, 170, 0.1);
-  border-color: rgba(120, 255, 170, 0.18);
-}
-
-.cwPill.pending {
-  background: rgba(255, 210, 120, 0.1);
-  border-color: rgba(255, 210, 120, 0.18);
-}
-
-.cwPill.outline {
-  background: transparent;
-}
-
-.cwDayBody {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 12px 14px;
+.cwChanges {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
-.cwDayBlock {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  overflow: hidden;
+.cwRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.cwRowIcon {
+  width: 16px;
+  text-align: center;
+  opacity: 0.9;
+}
+.cwRowTitle {
+  flex: 1;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cwRowMeta {
+  font-size: 11px;
+  opacity: 0.65;
+  white-space: nowrap;
 }
 
-.cwBlockTitle {
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.9);
+/* tones */
+.tone-add {
+  border-left: 3px solid rgba(79, 209, 197, 0.95);
 }
-
-.cwEmptyHint,
-.cwOffHint {
-  padding: 10px 12px;
-  opacity: 0.75;
-  line-height: 1.5;
+.tone-done {
+  border-left: 3px solid rgba(104, 211, 145, 0.95);
+}
+.tone-reopen {
+  border-left: 3px solid rgba(214, 188, 250, 0.95);
+}
+.tone-status {
+  border-left: 3px solid rgba(246, 173, 85, 0.95);
+}
+.tone-move {
+  border-left: 3px solid rgba(99, 179, 237, 0.95);
+}
+.tone-prio {
+  border-left: 3px solid rgba(246, 135, 179, 0.95);
 }
