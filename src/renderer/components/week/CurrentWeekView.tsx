@@ -68,7 +68,8 @@ export default function CurrentWeekView() {
                 <DayEpicChangelog
                   key={d}
                   dayKey={d}
-                  dateKey={day?.date ?? ''} // 未归档时可能为空：后续你可以用 weekKey+dayKey 作为 key
+                  dateKey={day?.date ?? ''} // may be empty when not archived
+                  // future solution : later can use <weekKey+dayKey> as key
                   title={title}
                   notArchived={notArchived}
                   isOff={isOff}
@@ -81,7 +82,7 @@ export default function CurrentWeekView() {
                   onGenerateDayReport={(dateKey) =>
                     console.log('gen day report', d, dateKey)
                   }
-                  defaultOpen={d === 'Mon'} // 默认只展开周一
+                  defaultOpen={d === 'Mon'} // expand Monday by default
                 />
               );
             })}
