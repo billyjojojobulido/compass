@@ -1,14 +1,16 @@
-/* right column must be scrollable */
-.cwRight {
-  min-height: 0;
+.cwRoot {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
-.cwAccordion {
+
+.cwScroll {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow: auto;
-  padding-right: 6px;
-  max-height: calc(100vh - 180px); /* 你可以按 app shell 实际高度调整 */
 }
 
 /* ---- Drawer base ---- */
@@ -32,7 +34,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* day container - nicer than yellow */
+/* ---- Day container style (更好看，不用黄色) ---- */
 .cwDay {
   background:
     radial-gradient(
@@ -48,12 +50,14 @@
     rgba(255, 255, 255, 0.035);
 }
 
+/* ---- Day header row ---- */
 .cwDayHeaderRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
+
 .cwDayLeft {
   display: flex;
   align-items: center;
@@ -68,17 +72,23 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.cwDayMeta {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+
+.cwDayHint {
+  font-size: 11px;
+  opacity: 0.6;
+  white-space: nowrap;
 }
+
+.cwDayHint.hot {
+  opacity: 0.9;
+}
+
 .cwDayRight {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
+/* caret */
 .cwCaret {
   display: inline-block;
   width: 14px;
@@ -89,6 +99,7 @@
   transform: rotate(90deg);
 }
 
+/* icon buttons (div role=button) */
 .cwIconBtn {
   width: 30px;
   height: 26px;
@@ -103,14 +114,18 @@
 .cwIconBtn:hover {
   background: rgba(255, 255, 255, 0.1);
 }
+.cwIconBtn:active {
+  transform: translateY(1px);
+}
 
+/* ---- Empty day ---- */
 .cwDayEmpty {
   padding: 10px 4px;
   font-size: 12px;
   opacity: 0.65;
 }
 
-/* epic drawer inside day */
+/* ---- Epic drawer (nested) ---- */
 .cwEpic {
   background: rgba(0, 0, 0, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -163,6 +178,7 @@
   text-align: center;
   opacity: 0.9;
 }
+
 .cwRowTitle {
   flex: 1;
   font-size: 12.5px;
@@ -171,13 +187,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .cwRowMeta {
   font-size: 11px;
   opacity: 0.65;
   white-space: nowrap;
 }
 
-/* tones */
+/* tone accents */
 .tone-add {
   border-left: 3px solid rgba(79, 209, 197, 0.95);
 }
@@ -195,4 +212,23 @@
 }
 .tone-prio {
   border-left: 3px solid rgba(246, 135, 179, 0.95);
+}
+
+/* right column must be scrollable */
+.cwRight {
+  min-height: 0;
+}
+.cwAccordion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: auto;
+  padding-right: 6px;
+  max-height: calc(100vh - 180px); /* 你可以按 app shell 实际高度调整 */
+}
+
+.cwDayMeta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
