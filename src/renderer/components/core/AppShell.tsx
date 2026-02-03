@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TopBar from './TopBar';
 import Sidebar, { NavKey } from './SideBar';
 import Content from '@/components/core/Content';
-import { LegacyWeekItem, listLegacyWeekly } from '@/domain/legacy/api';
+import { LegacyWeekItem } from '@/domain/legacy/api';
 import { WeeklyReportItem } from 'src/main/compassFs';
 
 export default function AppShell() {
