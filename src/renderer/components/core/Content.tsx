@@ -5,7 +5,7 @@ import PriorityView from '@/components/priortyView/PriorityView';
 import { useSprint } from '@/domain/sprintStore';
 import LegacyWeekView from '@/components/logView/LegacyWeekView';
 import { archiveTodaySnapshot } from '@/domain/snapshot/snapshotService';
-import CurrentWeekView from '../curWeekView/CurrentWeekView';
+import CurrentWeekView from '../week/CurrentWeekView';
 
 export default function Content({
   activeNav,
