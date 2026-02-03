@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { NavKey } from '@/components/core/SideBar';
-import SprintBoardView from '@/components/sprintBoard/SprintBoardView';
+import SprintBoardView from '@/components/sprintView/SprintBoardView';
 import PriorityView from '@/components/priortyView/PriorityView';
 import { useSprint } from '@/domain/sprintStore';
 import LegacyWeekView from '@/components/logView/LegacyWeekView';
