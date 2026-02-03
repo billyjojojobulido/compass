@@ -1,7 +1,7 @@
 import React from 'react';
 import { WORKDAYS } from '@/domain/types';
 import DayEpicChangelog from '@/components/week/DayEpicChangelog';
-import { useCurrentWeekWorkspace } from '@/components/curWeekView/useCurrentWeekWorkspace';
+import { useCurrentWeekWorkspace } from '@/components/week/hooks/useCurrentWeekWorkspace';
 import './currentWeek.css';
 
 const LABEL: Record<string, string> = {
