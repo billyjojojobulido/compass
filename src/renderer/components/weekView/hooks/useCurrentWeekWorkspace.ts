@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { weekRangeLocal } from '@/domain/time';
-import type { WeeklyWorkspace, WorkdayKey } from '@/domain/types';
-import { loadCurrentWeekSnapshots } from './weekly/loadCurrentWeekSnapshots';
-import { selectWeeklyWorkspace } from './weekly/selectWeeklyWorkspace';
+import type { WeeklyWorkspace } from '@/domain/types';
+import { loadCurrentWeekSnapshots } from './loadCurrentWeekSnapshots';
+import { selectWeeklyWorkspace } from './selectWeeklyWorkspace';
 
 function toISO(d: Date) {
   return d.toISOString();
