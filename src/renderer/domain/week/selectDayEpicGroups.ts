@@ -22,26 +22,21 @@ export type EpicGroupVM = {
 
 export function selectDayEpicGroups(
   log: DailyChangelog,
-  opts?: {
-    epicTitleById?: Record<string, string>;
-    fromEpicTitleById?: Record<string, string>;
-    toEpicTitleById?: Record<string, string>;
-  },
+  opts?: { epicTitleById?: Record<string, string> },
 ): EpicGroupVM[] {
   const epicTitleById = opts?.epicTitleById ?? {};
-
   const map = new Map<string, EpicGroupVM>();
 
   const ensure = (epicId: string) => {
-    const found = map.get(epicId);
-    if (found) return found;
-    const g: EpicGroupVM = {
+    const g = map.get(epicId);
+    if (g) return g;
+    const created: EpicGroupVM = {
       epicId,
-      epicTitle: epicTitleById[epicId] ?? `Epic: ${epicId}`,
+      epicTitle: epicTitleById[epicId] ?? epicId,
       items: [],
     };
-    map.set(epicId, g);
-    return g;
+    map.set(epicId, created);
+    return created;
   };
 
   // Task-based groups
@@ -65,8 +60,7 @@ export function selectDayEpicGroups(
     /* notes: may "move" over epics
      so it is more straightforward to
      make it under "toEpic" :: fromEpic like wise */
-    const epicId = m.toEpic.id;
-    ensure(epicId).items.push({
+    ensure(m.toEpic.id).items.push({
       kind: 'move',
       task: m.task,
       fromEpicTitle: m.fromEpic.title,
@@ -85,10 +79,9 @@ export function selectDayEpicGroups(
   }
 
   // only keeps epics taht have changed
-  const res = Array.from(map.values()).filter((g) => g.items.length > 0);
-
   // soring by epicTitle
   // TODO: is it necessary? if optional, may take out later
-  res.sort((a, b) => a.epicTitle.localeCompare(b.epicTitle));
-  return res;
+  return Array.from(map.values())
+    .filter((g) => g.items.length > 0)
+    .sort((a, b) => a.epicTitle.localeCompare(b.epicTitle));
 }
