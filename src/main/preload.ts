@@ -22,6 +22,14 @@ export type CompassHandler = {
     readDaily(date: string): Promise<DailySnapshot>;
     listDaily(year?: string): Promise<string[]>;
   };
+  workspace: {
+    writeWorkspace(
+      date: string,
+      snapshot: DailySnapshot,
+    ): Promise<{ ok: true; path: string }>;
+    readWorkspace(date: string): Promise<DailySnapshot>;
+    deleteWorkspace(year?: string): Promise<string[]>;
+  };
 };
 
 export type CompassChannel =
@@ -36,7 +44,9 @@ export type CompassChannel =
   | 'compass:report:read'
   | 'compass:legacy:list'
   | 'compass:legacy:read'
-  | 'compass:legacy:write';
+  | 'compass:workspace:read'
+  | 'compass:workspace:write'
+  | 'compass:workspace:delete';
 
 export type InvokeChannels = 'list-legacy-weekly' | 'read-legacy-weekly';
 
@@ -91,6 +101,15 @@ const compassHandler: CompassHandler = {
       ipcRenderer.invoke('compass:snapshot:read', { date }),
     listDaily: (year: string) =>
       ipcRenderer.invoke('compass:snapshot:list', { year }),
+  },
+
+  workspace: {
+    writeWorkspace: (key: string, doc: unknown) =>
+      ipcRenderer.invoke('compass:workspace:write', { key, doc }),
+    readWorkspace: (key: string) =>
+      ipcRenderer.invoke('compass:workspace:read', { key }),
+    deleteWorkspace: (key: string) =>
+      ipcRenderer.invoke('compass:workspace:delete', { key }),
   },
 };
 
