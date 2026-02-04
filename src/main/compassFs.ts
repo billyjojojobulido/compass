@@ -228,21 +228,6 @@ export type WeeklyReportItem = {
   generated?: boolean; // legacy = false, generated = true
 };
 
-function parseWeeklyTitle(fileName: string): WeeklyReportItem {
-  // Week 73 (2026-01-26).md
-  const base = fileName.replace(/\.md$/i, '');
-  const m = base.match(/Week\s*(\d+)\s*\((\d{4}-\d{2}-\d{2})\)/i);
-  if (m) {
-    return {
-      fileName,
-      title: `Week ${m[1]} (${m[2]})`,
-      weekStart: m[2],
-      generated: true,
-    };
-  }
-  return { fileName, title: base, generated: true };
-}
-
 export function writeWeeklyReport(weekStart: string, content: string) {
   ensureCompassDirs();
   const dir = weeklyReportDir();
@@ -268,6 +253,36 @@ export function readWeeklyReport(fileName: string) {
   const full = path.join(legacyWeeklyDir(), safe);
   if (!fs.existsSync(full)) throw new Error(`Weekly report not found: ${safe}`);
   return fs.readFileSync(full, 'utf-8');
+}
+
+// compassFs.ts
+export function weeklyWorkspacePath(weekKey: string) {
+  // weekKey = Monday "YYYY-MM-DD"
+  return path.join(getDataRoot(), 'reports', `${weekKey}.workspace.json`);
+}
+
+export function writeWeeklyWorkspace(weekKey: string, ws: unknown) {
+  ensureCompassDirs();
+  assertDayKey(weekKey);
+  const full = weeklyWorkspacePath(weekKey);
+  fs.writeFileSync(full, JSON.stringify(ws, null, 2), 'utf-8');
+  return { ok: true, path: full };
+}
+
+export function readWeeklyWorkspace(weekKey: string) {
+  ensureCompassDirs();
+  assertDayKey(weekKey);
+  const full = weeklyWorkspacePath(weekKey);
+  if (!fs.existsSync(full)) return null;
+  return JSON.parse(fs.readFileSync(full, 'utf-8'));
+}
+
+export function deleteWeeklyWorkspace(weekKey: string) {
+  ensureCompassDirs();
+  assertDayKey(weekKey);
+  const full = weeklyWorkspacePath(weekKey);
+  if (fs.existsSync(full)) fs.unlinkSync(full);
+  return { ok: true };
 }
 
 //#endregion
