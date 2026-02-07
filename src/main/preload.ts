@@ -1,12 +1,17 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
 import { DailySnapshot, LegacyWeekItem } from '@/domain/types';
-import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 
 export type Channels = 'ipc-example';
 
 export type CompassHandler = {
   invoke<T = unknown>(channel: CompassChannel, payload?: unknown): Promise<T>;
+
+  ipcRenderer: {
+    sendMessage(channel: Channels, ...args: unknown[]): void;
+    once(channel: Channels, func: (...args: unknown[]) => void): any;
+  };
 
   legacyWeekly: {
     list(): Promise<LegacyWeekItem[]>;
@@ -47,43 +52,18 @@ export type CompassChannel =
 
 export type InvokeChannels = 'list-legacy-weekly' | 'read-legacy-weekly';
 
-const electronHandler = {
+const compassHandler: CompassHandler = {
+  invoke: (channel: string, payload?: unknown) =>
+    ipcRenderer.invoke(channel, payload),
+
   ipcRenderer: {
     sendMessage(channel: Channels, ...args: unknown[]) {
       ipcRenderer.send(channel, ...args);
     },
-    on(channel: Channels, func: (...args: unknown[]) => void) {
-      const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
-        func(...args);
-      ipcRenderer.on(channel, subscription);
-
-      return () => {
-        ipcRenderer.removeListener(channel, subscription);
-      };
-    },
     once(channel: Channels, func: (...args: unknown[]) => void) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
-    invoke<T = unknown>(
-      channel: InvokeChannels,
-      ...args: unknown[]
-    ): Promise<T> {
-      return ipcRenderer.invoke(channel, ...args);
-    },
   },
-  legacyWeekly: {
-    list(): Promise<LegacyWeekItem[]> {
-      return ipcRenderer.invoke('list-legacy-weekly');
-    },
-    read(fileName: string): Promise<{ fileName: string; content: string }> {
-      return ipcRenderer.invoke('read-legacy-weekly', fileName);
-    },
-  },
-};
-
-const compassHandler: CompassHandler = {
-  invoke: (channel: string, payload?: unknown) =>
-    ipcRenderer.invoke(channel, payload),
 
   legacyWeekly: {
     list: () => ipcRenderer.invoke('compass:legacy:list'),
@@ -110,7 +90,4 @@ const compassHandler: CompassHandler = {
   },
 };
 
-contextBridge.exposeInMainWorld('electron', electronHandler);
 contextBridge.exposeInMainWorld('compass', compassHandler);
-
-export type ElectronHandler = typeof electronHandler;
