@@ -77,7 +77,7 @@ export default function CurrentWeekView() {
       date: day.date,
     })) as DailySnapshot;
 
-    // dayTagText：如果是 off / 未来生日等
+    // dayTagText：if is off / birthday
     const isOff = ws.dayMeta?.[dayKey]?.isOff ?? false;
     const dayTagText = isOff ? '😴' : undefined;
 
@@ -85,7 +85,7 @@ export default function CurrentWeekView() {
       date: day.date,
       snapshot: snap,
       config: state.config,
-      // changelog: day.changelog, // 如果你想用 changelog 做 touched 优先排序，可传
+      // changelog: day.changelog, // can pass in if want changelog to be sorted by touched
       dayTagText,
     });
 

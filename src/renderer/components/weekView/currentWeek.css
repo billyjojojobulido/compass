@@ -34,7 +34,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* ---- Day container style (更好看，不用黄色) ---- */
+/* ---- Day container style  ---- */
 .cwDay {
   background:
     radial-gradient(
@@ -224,7 +224,7 @@
   gap: 12px;
   overflow: auto;
   padding-right: 6px;
-  max-height: calc(100vh - 180px); /* 你可以按 app shell 实际高度调整 */
+  max-height: calc(100vh - 180px); /* can adjust height acc to app shell */
 }
 
 .cwDayMeta {

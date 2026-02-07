@@ -10,7 +10,7 @@ export type CompassHandler = {
 
   legacyWeekly: {
     list(): Promise<LegacyWeekItem[]>;
-    read(fileName: string): Promise<string>; // 建议直接返回 content string 更简单
+    read(fileName: string): Promise<string>; // easier to return content as string
   };
 
   snapshot: {
