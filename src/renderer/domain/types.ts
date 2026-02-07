@@ -211,6 +211,7 @@ export type DayTag = {
 export type WeeklyDayMeta = {
   tags?: DayTag[]; // future: birthday/payday/etc
   isOff?: boolean; // MVP required
+  collapsed?: boolean; // UI state: day drawer collapsed
 };
 
 export type WeeklyWorkspace = {
