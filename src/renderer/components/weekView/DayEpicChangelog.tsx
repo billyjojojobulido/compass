@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import Drawer from './Drawer';
-import type { DailyChangelog } from '@/domain/types';
+import type { DailyChangelog, WorkdayKey } from '@/domain/types';
 import {
   selectDayEpicGroups,
   EpicGroupVM,
@@ -17,6 +17,9 @@ export default function DayEpicChangelog(props: {
 
   log: DailyChangelog;
   epicTitleById?: Record<string, string>;
+
+  collapsed?: boolean;
+  onToggle?: (dayKey: WorkdayKey) => void;
 
   // TODO: top-right buttons (placeholder)
   onTag?: (dateKey: string) => void;
