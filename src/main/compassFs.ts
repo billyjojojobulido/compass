@@ -1,4 +1,4 @@
-import { DailySnapshot } from '@/domain/types';
+import { DailySnapshot, WeeklyWorkspace } from '@/domain/types';
 import { app } from 'electron';
 import { LegacyWeekItem } from '@/domain/types';
 import fs from 'fs';
@@ -268,7 +268,7 @@ export function readWeeklyWorkspace(weekKey: string) {
   assertDayKey(weekKey);
   const full = weeklyWorkspacePath(weekKey);
   if (!fs.existsSync(full)) return null;
-  return JSON.parse(fs.readFileSync(full, 'utf-8'));
+  return JSON.parse(fs.readFileSync(full, 'utf-8')) as WeeklyWorkspace;
 }
 
 export function deleteWeeklyWorkspace(weekKey: string) {

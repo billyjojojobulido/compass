@@ -21,7 +21,7 @@ export default function LegacyWeekView({
 
     window.compass
       .invoke('compass:legacy:read', { fileName })
-      .then((txt) => {
+      .then((txt: string) => {
         if (!alive) return;
         setMd(txt);
       })

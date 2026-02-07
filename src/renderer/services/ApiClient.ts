@@ -1,4 +1,8 @@
-import type { LegacyWeekItem, DailySnapshot } from '@/domain/types';
+import type {
+  LegacyWeekItem,
+  DailySnapshot,
+  WeeklyWorkspace,
+} from '@/domain/types';
 
 type CompassInvoke = (channel: string, payload?: unknown) => Promise<any>;
 
@@ -85,6 +89,41 @@ export const apiClient = {
         });
       } catch (e) {
         throw new Error(`[ApiClient.snapshots.write] ${toErrorMessage(e)}`);
+      }
+    },
+  },
+
+  workspace: {
+    async write(
+      key: string,
+      doc: unknown,
+    ): Promise<{ ok: true; path: string }> {
+      try {
+        const compass = assertCompass();
+        return await compass.invoke('compass:workspace:write', {
+          key,
+          doc,
+        });
+      } catch (e) {
+        throw new Error(`[ApiClient.workspace.write] ${toErrorMessage(e)}`);
+      }
+    },
+
+    async read(key: string): Promise<WeeklyWorkspace> {
+      try {
+        const compass = assertCompass();
+        return await compass.invoke('compass:workspace:read', { key });
+      } catch (e) {
+        throw new Error(`[ApiClient.workspace.read] ${toErrorMessage(e)}`);
+      }
+    },
+
+    async delete(key: string): Promise<{ ok: true }> {
+      try {
+        const compass = assertCompass();
+        return await compass.invoke('compass:workspace:delete', { key });
+      } catch (e) {
+        throw new Error(`[ApiClient.workspace.delete] ${toErrorMessage(e)}`);
       }
     },
   },
