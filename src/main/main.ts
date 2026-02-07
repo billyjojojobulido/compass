@@ -20,7 +20,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import i18nInit from '../renderer/services/i18nInit';
+import i18nInit from '../renderer/services/i18n/i18nInit';
 import windowStateKeeper from 'electron-window-state';
 import { registerCompassIpc } from './compassIpc';
 
