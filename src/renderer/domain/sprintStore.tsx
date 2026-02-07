@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useMemo, useReducer } from 'react';
 import type { Epic, SprintEvent, SprintState, Task } from './types';
 
-function nowISO() {
+export function nowISO() {
   return new Date().toISOString();
 }
 function uid() {
