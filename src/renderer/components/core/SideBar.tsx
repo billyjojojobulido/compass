@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { LegacyWeekItem, WeeklyReportItem } from 'src/main/compassFs';
+import { WeeklyReportItem } from 'src/main/compassFs';
+import { LegacyWeekItem } from '@/domain/types';
 
 export type NavKey =
   | '技术债务'

@@ -1,7 +1,6 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
-import { LegacyWeekItem } from '@/domain/legacy/api';
-import { DailySnapshot } from '@/domain/types';
+import { DailySnapshot, LegacyWeekItem } from '@/domain/types';
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
 export type Channels = 'ipc-example';

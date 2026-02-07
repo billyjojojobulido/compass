@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import TopBar from './TopBar';
 import Sidebar, { NavKey } from './SideBar';
 import Content from '@/components/core/Content';
-import { LegacyWeekItem } from '@/domain/legacy/api';
+import { LegacyWeekItem } from '@/domain/types';
 import { WeeklyReportItem } from 'src/main/compassFs';
 
 export default function AppShell() {

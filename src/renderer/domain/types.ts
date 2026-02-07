@@ -199,6 +199,13 @@ export type WeekRangeISO = {
   end: string; // ISO (exclusive)
 };
 
+export type LegacyWeekItem = {
+  fileName: string;
+  title: string; // "Week 72 (2026-01-19)"
+  weekNo?: number;
+  weekStart?: string;
+};
+
 export type WorkdayKey = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri';
 export const WORKDAYS: WorkdayKey[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 

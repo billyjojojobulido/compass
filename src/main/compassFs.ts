@@ -1,5 +1,6 @@
 import { DailySnapshot } from '@/domain/types';
 import { app } from 'electron';
+import { LegacyWeekItem } from '@/domain/types';
 import fs from 'fs';
 import path from 'path';
 
@@ -30,13 +31,6 @@ export function ensureCompassDirs() {
 export function legacyWeeklyDir() {
   return path.join(getDataRoot(), 'legacy-weekly');
 }
-
-export type LegacyWeekItem = {
-  fileName: string;
-  title: string;
-  weekNo?: number;
-  weekStart?: string;
-};
 
 function parseLegacyTitle(fileName: string): LegacyWeekItem {
   // compatiable with my existing log file name format

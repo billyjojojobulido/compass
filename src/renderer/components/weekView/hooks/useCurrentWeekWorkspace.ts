@@ -29,8 +29,7 @@ export function useCurrentWeekWorkspace() {
         key: weekKey,
       });
 
-      console.log('🦁: ', weekKey, doc);
-      // doc 可能为空：你就 selectWeeklyWorkspace(...) 生成一个
+      // doc maybe empty, if so, just selectWeeklyWorkspace(...) to generate one
       setWs(doc);
     } catch (e: any) {
       setError(String(e?.message ?? e));
