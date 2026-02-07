@@ -15,61 +15,39 @@ function makeTitle(weekKey: string) {
   return `Week (${weekKey})`;
 }
 
-export function useCurrentWeekWorkspace(opts?: { now?: Date }) {
-  const nowRef = useRef<Date>(opts?.now ?? new Date());
+export function useCurrentWeekWorkspace() {
+  const [ws, setWs] = useState<WeeklyWorkspace | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [ws, setWs] = useState<WeeklyWorkspace | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
 
-  const weekKey = useMemo(() => {
-    // can get weekey via loadCurrentWeekSnapshots also
-    // but here is for UI to show title in advance
-    // may drop useMemo to optimize
-    return '';
-  }, []);
+  const weekKey = '2026-02-02';
+  const reload = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const doc = await window.compass.invoke('compass:workspace:read', {
+        key: weekKey,
+      });
 
-  const reload = useCallback(() => setReloadToken((x) => x + 1), []);
+      // doc maybe empty, if so, just selectWeeklyWorkspace(...) to generate one
+      setWs(doc);
+    } catch (e: any) {
+      setError(String(e?.message ?? e));
+    } finally {
+      setLoading(false);
+    }
+  }, [weekKey]);
 
   useEffect(() => {
-    let alive = true;
+    reload();
+  }, [reload]);
 
-    (async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const persistWs = useCallback(async (next: WeeklyWorkspace) => {
+    await window.compass.invoke('compass:workspace:write', {
+      key: next.weekKey,
+      doc: next,
+    });
+  }, []);
 
-        const baseNow = nowRef.current;
-
-        const { weekKey, dayToSnapshot } =
-          await loadCurrentWeekSnapshots(baseNow);
-        const r = weekRangeLocal(baseNow, 1);
-        const title = makeTitle(weekKey);
-
-        const workspace = selectWeeklyWorkspace({
-          weekKey,
-          title,
-          range: { startISO: toISO(r.start), endISO: toISO(r.end) },
-          dayToSnapshot,
-          // TODO: dayOff use placeholder for now
-          // will added when implementing “😴 Day Off”
-        });
-
-        if (!alive) return;
-        setWs(workspace);
-      } catch (e: any) {
-        if (!alive) return;
-        setError(e?.message ?? String(e));
-      } finally {
-        if (!alive) return;
-        setLoading(false);
-      }
-    })();
-
-    return () => {
-      alive = false;
-    };
-  }, [reloadToken]); // only controlled by reloadToken
-
-  return { loading, error, ws, reload };
+  return { loading, error, ws, setWs, persistWs, reload };
 }

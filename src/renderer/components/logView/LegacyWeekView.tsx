@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import './legacyWeekView.css';
-import { readLegacyWeekly } from '@/domain/legacy/api';
 
 export default function LegacyWeekView({
   fileName,
@@ -20,8 +19,9 @@ export default function LegacyWeekView({
 
     console.log('[LegacyWeekView]: reading fileName: ', fileName);
 
-    readLegacyWeekly(fileName)
-      .then((txt) => {
+    window.compass
+      .invoke('compass:legacy:read', { fileName })
+      .then((txt: string) => {
         if (!alive) return;
         setMd(txt);
       })

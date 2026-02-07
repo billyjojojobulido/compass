@@ -199,8 +199,27 @@ export type WeekRangeISO = {
   end: string; // ISO (exclusive)
 };
 
+export type LegacyWeekItem = {
+  fileName: string;
+  title: string; // "Week 72 (2026-01-19)"
+  weekNo?: number;
+  weekStart?: string;
+};
+
 export type WorkdayKey = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri';
 export const WORKDAYS: WorkdayKey[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+export type DayTag = {
+  id: string; // e.g. "off" | "birthday" | "payday" | ...
+  label: string; // display text
+  emoji?: string; // optional
+};
+
+export type WeeklyDayMeta = {
+  tags?: DayTag[]; // future: birthday/payday/etc
+  isOff?: boolean; // MVP required
+  collapsed?: boolean; // UI state: day drawer collapsed
+};
 
 export type WeeklyWorkspace = {
   schemaVersion: 1;
@@ -215,6 +234,8 @@ export type WeeklyWorkspace = {
 
   // per day (Mon-Fri only)
   days: Partial<Record<WorkdayKey, WeeklyDay>>;
+
+  dayMeta?: Partial<Record<WorkdayKey, WeeklyDayMeta>>;
 
   // weekly rollup (derived)
   rollup: WeeklyRollup;

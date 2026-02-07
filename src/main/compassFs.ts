@@ -1,5 +1,6 @@
-import { DailySnapshot } from '@/domain/types';
+import { DailySnapshot, WeeklyWorkspace } from '@/domain/types';
 import { app } from 'electron';
+import { LegacyWeekItem } from '@/domain/types';
 import fs from 'fs';
 import path from 'path';
 
@@ -30,13 +31,6 @@ export function ensureCompassDirs() {
 export function legacyWeeklyDir() {
   return path.join(getDataRoot(), 'legacy-weekly');
 }
-
-export type LegacyWeekItem = {
-  fileName: string;
-  title: string;
-  weekNo?: number;
-  weekStart?: string;
-};
 
 function parseLegacyTitle(fileName: string): LegacyWeekItem {
   // compatiable with my existing log file name format
@@ -217,10 +211,6 @@ export function listDailySnapshots(
 
 //#region ---- Weekly Reports -----
 
-export function weeklyReportDir() {
-  return path.join(getDataRoot(), 'reports');
-}
-
 export type WeeklyReportItem = {
   fileName: string;
   title: string;
@@ -228,46 +218,34 @@ export type WeeklyReportItem = {
   generated?: boolean; // legacy = false, generated = true
 };
 
-function parseWeeklyTitle(fileName: string): WeeklyReportItem {
-  // Week 73 (2026-01-26).md
-  const base = fileName.replace(/\.md$/i, '');
-  const m = base.match(/Week\s*(\d+)\s*\((\d{4}-\d{2}-\d{2})\)/i);
-  if (m) {
-    return {
-      fileName,
-      title: `Week ${m[1]} (${m[2]})`,
-      weekStart: m[2],
-      generated: true,
-    };
-  }
-  return { fileName, title: base, generated: true };
+// compassFs.ts
+export function weeklyWorkspacePath(weekKey: string) {
+  // weekKey = Monday "YYYY-MM-DD"
+  return path.join(getDataRoot(), 'reports', `${weekKey}.workspace.json`);
 }
 
-export function writeWeeklyReport(weekStart: string, content: string) {
+export function writeWeeklyWorkspace(weekKey: string, ws: unknown) {
   ensureCompassDirs();
-  const dir = weeklyReportDir();
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-  const year = weekStart.slice(0, 4);
-  const weekNo = Math.ceil(
-    (new Date(weekStart).getTime() - new Date(`${year}-01-01`).getTime()) /
-      (7 * 24 * 3600 * 1000),
-  );
-
-  const fileName = `Week ${weekNo} (${weekStart}).md`;
-  const full = path.join(dir, fileName);
-
-  fs.writeFileSync(full, content, 'utf-8');
-
-  return { ok: true, fileName, path: full };
+  assertDayKey(weekKey);
+  const full = weeklyWorkspacePath(weekKey);
+  fs.writeFileSync(full, JSON.stringify(ws, null, 2), 'utf-8');
+  return { ok: true, path: full };
 }
 
-export function readWeeklyReport(fileName: string) {
+export function readWeeklyWorkspace(weekKey: string) {
   ensureCompassDirs();
-  const safe = path.basename(fileName);
-  const full = path.join(legacyWeeklyDir(), safe);
-  if (!fs.existsSync(full)) throw new Error(`Weekly report not found: ${safe}`);
-  return fs.readFileSync(full, 'utf-8');
+  assertDayKey(weekKey);
+  const full = weeklyWorkspacePath(weekKey);
+  if (!fs.existsSync(full)) return null;
+  return JSON.parse(fs.readFileSync(full, 'utf-8')) as WeeklyWorkspace;
+}
+
+export function deleteWeeklyWorkspace(weekKey: string) {
+  ensureCompassDirs();
+  assertDayKey(weekKey);
+  const full = weeklyWorkspacePath(weekKey);
+  if (fs.existsSync(full)) fs.unlinkSync(full);
+  return { ok: true };
 }
 
 //#endregion

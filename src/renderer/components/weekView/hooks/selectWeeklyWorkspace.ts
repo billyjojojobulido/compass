@@ -6,10 +6,7 @@ import {
   WeeklyDay,
 } from '@/domain/types';
 import { selectDailyChangelog } from './chanelog';
-
-function isoNow() {
-  return new Date().toISOString();
-}
+import { nowISO } from '@/domain/sprintStore';
 
 /**
  * weekStartLocalDate: the Monday Date object of that week (local)
@@ -40,7 +37,7 @@ export function selectWeeklyWorkspace(args: {
         changelog: {
           schemaVersion: 1,
           date: '', // UI can show "-"
-          generatedAt: isoNow(),
+          generatedAt: nowISO(),
           stats: {
             tasksAdded: 0,
             tasksCompleted: 0,
