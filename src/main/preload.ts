@@ -1,16 +1,17 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
-import { DailySnapshot, LegacyWeekItem } from '@/domain/types';
+import { DailySnapshot, LegacyWeekItem, WeeklyWorkspace } from '@/domain/types';
+import { apiClient } from '@/services/ApiClient';
 import { contextBridge, ipcRenderer } from 'electron';
 
-export type Channels = 'ipc-example';
+export type GeneralChannels = 'ipc-example';
 
 export type CompassHandler = {
   invoke<T = unknown>(channel: CompassChannel, payload?: unknown): Promise<T>;
 
   ipcRenderer: {
-    sendMessage(channel: Channels, ...args: unknown[]): void;
-    once(channel: Channels, func: (...args: unknown[]) => void): any;
+    sendMessage(channel: GeneralChannels, ...args: unknown[]): void;
+    once(channel: GeneralChannels, func: (...args: unknown[]) => void): any;
   };
 
   legacyWeekly: {
@@ -31,7 +32,7 @@ export type CompassHandler = {
       date: string,
       snapshot: DailySnapshot,
     ): Promise<{ ok: true; path: string }>;
-    readWorkspace(date: string): Promise<DailySnapshot>;
+    readWorkspace(date: string): Promise<WeeklyWorkspace>;
     deleteWorkspace(year?: string): Promise<string[]>;
   };
 };
@@ -57,36 +58,31 @@ const compassHandler: CompassHandler = {
     ipcRenderer.invoke(channel, payload),
 
   ipcRenderer: {
-    sendMessage(channel: Channels, ...args: unknown[]) {
+    sendMessage(channel: GeneralChannels, ...args: unknown[]) {
       ipcRenderer.send(channel, ...args);
     },
-    once(channel: Channels, func: (...args: unknown[]) => void) {
+    once(channel: GeneralChannels, func: (...args: unknown[]) => void) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
   },
 
   legacyWeekly: {
-    list: () => ipcRenderer.invoke('compass:legacy:list'),
-    read: (fileName: string) =>
-      ipcRenderer.invoke('compass:legacy:read', { fileName }),
+    list: () => apiClient.legacyWeekly.list(),
+    read: (fileName: string) => apiClient.legacyWeekly.read(fileName),
   },
 
   snapshot: {
     writeDaily: (date: string, snapshot: DailySnapshot) =>
-      ipcRenderer.invoke('compass:snapshot:write', { date, snapshot }),
-    readDaily: (date: string) =>
-      ipcRenderer.invoke('compass:snapshot:read', { date }),
-    listDaily: (year: string) =>
-      ipcRenderer.invoke('compass:snapshot:list', { year }),
+      apiClient.snapshots.write(date, snapshot),
+    readDaily: (date: string) => apiClient.snapshots.read(date),
+    listDaily: (year: string) => apiClient.snapshots.list(year),
   },
 
   workspace: {
     writeWorkspace: (key: string, doc: unknown) =>
-      ipcRenderer.invoke('compass:workspace:write', { key, doc }),
-    readWorkspace: (key: string) =>
-      ipcRenderer.invoke('compass:workspace:read', { key }),
-    deleteWorkspace: (key: string) =>
-      ipcRenderer.invoke('compass:workspace:delete', { key }),
+      apiClient.workspace.write(key, doc),
+    readWorkspace: (key: string) => apiClient.workspace.read(key),
+    deleteWorkspace: (key: string) => apiClient.workspace.delete(key),
   },
 };
 

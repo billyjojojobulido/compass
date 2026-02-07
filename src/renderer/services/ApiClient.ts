@@ -118,7 +118,7 @@ export const apiClient = {
       }
     },
 
-    async delete(key: string): Promise<{ ok: true }> {
+    async delete(key: string): Promise<string[]> {
       try {
         const compass = assertCompass();
         return await compass.invoke('compass:workspace:delete', { key });
