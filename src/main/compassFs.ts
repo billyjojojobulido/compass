@@ -224,7 +224,7 @@ export function weeklyWorkspacePath(weekKey: string) {
   return path.join(getDataRoot(), 'reports', `${weekKey}.workspace.json`);
 }
 
-export function writeWeeklyWorkspace(weekKey: string, ws: unknown) {
+export function writeWeeklyWorkspace(weekKey: string, ws: WeeklyWorkspace) {
   ensureCompassDirs();
   assertDayKey(weekKey);
   const full = weeklyWorkspacePath(weekKey);

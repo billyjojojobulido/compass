@@ -96,7 +96,7 @@ export const apiClient = {
   workspace: {
     async write(
       key: string,
-      doc: unknown,
+      doc: WeeklyWorkspace,
     ): Promise<{ ok: true; path: string }> {
       try {
         const compass = assertCompass();
