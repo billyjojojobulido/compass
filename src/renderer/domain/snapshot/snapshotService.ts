@@ -1,6 +1,7 @@
 // src/domain/snapshot/snapshotService.ts
 import type { SprintState, DailySnapshot } from '@/domain/types';
 import { createDailySnapshot } from '@/domain/snapshot/dailySnapshot';
+import { apiClient } from '@/services/ApiClient';
 
 export type ArchiveSnapshotResult = {
   date: string;
@@ -24,10 +25,7 @@ export async function archiveTodaySnapshot(
     },
   });
 
-  await window.compass.invoke('compass:snapshot:write', {
-    date: snapshot.date,
-    snapshot,
-  });
+  await apiClient.snapshots.write(snapshot.date, snapshot);
 
   return { date: snapshot.date, snapshot };
 }

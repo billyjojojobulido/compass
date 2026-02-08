@@ -1,38 +1,44 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
-import { DailySnapshot, LegacyWeekItem } from '@/domain/types';
+import { DailySnapshot, LegacyWeekItem, WeeklyWorkspace } from '@/domain/types';
 import { contextBridge, ipcRenderer } from 'electron';
 
-export type Channels = 'ipc-example';
+export type GeneralChannels = 'ipc-example';
+
+type Invoke = <T = unknown>(
+  channel: CompassChannel,
+  payload?: unknown,
+) => Promise<T>;
+
+const invoke: Invoke = (channel, payload) =>
+  ipcRenderer.invoke(channel, payload);
 
 export type CompassHandler = {
-  invoke<T = unknown>(channel: CompassChannel, payload?: unknown): Promise<T>;
-
+  invoke: Invoke;
   ipcRenderer: {
-    sendMessage(channel: Channels, ...args: unknown[]): void;
-    once(channel: Channels, func: (...args: unknown[]) => void): any;
+    sendMessage(channel: GeneralChannels, ...args: unknown[]): void;
+    once(channel: GeneralChannels, func: (...args: unknown[]) => void): any;
   };
-
   legacyWeekly: {
     list(): Promise<LegacyWeekItem[]>;
     read(fileName: string): Promise<string>; // easier to return content as string
   };
 
   snapshot: {
-    writeDaily(
+    write(
       date: string,
       snapshot: DailySnapshot,
     ): Promise<{ ok: true; path: string }>;
-    readDaily(date: string): Promise<DailySnapshot>;
-    listDaily(year?: string): Promise<string[]>;
+    read(date: string): Promise<DailySnapshot>;
+    list(year?: string): Promise<string[]>;
   };
   workspace: {
-    writeWorkspace(
-      date: string,
-      snapshot: DailySnapshot,
+    write(
+      key: string,
+      doc: WeeklyWorkspace,
     ): Promise<{ ok: true; path: string }>;
-    readWorkspace(date: string): Promise<DailySnapshot>;
-    deleteWorkspace(year?: string): Promise<string[]>;
+    read(date: string): Promise<WeeklyWorkspace>;
+    delete(year?: string): Promise<string[]>;
   };
 };
 
@@ -50,43 +56,55 @@ export type CompassChannel =
   | 'compass:workspace:write'
   | 'compass:workspace:delete';
 
-export type InvokeChannels = 'list-legacy-weekly' | 'read-legacy-weekly';
-
 const compassHandler: CompassHandler = {
-  invoke: (channel: string, payload?: unknown) =>
-    ipcRenderer.invoke(channel, payload),
+  invoke,
 
   ipcRenderer: {
-    sendMessage(channel: Channels, ...args: unknown[]) {
+    sendMessage(channel: GeneralChannels, ...args: unknown[]) {
       ipcRenderer.send(channel, ...args);
     },
-    once(channel: Channels, func: (...args: unknown[]) => void) {
+    once(channel: GeneralChannels, func: (...args: unknown[]) => void) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
   },
 
   legacyWeekly: {
-    list: () => ipcRenderer.invoke('compass:legacy:list'),
-    read: (fileName: string) =>
-      ipcRenderer.invoke('compass:legacy:read', { fileName }),
+    list(): Promise<LegacyWeekItem[]> {
+      return invoke('compass:legacy:list');
+    },
+    read(fileName: string): Promise<string> {
+      return invoke('compass:legacy:read', { fileName });
+    },
   },
 
   snapshot: {
-    writeDaily: (date: string, snapshot: DailySnapshot) =>
-      ipcRenderer.invoke('compass:snapshot:write', { date, snapshot }),
-    readDaily: (date: string) =>
-      ipcRenderer.invoke('compass:snapshot:read', { date }),
-    listDaily: (year: string) =>
-      ipcRenderer.invoke('compass:snapshot:list', { year }),
+    write(
+      date: string,
+      snapshot: DailySnapshot,
+    ): Promise<{ ok: true; path: string }> {
+      return invoke('compass:snapshot:write', { date, snapshot });
+    },
+    read(date: string): Promise<DailySnapshot> {
+      return invoke('compass:snapshot:read', { date });
+    },
+    list(year?: string): Promise<string[]> {
+      return invoke('compass:snapshot:list', year ? { year } : undefined);
+    },
   },
 
   workspace: {
-    writeWorkspace: (key: string, doc: unknown) =>
-      ipcRenderer.invoke('compass:workspace:write', { key, doc }),
-    readWorkspace: (key: string) =>
-      ipcRenderer.invoke('compass:workspace:read', { key }),
-    deleteWorkspace: (key: string) =>
-      ipcRenderer.invoke('compass:workspace:delete', { key }),
+    write(
+      key: string,
+      doc: WeeklyWorkspace,
+    ): Promise<{ ok: true; path: string }> {
+      return invoke('compass:workspace:write', { key, doc });
+    },
+    read(key: string): Promise<WeeklyWorkspace> {
+      return invoke('compass:workspace:read', { key });
+    },
+    delete(key?: string): Promise<string[]> {
+      return invoke('compass:workspace:delete', key ? { key } : undefined);
+    },
   },
 };
 

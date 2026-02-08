@@ -1,6 +1,7 @@
 import type { DailySnapshot, WorkdayKey } from '@/domain/types';
 import { startOfWeekLocal, addDaysLocal, formatLocalYMD } from '@/domain/time';
 import { WORKDAYS } from '@/domain/types';
+import { apiClient } from '@/services/ApiClient';
 
 type DayToSnapshot = Partial<Record<WorkdayKey, DailySnapshot>>;
 
@@ -40,10 +41,7 @@ export async function loadCurrentWeekSnapshots(
   // baocheng notes: list first, and then read as needed
   // in case blindly read files not exist
   const year = weekKey.slice(0, 4);
-  const allDates: string[] = await window.compass.invoke(
-    'compass:snapshot:list',
-    { year },
-  );
+  const allDates: string[] = await apiClient.snapshots.list(year);
 
   const set = new Set(allDates);
   const dayToSnapshot: DayToSnapshot = {};
@@ -53,7 +51,7 @@ export async function loadCurrentWeekSnapshots(
     const date = dayToDate[d];
     if (!set.has(date)) continue;
 
-    const snap = await window.compass.invoke('compass:snapshot:read', { date });
+    const snap = await apiClient.snapshots.read(date);
     // baocheng notes: snap is `plain object`
     // because readDailySnapshot return JSON.parse(raw)
     dayToSnapshot[d] = snap as DailySnapshot;

@@ -9,7 +9,7 @@ import {
   readWeeklyWorkspace,
   deleteWeeklyWorkspace,
 } from './compassFs';
-import { DailySnapshot } from '@/domain/types';
+import { DailySnapshot, WeeklyWorkspace } from '@/domain/types';
 
 export function registerCompassIpc() {
   ipcMain.handle('compass:legacy:list', async () => {
@@ -47,7 +47,7 @@ export function registerCompassIpc() {
   // compassIpc.ts
   ipcMain.handle(
     'compass:workspace:write',
-    async (_e, payload: { key: string; doc: unknown }) => {
+    async (_e, payload: { key: string; doc: WeeklyWorkspace }) => {
       // key = weekKey
       return writeWeeklyWorkspace(payload.key, payload.doc);
     },
