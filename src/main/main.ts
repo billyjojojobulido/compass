@@ -89,7 +89,7 @@ const SUPPORTED_EXTS = new Set(['.md', '.mmd', '.txt', '.html', '.glb']);
 //#endregion
 
 // -- MAIN WINDOW CREATOR --
-const createWindow = async (i18n: any) => {
+const createWindow = async (i18n?: any) => {
   if (isDebug) {
     await installExtensions();
   }
@@ -250,63 +250,61 @@ let appI18N: any;
 app
   .whenReady()
   .then(() => {
-    return i18nInit().then((i18n) => {
-      //#region Compass IPC register
-      registerCompassIpc();
-      //#endregion
+    // return i18nInit().then((i18n) => {
+    //#region Compass IPC register
+    registerCompassIpc();
+    //#endregion
 
-      appI18N = i18n;
-      createWindow(i18n);
+    // appI18N = i18n;
+    // createWindow(i18n);
+    createWindow();
 
-      i18n.on('languageChanged', (lng) => {
-        try {
-          console.log('[Localisation] LanguageChanged: ' + lng);
-          // TODO how to change languages
-        } catch (ex) {
-          console.log('[Localisation] LanguageChanged - Error:', ex);
-        }
-      });
+    // i18n.on('languageChanged', (lng) => {
+    //   try {
+    //     console.log('[Localisation] LanguageChanged: ' + lng);
+    //     // TODO how to change languages
+    //   } catch (ex) {
+    //     console.log('[Localisation] LanguageChanged - Error:', ex);
+    //   }
+    // });
 
-      //#region --- IPC Main Handlers ---
-      ipcMain.on('show-main-window', showApp);
-      ipcMain.on('relaunch-app', reloadApp);
+    //#region --- IPC Main Handlers ---
+    ipcMain.on('show-main-window', showApp);
+    ipcMain.on('relaunch-app', reloadApp);
 
-      //#endregion
+    //#endregion
 
-      //#region --- Process Event Handler
-      process.removeAllListeners('uncaughtException');
-      process.on('uncaughtException', (error) => {
+    //#region --- Process Event Handler
+    process.removeAllListeners('uncaughtException');
+    process.on('uncaughtException', (error) => {
+      console.error(
+        'UNCAUGHT EXCEPTION in main:',
+        error && error.stack ? error.stack : error,
+      );
+      const msg = error && error.message ? error.message : '';
+      //@ts-ignore
+      const code = error && error.code ? error.code : '';
+      const isAbort = error && error.name === 'AbortError';
+      const isSocketHangUp =
+        msg.includes('socket hang up') ||
+        code === 'ECONNRESET' ||
+        code === 'ECONNABORTED';
+
+      if (isAbort || isSocketHangUp) {
+        console.warn('Known non-fatal error (ignored):', msg || code || error);
+        return;
+      }
+      try {
+        reloadApp();
+      } catch (reloadErr) {
         console.error(
-          'UNCAUGHT EXCEPTION in main:',
-          error && error.stack ? error.stack : error,
+          'reloadApp() failed, exiting process:',
+          reloadErr && reloadErr.stack ? reloadErr.stack : reloadErr,
         );
-        const msg = error && error.message ? error.message : '';
-        //@ts-ignore
-        const code = error && error.code ? error.code : '';
-        const isAbort = error && error.name === 'AbortError';
-        const isSocketHangUp =
-          msg.includes('socket hang up') ||
-          code === 'ECONNRESET' ||
-          code === 'ECONNABORTED';
-
-        if (isAbort || isSocketHangUp) {
-          console.warn(
-            'Known non-fatal error (ignored):',
-            msg || code || error,
-          );
-          return;
-        }
-        try {
-          reloadApp();
-        } catch (reloadErr) {
-          console.error(
-            'reloadApp() failed, exiting process:',
-            reloadErr && reloadErr.stack ? reloadErr.stack : reloadErr,
-          );
-          process.exit(1);
-        }
-      });
-      //#endregion
+        process.exit(1);
+      }
     });
+    //#endregion
+    // });
   })
   .catch(console.log);
