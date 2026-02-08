@@ -73,9 +73,9 @@ export default function CurrentWeekView() {
     }
 
     // read snapshot data of that day (upstream)
-    const snap = (await window.compass.invoke('compass:snapshot:read', {
-      date: day.date,
-    })) as DailySnapshot;
+    const snap = (await window.compass.snapshot.read(
+      day.date,
+    )) as DailySnapshot;
 
     // dayTagText：if is off / birthday
     const isOff = ws.dayMeta?.[dayKey]?.isOff ?? false;

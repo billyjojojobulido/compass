@@ -25,9 +25,11 @@ export function useCurrentWeekWorkspace() {
     setLoading(true);
     setError(null);
     try {
-      const doc = await window.compass.invoke('compass:workspace:read', {
-        key: weekKey,
-      });
+      // const doc = await window.compass.invoke('compass:workspace:read', {
+      //   key: weekKey,
+      // });
+
+      const doc = await window.compass.workspace.read(weekKey);
 
       // doc maybe empty, if so, just selectWeeklyWorkspace(...) to generate one
       setWs(doc);
@@ -43,10 +45,7 @@ export function useCurrentWeekWorkspace() {
   }, [reload]);
 
   const persistWs = useCallback(async (next: WeeklyWorkspace) => {
-    await window.compass.invoke('compass:workspace:write', {
-      key: next.weekKey,
-      doc: next,
-    });
+    await window.compass.workspace.write(next.weekKey, next);
   }, []);
 
   return { loading, error, ws, setWs, persistWs, reload };

@@ -15,7 +15,7 @@ export default function AppShell() {
 
   /* read generated & legacy weekly report list when launch */
   useEffect(() => {
-    window.compass.invoke('compass:legacy:list').then(setLegacyWeeks);
+    window.compass.legacyWeekly.list().then(setLegacyWeeks);
   }, []);
 
   return (
