@@ -1,12 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { weekRangeLocal } from '@/domain/time';
+import { useCallback, useEffect, useState } from 'react';
 import type { WeeklyWorkspace } from '@/domain/types';
-import { loadCurrentWeekSnapshots } from './loadCurrentWeekSnapshots';
-import { selectWeeklyWorkspace } from './selectWeeklyWorkspace';
-
-function toISO(d: Date) {
-  return d.toISOString();
-}
+import { apiClient } from '@/services/ApiClient';
 
 function makeTitle(weekKey: string) {
   // baocheng notes: in current design, title format is fixed
@@ -25,11 +19,7 @@ export function useCurrentWeekWorkspace() {
     setLoading(true);
     setError(null);
     try {
-      // const doc = await window.compass.invoke('compass:workspace:read', {
-      //   key: weekKey,
-      // });
-
-      const doc = await window.compass.workspace.read(weekKey);
+      const doc = await apiClient.workspace.read(weekKey);
 
       // doc maybe empty, if so, just selectWeeklyWorkspace(...) to generate one
       setWs(doc);
@@ -45,7 +35,7 @@ export function useCurrentWeekWorkspace() {
   }, [reload]);
 
   const persistWs = useCallback(async (next: WeeklyWorkspace) => {
-    await window.compass.workspace.write(next.weekKey, next);
+    await apiClient.workspace.write(next.weekKey, next);
   }, []);
 
   return { loading, error, ws, setWs, persistWs, reload };

@@ -11,6 +11,7 @@ import './currentWeek.css';
 import { setDayOff, toggleDayCollapsed } from '@/domain/week/workspaceHelper';
 import { renderDailyMarkdown } from '@/domain/week/renderDailyMarkdown';
 import { useSprint } from '@/domain/sprintStore';
+import { apiClient } from '@/services/ApiClient';
 
 const LABEL: Record<string, string> = {
   Mon: 'Monday',
@@ -73,9 +74,7 @@ export default function CurrentWeekView() {
     }
 
     // read snapshot data of that day (upstream)
-    const snap = (await window.compass.snapshot.read(
-      day.date,
-    )) as DailySnapshot;
+    const snap = (await apiClient.snapshots.read(day.date)) as DailySnapshot;
 
     // dayTagText：if is off / birthday
     const isOff = ws.dayMeta?.[dayKey]?.isOff ?? false;

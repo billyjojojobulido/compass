@@ -4,6 +4,7 @@ import Sidebar, { NavKey } from './SideBar';
 import Content from '@/components/core/Content';
 import { LegacyWeekItem } from '@/domain/types';
 import { WeeklyReportItem } from 'src/main/compassFs';
+import { apiClient } from '@/services/ApiClient';
 
 export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -15,7 +16,7 @@ export default function AppShell() {
 
   /* read generated & legacy weekly report list when launch */
   useEffect(() => {
-    window.compass.legacyWeekly.list().then(setLegacyWeeks);
+    apiClient.legacyWeekly.list().then(setLegacyWeeks);
   }, []);
 
   return (
