@@ -4,9 +4,7 @@ import type {
   WeeklyWorkspace,
 } from '@/domain/types';
 
-type CompassInvoke = (channel: string, payload?: unknown) => Promise<any>;
-
-function assertCompass(): { invoke: CompassInvoke } {
+function assertCompass(): Window['compass'] {
   if (typeof window === 'undefined') {
     throw new Error('[ApiClient] window is undefined (not in renderer)');
   }
@@ -36,7 +34,7 @@ export const apiClient = {
     async list(): Promise<LegacyWeekItem[]> {
       try {
         const compass = assertCompass();
-        return await compass.invoke('compass:legacy:list');
+        return await compass.legacyWeekly.list();
       } catch (e) {
         throw new Error(`[ApiClient.legacyWeekly.list] ${toErrorMessage(e)}`);
       }
@@ -45,7 +43,7 @@ export const apiClient = {
     async read(fileName: string): Promise<string> {
       try {
         const compass = assertCompass();
-        return await compass.invoke('compass:legacy:read', { fileName });
+        return await compass.legacyWeekly.read(fileName);
       } catch (e) {
         throw new Error(`[ApiClient.legacyWeekly.read] ${toErrorMessage(e)}`);
       }
@@ -59,10 +57,7 @@ export const apiClient = {
     async list(year?: string): Promise<string[]> {
       try {
         const compass = assertCompass();
-        return await compass.invoke(
-          'compass:snapshot:list',
-          year ? { year } : undefined,
-        );
+        return await compass.snapshot.list(year);
       } catch (e) {
         throw new Error(`[ApiClient.snapshots.list] ${toErrorMessage(e)}`);
       }
@@ -71,7 +66,7 @@ export const apiClient = {
     async read(date: string): Promise<DailySnapshot> {
       try {
         const compass = assertCompass();
-        return await compass.invoke('compass:snapshot:read', { date });
+        return await compass.snapshot.read(date);
       } catch (e) {
         throw new Error(`[ApiClient.snapshots.read] ${toErrorMessage(e)}`);
       }
@@ -83,10 +78,7 @@ export const apiClient = {
     ): Promise<{ ok: true; path: string }> {
       try {
         const compass = assertCompass();
-        return await compass.invoke('compass:snapshot:write', {
-          date,
-          snapshot,
-        });
+        return await compass.snapshot.write(date, snapshot);
       } catch (e) {
         throw new Error(`[ApiClient.snapshots.write] ${toErrorMessage(e)}`);
       }
@@ -100,10 +92,7 @@ export const apiClient = {
     ): Promise<{ ok: true; path: string }> {
       try {
         const compass = assertCompass();
-        return await compass.invoke('compass:workspace:write', {
-          key,
-          doc,
-        });
+        return await compass.workspace.write(key, doc);
       } catch (e) {
         throw new Error(`[ApiClient.workspace.write] ${toErrorMessage(e)}`);
       }
@@ -112,7 +101,7 @@ export const apiClient = {
     async read(key: string): Promise<WeeklyWorkspace> {
       try {
         const compass = assertCompass();
-        return await compass.invoke('compass:workspace:read', { key });
+        return await compass.workspace.read(key);
       } catch (e) {
         throw new Error(`[ApiClient.workspace.read] ${toErrorMessage(e)}`);
       }
@@ -121,7 +110,7 @@ export const apiClient = {
     async delete(key: string): Promise<string[]> {
       try {
         const compass = assertCompass();
-        return await compass.invoke('compass:workspace:delete', { key });
+        return await compass.workspace.delete(key);
       } catch (e) {
         throw new Error(`[ApiClient.workspace.delete] ${toErrorMessage(e)}`);
       }
