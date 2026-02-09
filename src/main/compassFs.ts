@@ -209,14 +209,7 @@ export function listDailySnapshots(
 }
 //#endregion
 
-//#region ---- Weekly Reports -----
-
-export type WeeklyReportItem = {
-  fileName: string;
-  title: string;
-  weekStart?: string;
-  generated?: boolean; // legacy = false, generated = true
-};
+//#region ---- Weekly Reports :: Workspace -----
 
 // compassFs.ts
 export function weeklyWorkspacePath(weekKey: string) {

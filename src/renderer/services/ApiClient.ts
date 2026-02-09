@@ -8,9 +8,9 @@ function assertCompass(): Window['compass'] {
   if (typeof window === 'undefined') {
     throw new Error('[ApiClient] window is undefined (not in renderer)');
   }
-  if (!window.compass || typeof window.compass.invoke !== 'function') {
+  if (!window.compass) {
     throw new Error(
-      '[ApiClient] window.compass.invoke is not available. Check preload exposure.',
+      '[ApiClient] window.compass is not available. Check preload exposure.',
     );
   }
   return window.compass;

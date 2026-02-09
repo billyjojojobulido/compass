@@ -1,5 +1,4 @@
-import React, { useMemo } from 'react';
-import { WeeklyReportItem } from 'src/main/compassFs';
+import React from 'react';
 import { LegacyWeekItem } from '@/domain/types';
 
 export type NavKey =
@@ -15,7 +14,6 @@ type Props = {
   onChangeNav: (nav: NavKey) => void;
   onRequestClose: () => void; // click backdrop to close
   legacyWeeks: LegacyWeekItem[];
-  weeklyReports: WeeklyReportItem[];
 
   activeWeekFile: string | null;
   onSelectWeek: (fileName: string) => void;
@@ -27,7 +25,6 @@ export default function Sidebar({
   onChangeNav,
   onRequestClose,
   legacyWeeks,
-  weeklyReports,
   activeWeekFile,
   onSelectWeek,
 }: Props) {
@@ -75,7 +72,7 @@ export default function Sidebar({
             <div className="sectionTitle">Weekly Reports</div>
 
             <div className="weekList" role="list">
-              {[...weeklyReports, ...legacyWeeks].map((w) => (
+              {[...legacyWeeks].map((w) => (
                 <div
                   className={`weekRow ${
                     activeWeekFile === w.fileName ? 'active' : ''
