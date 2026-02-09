@@ -249,3 +249,30 @@ export function deleteWeeklyWorkspace(weekKey: string) {
 }
 
 //#endregion
+
+//#region ---- Sprint State ----
+export function sprintDir() {
+  return path.join(getDataRoot(), 'sprint');
+}
+
+export function sprintStatePath() {
+  return path.join(sprintDir(), 'state.json');
+}
+
+export function writeSprintState(doc: unknown) {
+  ensureCompassDirs();
+  const dir = sprintDir();
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  fs.writeFileSync(sprintStatePath(), JSON.stringify(doc, null, 2), 'utf-8');
+  return { ok: true, path: sprintStatePath() };
+}
+
+export function readSprintState(): unknown | null {
+  ensureCompassDirs();
+  const full = sprintStatePath();
+  if (!fs.existsSync(full)) return null;
+  const raw = fs.readFileSync(full, 'utf-8');
+  return JSON.parse(raw);
+}
+//#endregion

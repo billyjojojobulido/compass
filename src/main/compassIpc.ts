@@ -8,6 +8,8 @@ import {
   writeWeeklyWorkspace,
   readWeeklyWorkspace,
   deleteWeeklyWorkspace,
+  readSprintState,
+  writeSprintState,
 } from './compassFs';
 import { DailySnapshot, WeeklyWorkspace } from '@/domain/types';
 
@@ -44,7 +46,6 @@ export function registerCompassIpc() {
     },
   );
 
-  // compassIpc.ts
   ipcMain.handle(
     'compass:workspace:write',
     async (_e, payload: { key: string; doc: WeeklyWorkspace }) => {
@@ -64,6 +65,17 @@ export function registerCompassIpc() {
     'compass:workspace:delete',
     async (_e, payload: { key: string }) => {
       return deleteWeeklyWorkspace(payload.key);
+    },
+  );
+
+  ipcMain.handle('compass:sprint:state:read', async () => {
+    return readSprintState(); // unknown | null
+  });
+
+  ipcMain.handle(
+    'compass:sprint:state:write',
+    async (_e, payload: { doc: unknown }) => {
+      return writeSprintState(payload.doc);
     },
   );
 }
