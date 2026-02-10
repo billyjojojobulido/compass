@@ -40,6 +40,10 @@ export type CompassHandler = {
     read(date: string): Promise<WeeklyWorkspace>;
     delete(year?: string): Promise<string[]>;
   };
+  sprint: {
+    stateRead(): Promise<unknown | null>;
+    stateWrite(doc: unknown): Promise<{ ok: true; path: string }>;
+  };
 };
 
 export type CompassChannel =
@@ -54,7 +58,9 @@ export type CompassChannel =
   | 'compass:legacy:read'
   | 'compass:workspace:read'
   | 'compass:workspace:write'
-  | 'compass:workspace:delete';
+  | 'compass:workspace:delete'
+  | 'compass:sprint:state:read'
+  | 'compass:sprint:state:write';
 
 const compassHandler: CompassHandler = {
   invoke,
@@ -105,6 +111,11 @@ const compassHandler: CompassHandler = {
     delete(key?: string): Promise<string[]> {
       return invoke('compass:workspace:delete', key ? { key } : undefined);
     },
+  },
+  sprint: {
+    stateRead: () => ipcRenderer.invoke('compass:sprint:state:read'),
+    stateWrite: (doc: unknown) =>
+      ipcRenderer.invoke('compass:sprint:state:write', { doc }),
   },
 };
 

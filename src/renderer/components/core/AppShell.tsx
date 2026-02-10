@@ -3,13 +3,11 @@ import TopBar from './TopBar';
 import Sidebar, { NavKey } from './SideBar';
 import Content from '@/components/core/Content';
 import { LegacyWeekItem } from '@/domain/types';
-import { WeeklyReportItem } from 'src/main/compassFs';
 import { apiClient } from '@/services/ApiClient';
 
 export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav, setActiveNav] = useState<NavKey>('待做事项');
-  const [weeklyReports, setWeeklyReports] = useState<WeeklyReportItem[]>([]);
   /* history week log index + week log that is currently chosen */
   const [legacyWeeks, setLegacyWeeks] = useState<LegacyWeekItem[]>([]);
   const [activeWeekFile, setActiveWeekFile] = useState<string | null>(null);
@@ -39,7 +37,6 @@ export default function AppShell() {
           }}
           onRequestClose={() => setSidebarOpen(false)}
           legacyWeeks={legacyWeeks}
-          weeklyReports={weeklyReports}
           activeWeekFile={activeWeekFile}
           onSelectWeek={(fileName) => {
             setActiveWeekFile(fileName);
