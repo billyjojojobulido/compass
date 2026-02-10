@@ -79,6 +79,10 @@ export function SprintProvider({
   }, []); // only once
 
   React.useEffect(() => {
+    // baocheng notes: this is critically important!
+    // to avoid override file with default state befroe hydrate
+    if (!didHydrateRef.current) return;
+
     debouncedSave(() => {
       const doc: PersistedSprintDoc = {
         schemaVersion: 1,
