@@ -73,6 +73,14 @@ export type SprintState = {
   ui?: SprintUIState;
 };
 
+export type PersistedSprintDocV1 = {
+  schemaVersion: 1;
+  generatedAt: string; // ISO
+  state: SprintState;
+};
+
+export type PersistedSprintDoc = PersistedSprintDocV1;
+
 export type DailySnapshot = {
   schemaVersion: 1;
 

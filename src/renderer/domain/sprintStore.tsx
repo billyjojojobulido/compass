@@ -1,5 +1,20 @@
 import React, { createContext, useContext, useMemo, useReducer } from 'react';
 import type { Epic, SprintEvent, SprintState, Task } from './types';
+import { PersistedSprintDoc } from '@/domain/types';
+
+function isPersistedSprintDocV1(x: any): x is PersistedSprintDoc {
+  return (
+    x && x.schemaVersion === 1 && x.state && typeof x.generatedAt === 'string'
+  );
+}
+
+function createDebouncer(ms: number) {
+  let t: any = null;
+  return (fn: () => void) => {
+    if (t) clearTimeout(t);
+    t = setTimeout(fn, ms);
+  };
+}
 
 export function nowISO() {
   return new Date().toISOString();
@@ -27,6 +42,55 @@ export function SprintProvider({
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const actions = useMemo(() => createActions(state, dispatch), [state]);
+  // add debounce
+  const debouncedSave = React.useMemo(() => createDebouncer(800), []);
+  const didHydrateRef = React.useRef(false);
+
+  React.useEffect(() => {
+    // hydrate once
+    (async () => {
+      const raw = await window.compass.sprint.stateRead();
+      if (!raw) {
+        didHydrateRef.current = true;
+        return;
+      }
+
+      if (!isPersistedSprintDocV1(raw)) {
+        console.warn(
+          '[SprintStore] persisted state has unknown format, ignored.',
+        );
+        didHydrateRef.current = true;
+        return;
+      }
+
+      // merge strategy:
+      // - keep runtime config as source of truth for now
+      // - but allow persisted state to bring epics/tasks/order/etc.
+      // can do merge config here, if users are allowed to edit config in future build
+      const next: SprintState = {
+        ...raw.state,
+        config: state.config, // overrdie using runtime-config - stable
+      };
+
+      dispatch({ type: 'HYDRATE', payload: next });
+      didHydrateRef.current = true;
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // only once
+
+  React.useEffect(() => {
+    debouncedSave(() => {
+      const doc: PersistedSprintDoc = {
+        schemaVersion: 1,
+        generatedAt: nowISO(),
+        state, // incl config
+      };
+
+      window.compass.sprint
+        .stateWrite(doc)
+        .catch((e) => console.error('[SprintStore] save failed', e));
+    });
+  }, [state, debouncedSave]);
 
   return (
     <SprintContext.Provider value={{ state, actions }}>
@@ -83,7 +147,8 @@ type DispatchAction =
       toEpicId: string;
       toIndex: number;
     }
-  | { type: 'UI_SCROLL_TO_EPIC'; epicId: string | null };
+  | { type: 'UI_SCROLL_TO_EPIC'; epicId: string | null }
+  | { type: 'HYDRATE'; payload: SprintState };
 
 function reducer(state: SprintState, a: DispatchAction): SprintState {
   switch (a.type) {
@@ -261,6 +326,8 @@ function reducer(state: SprintState, a: DispatchAction): SprintState {
         ...state,
         ui: { ...(state.ui ?? {}), scrollToEpicId: a.epicId },
       };
+    case 'HYDRATE':
+      return a.payload;
     default:
       return state;
   }
