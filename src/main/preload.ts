@@ -43,6 +43,15 @@ export type CompassHandler = {
   sprint: {
     stateRead(): Promise<unknown | null>;
     stateWrite(doc: unknown): Promise<{ ok: true; path: string }>;
+    events: {
+      append(
+        event: SprintEventRecord,
+      ): Promise<{ ok: true; monthFile: string }>;
+      read(args?: {
+        from?: SprintEventCursor;
+        toMonthKey?: string;
+      }): Promise<SprintEventRecord[]>;
+    };
   };
 };
 
@@ -60,7 +69,12 @@ export type CompassChannel =
   | 'compass:workspace:write'
   | 'compass:workspace:delete'
   | 'compass:sprint:state:read'
-  | 'compass:sprint:state:write';
+  | 'compass:sprint:state:write'
+  | 'compass:sprint:events:append'
+  | 'compass:sprint:events:read';
+
+type SprintEventRecord = { id: string; ts: string; type: string; payload: any };
+type SprintEventCursor = { monthFile: string; lastEventId?: string };
 
 const compassHandler: CompassHandler = {
   invoke,
@@ -116,6 +130,19 @@ const compassHandler: CompassHandler = {
     stateRead: () => ipcRenderer.invoke('compass:sprint:state:read'),
     stateWrite: (doc: unknown) =>
       ipcRenderer.invoke('compass:sprint:state:write', { doc }),
+    events: {
+      append(
+        event: SprintEventRecord,
+      ): Promise<{ ok: true; monthFile: string }> {
+        return ipcRenderer.invoke('compass:sprint:events:append', { event });
+      },
+      read(args?: {
+        from?: SprintEventCursor;
+        toMonthKey?: string;
+      }): Promise<SprintEventRecord[]> {
+        return ipcRenderer.invoke('compass:sprint:events:read', args);
+      },
+    },
   },
 };
 
