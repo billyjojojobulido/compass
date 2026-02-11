@@ -77,3 +77,69 @@ Weekly Report (Presentation Layer / Human Readable)
         ↓
 Sidebar History View
 </pre>
+
+### Data Lifecycle Map
+
+<pre>
+┌───────────────────────────────┐
+│           User Intent         │
+│  (UI interactions, decisions) │
+└───────────────┬───────────────┘
+                │
+                ▼
+┌───────────────────────────────┐
+│          Domain Actions       │
+│  createTask / moveTask / ...  │
+└───────────────┬───────────────┘
+                │ emit
+                ▼
+┌───────────────────────────────┐
+│           Event Log           │   ← append-only, grows forever
+│   events/YYYY-MM.ndjson       │
+│                               │
+│  - immutable                  │
+│  - replayable                 │
+│  - analytics source           │
+└───────────────┬───────────────┘
+                │ replay / reduce
+                ▼
+┌───────────────────────────────┐
+│          SprintState          │   ← bounded working set
+│        (state.json)           │
+│                               │
+│  - current epics/tasks only   │
+│  - hot data                   │
+│  - hydrated on app start      │
+└───────────────┬───────────────┘
+                │ snapshot (daily)
+                ▼
+┌───────────────────────────────┐
+│        Daily Snapshot         │   ← cold state checkpoint
+│  snapshots/YYYY/YYYY-MM-DD    │
+│                               │
+│  - full state clone           │
+│  - deterministic              │
+│  - used for diff              │
+└───────────────┬───────────────┘
+                │ project
+                ▼
+┌───────────────────────────────┐
+│       Weekly Workspace        │   ← editable working doc
+│      workspace.json           │
+│                               │
+│  - Mon–Fri days               │
+│  - changelog per day          │
+│  - day off / collapse / tags  │
+│  - NOT source of truth        │
+└───────────────┬───────────────┘
+                │ archive
+                ▼
+┌───────────────────────────────┐
+│      Legacy Weekly Report     │   ← human-readable history
+│   legacy-weekly/WeekXX.md     │
+│                               │
+│  - frozen                     │
+│  - versioned by content       │
+│  - shown in Sidebar history   │
+└───────────────────────────────┘
+</pre>
