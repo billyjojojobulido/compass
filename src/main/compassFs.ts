@@ -318,6 +318,78 @@ export type SprintEventCursor = {
   lastEventId?: string;
 };
 
-// TODO: how to read events from certain time point?
+// read events from cursor
+// TODO: in MVP read by monthly order & skip all events prior to lastEvent Id
+
+export function readSprintEvents(args?: {
+  from?: SprintEventCursor;
+  toMonthKey?: string; // optional "YYYY-MM"
+}): SprintEventRecord[] {
+  ensureSprintDirs();
+
+  const dir = sprintEventsDir();
+  if (!fs.existsSync(dir)) return [];
+
+  const files = fs
+    .readdirSync(dir)
+    .filter((f) => /\.ndjson$/i.test(f))
+    .sort(); // asc: "2026-01.ndjson" -> "2026-02.ndjson"
+
+  if (files.length === 0) return [];
+
+  let startIndex = 0;
+  let startFile = args?.from?.monthFile;
+  if (startFile) {
+    const idx = files.indexOf(startFile);
+    if (idx >= 0) startIndex = idx;
+  }
+
+  let endIndex = files.length - 1;
+  if (args?.toMonthKey) {
+    const endFile = `${args.toMonthKey}.ndjson`;
+    const idx = files.indexOf(endFile);
+    if (idx >= 0) endIndex = idx;
+  }
+
+  const out: SprintEventRecord[] = [];
+  let pastCursor = !args?.from?.lastEventId; // if no lastEventId, start immediately
+
+  for (let i = startIndex; i <= endIndex; i++) {
+    const f = files[i];
+    const full = path.join(dir, f);
+    if (!fs.existsSync(full)) continue;
+
+    const raw = fs.readFileSync(full, 'utf-8');
+    const lines = raw.split('\n').filter(Boolean);
+
+    for (const line of lines) {
+      let ev: SprintEventRecord | null = null;
+      try {
+        ev = JSON.parse(line);
+      } catch {
+        continue;
+      }
+      if (!ev) continue;
+
+      if (!pastCursor) {
+        if (ev.id === args?.from?.lastEventId) {
+          pastCursor = true; // start collecting AFTER this
+        }
+        continue;
+      }
+
+      out.push(ev);
+    }
+
+    // if cursor === start index & cannot find lastEventid
+    // it is equal to "starting from the first file"
+    if (i === startIndex && args?.from?.lastEventId && !pastCursor) {
+      pastCursor = true;
+      // then: all files after this will be read!!
+    }
+  }
+
+  return out;
+}
 
 //#endregion
