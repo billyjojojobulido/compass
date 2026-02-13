@@ -12,6 +12,84 @@ export type SprintEvent = {
   meta?: Record<string, unknown>;
 };
 
+type BaseEvent = {
+  id: string; // uuid
+  ts: string; // ISO
+  version: 2; // schema version
+};
+
+export type SprintEventV2 =
+  | (BaseEvent & {
+      type: 'TASK_CREATED';
+      task: {
+        id: string;
+        epicId: string;
+        title: string;
+        statusId: string;
+        stakeholderId?: string;
+      };
+    })
+  | (BaseEvent & {
+      type: 'TASK_UPDATED'; // rename / stakeholder / status may also goes this flow
+      taskId: string;
+      patch: Partial<{
+        title: string;
+        statusId: string;
+        stakeholderId?: string;
+        epicId: string;
+      }>;
+      // this makes it easier to do changelog
+      from?: Partial<{
+        title: string;
+        statusId: string;
+        stakeholderId?: string;
+        epicId: string;
+      }>;
+    })
+  | (BaseEvent & {
+      type: 'TASK_MOVED';
+      taskId: string;
+      fromEpicId: string;
+      toEpicId: string;
+      toIndex: number;
+    })
+  | (BaseEvent & {
+      type: 'TASK_REORDERED';
+      taskId: string;
+      epicId: string;
+      fromIndex: number;
+      toIndex: number;
+    })
+  | (BaseEvent & {
+      type: 'TASK_DELETED';
+      taskId: string;
+      epicId: string;
+    })
+  | (BaseEvent & {
+      type: 'EPIC_CREATED';
+      epic: { id: string; title: string; priorityId: string; statusId: string };
+    })
+  | (BaseEvent & {
+      type: 'EPIC_UPDATED';
+      epicId: string;
+      patch: Partial<{
+        title: string;
+        priorityId: string;
+        statusId: string;
+        pinned?: boolean;
+      }>;
+      from?: Partial<{
+        title: string;
+        priorityId: string;
+        statusId: string;
+        pinned?: boolean;
+      }>;
+    })
+  | (BaseEvent & {
+      type: 'EPIC_DELETED';
+      epicId: string;
+    });
+
 export type PriorityDef = {
   id: string;
   label: string;
