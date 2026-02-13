@@ -3,6 +3,7 @@ import type {
   DailySnapshot,
   WeeklyWorkspace,
 } from '@/domain/types';
+import { SprintEventCursor, SprintEventRecord } from 'src/main/compassFs';
 
 function assertCompass(): Window['compass'] {
   if (typeof window === 'undefined') {
@@ -116,7 +117,56 @@ export const apiClient = {
       }
     },
   },
+  sprint: {
+    state: {
+      async read(): Promise<unknown> {
+        try {
+          const compass = assertCompass();
+          return await compass.sprint.stateRead();
+        } catch (e) {
+          throw new Error(`[ApiClient.sprint.state.read] ${toErrorMessage(e)}`);
+        }
+      },
+      async write(state: unknown): Promise<{ ok: true; path: string }> {
+        try {
+          const compass = assertCompass();
+          return await compass.sprint.stateWrite(state);
+        } catch (e) {
+          throw new Error(
+            `[ApiClient.sprint.state.write] ${toErrorMessage(e)}`,
+          );
+        }
+      },
+    },
+    events: {
+      async read(args?: {
+        from?: SprintEventCursor;
+        toMonthKey?: string;
+      }): Promise<SprintEventRecord[]> {
+        try {
+          const compass = assertCompass();
+          return await compass.sprint.events.read(args);
+        } catch (e) {
+          throw new Error(
+            `[ApiClient.sprint.events.read] ${toErrorMessage(e)}`,
+          );
+        }
+      },
 
+      async append(
+        event: SprintEventRecord,
+      ): Promise<{ ok: true; monthFile: string }> {
+        try {
+          const compass = assertCompass();
+          return await compass.sprint.events.append(event);
+        } catch (e) {
+          throw new Error(
+            `[ApiClient.sprint.events.append] ${toErrorMessage(e)}`,
+          );
+        }
+      },
+    },
+  },
   // TODO: Future expansion points (implement when IPC exists)
   // config: { read, write }
   // events: { append, read }
