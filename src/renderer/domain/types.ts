@@ -2,6 +2,7 @@ export type EntityType = 'epic' | 'task' | 'config';
 export type ActionType = 'create' | 'update' | 'delete' | 'move' | 'reorder';
 export type Tone = 'gray' | 'blue' | 'yellow' | 'green' | 'red';
 
+//#region [IMPORTANT] SPRINT EVENTS related 🚨
 export type SprintEvent = {
   id: string;
   ts: string;
@@ -17,78 +18,71 @@ type BaseEvent = {
   ts: string; // ISO
   version: 2; // schema version
 };
-
 export type SprintEventV2 =
-  | (BaseEvent & {
-      type: 'TASK_CREATED';
-      task: {
-        id: string;
-        epicId: string;
-        title: string;
-        statusId: string;
-        stakeholderId?: string;
-      };
-    })
-  | (BaseEvent & {
-      type: 'TASK_UPDATED'; // rename / stakeholder / status may also goes this flow
-      taskId: string;
-      patch: Partial<{
-        title: string;
-        statusId: string;
-        stakeholderId?: string;
-        epicId: string;
-      }>;
-      // this makes it easier to do changelog
-      from?: Partial<{
-        title: string;
-        statusId: string;
-        stakeholderId?: string;
-        epicId: string;
-      }>;
-    })
-  | (BaseEvent & {
-      type: 'TASK_MOVED';
-      taskId: string;
-      fromEpicId: string;
-      toEpicId: string;
-      toIndex: number;
-    })
-  | (BaseEvent & {
-      type: 'TASK_REORDERED';
-      taskId: string;
-      epicId: string;
-      fromIndex: number;
-      toIndex: number;
-    })
-  | (BaseEvent & {
-      type: 'TASK_DELETED';
-      taskId: string;
-      epicId: string;
-    })
-  | (BaseEvent & {
-      type: 'EPIC_CREATED';
-      epic: { id: string; title: string; priorityId: string; statusId: string };
-    })
-  | (BaseEvent & {
-      type: 'EPIC_UPDATED';
-      epicId: string;
-      patch: Partial<{
-        title: string;
-        priorityId: string;
-        statusId: string;
-        pinned?: boolean;
-      }>;
-      from?: Partial<{
-        title: string;
-        priorityId: string;
-        statusId: string;
-        pinned?: boolean;
-      }>;
-    })
-  | (BaseEvent & {
-      type: 'EPIC_DELETED';
-      epicId: string;
-    });
+  | EpicCreated
+  | EpicUpdated
+  | EpicDeleted
+  | TaskCreated
+  | TaskUpdated
+  | TaskDeleted
+  | TaskMoved
+  | TaskReordered;
+
+/* Epic related events */
+type EpicCreated = BaseEvent & {
+  type: 'EPIC_CREATED';
+  epic: Epic;
+};
+
+type EpicUpdated = BaseEvent & {
+  type: 'EPIC_UPDATED';
+  epicId: string;
+  patch: Partial<Epic>;
+  from?: Partial<Epic>;
+};
+
+type EpicDeleted = BaseEvent & {
+  type: 'EPIC_DELETED';
+  epicId: string;
+};
+/* Task related events */
+type TaskCreated = BaseEvent & {
+  type: 'TASK_CREATED';
+  task: Task;
+};
+
+type TaskUpdated = BaseEvent & {
+  type: 'TASK_UPDATED';
+  taskId: string;
+  patch: Partial<Task>;
+  from?: Partial<Task>;
+  autoCloseBottom?: boolean;
+};
+
+type TaskDeleted = BaseEvent & {
+  type: 'TASK_DELETED';
+  taskId: string;
+  epicId: string;
+};
+
+type TaskMoved = BaseEvent & {
+  type: 'TASK_MOVED';
+  taskId: string;
+  fromEpicId: string;
+  toEpicId: string;
+  toIndex: number;
+  reason?: 'user-dnd' | 'system';
+};
+
+type TaskReordered = BaseEvent & {
+  type: 'TASK_REORDERED';
+  taskId: string;
+  epicId: string;
+  fromIndex: number;
+  toIndex: number;
+  reason?: 'user-dnd';
+};
+//#endregion
 
 export type PriorityDef = {
   id: string;
