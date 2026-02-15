@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useMemo, useReducer } from 'react';
-import type { Epic, SprintEvent, SprintState, Task } from './types';
-import { PersistedSprintDoc } from '@/domain/types';
+import type {
+  Epic,
+  EpicCreated,
+  SprintEvent,
+  SprintEventV2,
+  SprintState,
+  Task,
+  PersistedSprintDoc,
+} from '@/domain/types';
 
 function isPersistedSprintDocV1(x: any): x is PersistedSprintDoc {
   return (
@@ -112,7 +119,7 @@ export function useSprint() {
 /** ---------- reducer + action types ---------- */
 
 type DispatchAction =
-  | { type: 'EPIC_CREATE'; epic: Epic; event: SprintEvent }
+  | { type: 'EPIC_CREATE'; epic: Epic; event: SprintEvent | SprintEventV2 }
   | {
       type: 'EPIC_UPDATE';
       epicId: string;
@@ -368,11 +375,13 @@ function createActions(
         statusId: input.statusId,
         pinned: input.pinned,
       };
-      const event = emit({
-        entity: { type: 'epic', id: epic.id },
-        action: 'create',
-        diff: { after: epic as any },
-      });
+      const event: EpicCreated = {
+        version: 2,
+        id: uid(),
+        ts: nowISO(),
+        type: 'EPIC_CREATED',
+        epic,
+      };
       dispatch({ type: 'EPIC_CREATE', epic, event });
     },
 

@@ -29,7 +29,7 @@ export type SprintEventV2 =
   | TaskReordered;
 
 /* Epic related events */
-type EpicCreated = BaseEvent & {
+export type EpicCreated = BaseEvent & {
   type: 'EPIC_CREATED';
   epic: Epic;
 };
@@ -140,7 +140,7 @@ export type SprintState = {
   taskOrderByEpic: Record<string, string[]>;
 
   // Event log（Stage 4）
-  events: SprintEvent[];
+  events: (SprintEvent | SprintEventV2)[];
   // scroll to epicId
   ui?: SprintUIState;
 };
