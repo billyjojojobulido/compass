@@ -331,75 +331,39 @@ export type SprintEventCursor = {
 // read events from cursor
 // TODO: in MVP read by monthly order & skip all events prior to lastEvent Id
 
-export function readSprintEvents(args?: {
-  from?: SprintEventCursor;
-  toMonthKey?: string; // optional "YYYY-MM"
-}): SprintEventRecord[] {
+export function readSprintEventsV2(monthKey: string): SprintEventV2[] {
   ensureSprintDirs();
 
+  const file = sprintMonthEventPath(monthKey);
+  if (!fs.existsSync(file)) return [];
+
+  const raw = fs.readFileSync(file, 'utf-8');
+  const lines = raw.split('\n');
+  const out: SprintEventV2[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const s = lines[i].trim();
+    if (!s) continue;
+    try {
+      out.push(JSON.parse(s));
+    } catch {
+      // crash-safe: ignore trailing partial line / corrupted line
+      // TODO: in MVP will just ignore :: later can log a warning here
+      continue;
+    }
+  }
+  return out;
+}
+
+export function listEventMonths(): string[] {
+  ensureSprintDirs();
   const dir = sprintEventsDir();
   if (!fs.existsSync(dir)) return [];
 
-  const files = fs
+  return fs
     .readdirSync(dir)
-    .filter((f) => /\.ndjson$/i.test(f))
-    .sort(); // asc: "2026-01.ndjson" -> "2026-02.ndjson"
-
-  if (files.length === 0) return [];
-
-  let startIndex = 0;
-  let startFile = args?.from?.monthFile;
-  if (startFile) {
-    const idx = files.indexOf(startFile);
-    if (idx >= 0) startIndex = idx;
-  }
-
-  let endIndex = files.length - 1;
-  if (args?.toMonthKey) {
-    const endFile = `${args.toMonthKey}.ndjson`;
-    const idx = files.indexOf(endFile);
-    if (idx >= 0) endIndex = idx;
-  }
-
-  const out: SprintEventRecord[] = [];
-  let pastCursor = !args?.from?.lastEventId; // if no lastEventId, start immediately
-
-  for (let i = startIndex; i <= endIndex; i++) {
-    const f = files[i];
-    const full = path.join(dir, f);
-    if (!fs.existsSync(full)) continue;
-
-    const raw = fs.readFileSync(full, 'utf-8');
-    const lines = raw.split('\n').filter(Boolean);
-
-    for (const line of lines) {
-      let ev: SprintEventRecord | null = null;
-      try {
-        ev = JSON.parse(line);
-      } catch {
-        continue;
-      }
-      if (!ev) continue;
-
-      if (!pastCursor) {
-        if (ev.id === args?.from?.lastEventId) {
-          pastCursor = true; // start collecting AFTER this
-        }
-        continue;
-      }
-
-      out.push(ev);
-    }
-
-    // if cursor === start index & cannot find lastEventid
-    // it is equal to "starting from the first file"
-    if (i === startIndex && args?.from?.lastEventId && !pastCursor) {
-      pastCursor = true;
-      // then: all files after this will be read!!
-    }
-  }
-
-  return out;
+    .filter((f) => /^\d{4}-\d{2}\.ndjson$/i.test(f))
+    .map((f) => f.replace(/\.ndjson$/i, ''))
+    .sort();
 }
 
 //#endregion
