@@ -1,11 +1,6 @@
 import { apiClient } from '@/services/ApiClient';
+import { SprintEventV2 } from './events/sprintEventV2';
 
-export type SprintEventRecord = {
-  id: string;
-  ts: string;
-  type: string;
-  payload: any;
-};
 export type SprintEventCursor = { monthFile: string; lastEventId?: string };
 
 function debounce<T extends (...args: any[]) => void>(fn: T, wait = 500) {
@@ -18,7 +13,7 @@ function debounce<T extends (...args: any[]) => void>(fn: T, wait = 500) {
 
 export async function hydrateSprintState(args: {
   initialState: any;
-  applyEvent: (state: any, ev: SprintEventRecord) => any; // reducer apply
+  applyEvent: (state: any, ev: SprintEventV2) => any; // reducer apply
 }) {
   const diskState = await apiClient.sprint.state.read().catch(() => null);
 
@@ -77,7 +72,7 @@ export function createSprintPersister() {
 
   return {
     async appendEventAndScheduleState(args: {
-      event: SprintEventRecord;
+      event: SprintEventV2;
       doc: any; // {state, meta}
     }) {
       const res = await apiClient.sprint.events.append(args.event);

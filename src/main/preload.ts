@@ -1,5 +1,6 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
+import { SprintEventV2 } from '@/domain/events/sprintEventV2';
 import { DailySnapshot, LegacyWeekItem, WeeklyWorkspace } from '@/domain/types';
 import { contextBridge, ipcRenderer } from 'electron';
 
@@ -44,13 +45,11 @@ export type CompassHandler = {
     stateRead(): Promise<unknown | null>;
     stateWrite(doc: unknown): Promise<{ ok: true; path: string }>;
     events: {
-      append(
-        event: SprintEventRecord,
-      ): Promise<{ ok: true; monthFile: string }>;
+      append(event: SprintEventV2): Promise<{ ok: true; monthFile: string }>;
       read(args?: {
         from?: SprintEventCursor;
         toMonthKey?: string;
-      }): Promise<SprintEventRecord[]>;
+      }): Promise<SprintEventV2[]>;
     };
   };
 };
@@ -73,7 +72,6 @@ export type CompassChannel =
   | 'compass:sprint:events:append'
   | 'compass:sprint:events:read';
 
-type SprintEventRecord = { id: string; ts: string; type: string; payload: any };
 type SprintEventCursor = { monthFile: string; lastEventId?: string };
 
 const compassHandler: CompassHandler = {
@@ -131,15 +129,13 @@ const compassHandler: CompassHandler = {
     stateWrite: (doc: unknown) =>
       ipcRenderer.invoke('compass:sprint:state:write', { doc }),
     events: {
-      append(
-        event: SprintEventRecord,
-      ): Promise<{ ok: true; monthFile: string }> {
+      append(event: SprintEventV2): Promise<{ ok: true; monthFile: string }> {
         return ipcRenderer.invoke('compass:sprint:events:append', { event });
       },
       read(args?: {
         from?: SprintEventCursor;
         toMonthKey?: string;
-      }): Promise<SprintEventRecord[]> {
+      }): Promise<SprintEventV2[]> {
         return ipcRenderer.invoke('compass:sprint:events:read', args);
       },
     },

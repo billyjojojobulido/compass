@@ -3,6 +3,7 @@ import { app } from 'electron';
 import { LegacyWeekItem } from '@/domain/types';
 import fs from 'fs';
 import path from 'path';
+import { SprintEventV2 } from '@/domain/events/sprintEventV2';
 
 export function getDataRoot() {
   // TODO: can change to configable dir in the future
@@ -297,14 +298,8 @@ export function writeSprintState(state: unknown) {
 /* 
   --- Sprint: Event ---
 */
-export type SprintEventRecord = {
-  id: string; // unique
-  ts: string; // ISO
-  type: string;
-  payload: any;
-};
 
-export function appendSprintEvent(ev: SprintEventRecord) {
+export function appendSprintEvent(ev: SprintEventV2) {
   ensureSprintDirs();
   const monthKey = monthKeyFromISO(ev.ts);
   const file = sprintMonthEventPath(monthKey);
@@ -324,7 +319,7 @@ export type SprintEventCursor = {
 export function readSprintEvents(args?: {
   from?: SprintEventCursor;
   toMonthKey?: string; // optional "YYYY-MM"
-}): SprintEventRecord[] {
+}): SprintEventV2[] {
   ensureSprintDirs();
   const dir = sprintEventsDir();
   if (!fs.existsSync(dir)) return [];
@@ -350,7 +345,7 @@ export function readSprintEvents(args?: {
     if (idx >= 0) endIndex = idx;
   }
 
-  const out: SprintEventRecord[] = [];
+  const out: SprintEventV2[] = [];
   let pastCursor = !args?.from?.lastEventId; // if no lastEventId, start immediately
 
   for (let i = startIndex; i <= endIndex; i++) {
@@ -362,7 +357,7 @@ export function readSprintEvents(args?: {
     const lines = raw.split('\n').filter(Boolean);
 
     for (const line of lines) {
-      let ev: SprintEventRecord | null = null;
+      let ev: SprintEventV2 | null = null;
       try {
         ev = JSON.parse(line);
       } catch {
