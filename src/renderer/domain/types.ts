@@ -1,8 +1,11 @@
+import { SprintEventV2 } from './events/sprintEventV2';
+
 export type EntityType = 'epic' | 'task' | 'config';
 export type ActionType = 'create' | 'update' | 'delete' | 'move' | 'reorder';
 export type Tone = 'gray' | 'blue' | 'yellow' | 'green' | 'red';
 
-//#region [IMPORTANT] SPRINT EVENTS related 🚨
+//#region SprintEventV2 migrated to /src/domain/events/..
+// TODO: this part need to be removed when
 export type SprintEvent = {
   id: string;
   ts: string;
@@ -13,75 +16,6 @@ export type SprintEvent = {
   meta?: Record<string, unknown>;
 };
 
-type BaseEvent = {
-  id: string; // uuid
-  ts: string; // ISO
-  version: 2; // schema version
-};
-export type SprintEventV2 =
-  | EpicCreated
-  | EpicUpdated
-  | EpicDeleted
-  | TaskCreated
-  | TaskUpdated
-  | TaskDeleted
-  | TaskMoved
-  | TaskReordered;
-
-/* Epic related events */
-export type EpicCreated = BaseEvent & {
-  type: 'EPIC_CREATED';
-  epic: Epic;
-};
-
-type EpicUpdated = BaseEvent & {
-  type: 'EPIC_UPDATED';
-  epicId: string;
-  patch: Partial<Epic>;
-  from?: Partial<Epic>;
-};
-
-type EpicDeleted = BaseEvent & {
-  type: 'EPIC_DELETED';
-  epicId: string;
-};
-/* Task related events */
-type TaskCreated = BaseEvent & {
-  type: 'TASK_CREATED';
-  task: Task;
-};
-
-type TaskUpdated = BaseEvent & {
-  type: 'TASK_UPDATED';
-  taskId: string;
-  patch: Partial<Task>;
-  from?: Partial<Task>;
-  autoCloseBottom?: boolean;
-};
-
-type TaskDeleted = BaseEvent & {
-  type: 'TASK_DELETED';
-  taskId: string;
-  epicId: string;
-};
-
-type TaskMoved = BaseEvent & {
-  type: 'TASK_MOVED';
-  taskId: string;
-  fromEpicId: string;
-  toEpicId: string;
-  toIndex: number;
-  reason?: 'user-dnd' | 'system';
-};
-
-type TaskReordered = BaseEvent & {
-  type: 'TASK_REORDERED';
-  taskId: string;
-  epicId: string;
-  fromIndex: number;
-  toIndex: number;
-  reason?: 'user-dnd';
-};
 //#endregion
 
 export type PriorityDef = {
@@ -140,7 +74,7 @@ export type SprintState = {
   taskOrderByEpic: Record<string, string[]>;
 
   // Event log（Stage 4）
-  events: (SprintEvent | SprintEventV2)[];
+  events: SprintEventV2[];
   // scroll to epicId
   ui?: SprintUIState;
 };
