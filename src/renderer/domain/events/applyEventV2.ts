@@ -74,6 +74,17 @@ export function applyEventV2(
         state.taskOrderByEpic[e.patch.epicId].push(e.taskId);
       }
 
+      if (e.autoCloseBottom) {
+        // move the task to the bottom of its epic (or "non-closed bottom" rule)
+        const epicId = next.epicId;
+        const list = state.taskOrderByEpic[epicId] ?? [];
+
+        const newTaskLists = list.filter((x) => x !== next.id);
+        newTaskLists.push(next.id);
+
+        state.taskOrderByEpic[epicId] = newTaskLists;
+      }
+
       return state;
     }
 
