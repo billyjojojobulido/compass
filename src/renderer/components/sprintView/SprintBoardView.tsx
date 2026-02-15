@@ -223,8 +223,25 @@ export default function SprintBoardView(props) {
     const toEpicId = findEpicContainerByDndId(over.id);
     if (!toEpicId) return;
 
-    const toList = taskOrderRef.current[toEpicId] ?? [];
-    const toIndex = toList.indexOf(taskId);
+    const overTaskId = isTaskDndId(overSid) ? parseTaskId(overSid) : null;
+    const list = taskOrderRef.current[toEpicId] ?? [];
+
+    // same as epic reorder: toIndex = overIndex (not task's own index)
+    let toIndex = origin.index;
+
+    if (overTaskId) {
+      const overIndex = list.indexOf(overTaskId);
+      if (overIndex >= 0) toIndex = overIndex;
+    } else {
+      // case: over is epic container (empty area)
+      //  reorder to bottom: under semantic of arrayMove, bottom index = list.length - 1
+      // case  move to another epic: insert to bottom; index = list.length
+      toIndex =
+        origin.epicId === toEpicId ? Math.max(0, list.length - 1) : list.length;
+    }
+
+    // if over is itself, stay still (drag back to own position)
+    if (overTaskId === taskId) toIndex = origin.index;
 
     const epicId = findEpicContainerByDndId(active.id);
     const overEpicId = findEpicContainerByDndId(over.id);

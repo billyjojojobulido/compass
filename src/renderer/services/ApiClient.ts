@@ -1,9 +1,10 @@
+import { SprintEventV2 } from '@/domain/events/sprintEventV2';
 import type {
   LegacyWeekItem,
   DailySnapshot,
   WeeklyWorkspace,
 } from '@/domain/types';
-import { SprintEventCursor, SprintEventRecord } from 'src/main/compassFs';
+import { SprintEventCursor } from 'src/main/compassFs';
 
 function assertCompass(): Window['compass'] {
   if (typeof window === 'undefined') {
@@ -142,7 +143,7 @@ export const apiClient = {
       async read(args?: {
         from?: SprintEventCursor;
         toMonthKey?: string;
-      }): Promise<SprintEventRecord[]> {
+      }): Promise<SprintEventV2[]> {
         try {
           const compass = assertCompass();
           return await compass.sprint.events.read(args);
@@ -154,7 +155,7 @@ export const apiClient = {
       },
 
       async append(
-        event: SprintEventRecord,
+        event: SprintEventV2,
       ): Promise<{ ok: true; monthFile: string }> {
         try {
           const compass = assertCompass();

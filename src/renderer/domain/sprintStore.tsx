@@ -47,12 +47,46 @@ export function SprintProvider({
   initialState: SprintState;
   children: React.ReactNode;
 }) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, baseDispatch] = useReducer(reducer, initialState);
 
-  const actions = useMemo(() => createActions(state, dispatch), [state]);
+  const appendChainRef = React.useRef<Promise<void>>(Promise.resolve());
+
+  const appendEvent = React.useCallback((ev: SprintEventV2) => {
+    console.log('🦁 ', ev);
+
+    appendChainRef.current = appendChainRef.current
+      .then(async () => {
+        await window.compass.sprint.events.append(ev);
+      })
+      .catch((e) => {
+        console.error('[SprintStore] append event failed', e);
+        // baocheng notes: don't throw anything, or the chain might break
+      });
+  }, []);
+
+  /*
+    override the dispatch with a wrapper layer: update state first, then append event
+  */
+  const dispatch = React.useCallback(
+    (action: any) => {
+      baseDispatch(action);
+      if (action?.event) appendEvent(action.event);
+    },
+    [appendEvent],
+  );
+
+  const actions = useMemo(
+    () => createActions(state, dispatch),
+    [state, dispatch],
+  );
   // add debounce
   const debouncedSave = React.useMemo(() => createDebouncer(800), []);
   const didHydrateRef = React.useRef(false);
+
+  /*
+    Hydrate: state (optional:: read events by the way)
+  */
+  const eventsRef = React.useRef<SprintEventV2[]>([]);
 
   React.useEffect(() => {
     // hydrate once
@@ -80,8 +114,18 @@ export function SprintProvider({
         config: state.config, // overrdie using runtime-config - stable
       };
 
-      dispatch({ type: 'HYDRATE', payload: next });
+      baseDispatch({ type: 'HYDRATE', payload: next });
       didHydrateRef.current = true;
+
+      try {
+        const evs = await window.compass.sprint.events.read({
+          // from: { monthFile, lastEventId }  // pass in cursor if there is any
+          // toMonthKey: '2026-02'
+        });
+        eventsRef.current = Array.isArray(evs) ? evs : [];
+      } catch (e) {
+        console.warn('[SprintStore] eventsRead failed (ignored)', e);
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // only once
@@ -121,38 +165,6 @@ export function useSprint() {
 
 type DispatchAction =
   | { type: 'APPLY_EVENT_V2'; event: SprintEventV2 }
-  | { type: 'EPIC_CREATE'; event: SprintEvent | SprintEventV2 }
-  | {
-      type: 'EPIC_UPDATE';
-      epicId: string;
-      patch: Partial<Epic>;
-      event: SprintEvent;
-    }
-  | { type: 'EPIC_DELETE'; epicId: string; event: SprintEvent }
-  | { type: 'TASK_CREATE'; task: Task; event: SprintEvent }
-  | {
-      type: 'TASK_UPDATE';
-      taskId: string;
-      patch: Partial<Task>;
-      event: SprintEvent;
-      meta?: { autoCloseBottom?: boolean };
-    }
-  | { type: 'TASK_DELETE'; taskId: string; event: SprintEvent }
-  | {
-      type: 'TASK_MOVE';
-      taskId: string;
-      fromEpicId: string;
-      toEpicId: string;
-      toIndex: number;
-      event: SprintEvent;
-    }
-  | {
-      type: 'TASK_REORDER';
-      taskId: string;
-      epicId: string;
-      toIndex: number;
-      event: SprintEvent;
-    }
   | {
       type: 'TASK_PREVIEW_MOVE';
       taskId: string;
@@ -187,9 +199,6 @@ function reducer(state: SprintState, a: DispatchAction): SprintState {
       const toList = [...(state.taskOrderByEpic[a.toEpicId] ?? [])].filter(
         (x) => x !== a.taskId,
       );
-
-      const idx = Math.max(0, Math.min(a.toIndex, toList.length));
-      toList.splice(idx, 0, a.taskId);
 
       return {
         ...state,
