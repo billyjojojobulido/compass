@@ -20,8 +20,8 @@ export function applyEventV2(
   state: SprintState,
   e: SprintEventV2,
 ): SprintState {
-  // (Optional) if you're using immutable reducer style, clone here.
-  // If you're using mutable updates inside reducer, you can just mutate and return state.
+  // (Optional) if using immutable reducer style, clone here.
+  // If using mutable updates inside reducer, can just mutate and return state.
   switch (e.type) {
     case 'EPIC_CREATED': {
       state.epics.push(e.epic);
@@ -64,7 +64,7 @@ export function applyEventV2(
       const next = { ...prev, ...e.patch };
       state.tasksById[e.taskId] = next;
 
-      // If epicId changed via update (rare but allowed by your modal)
+      // If epicId changed via update (rare but allowed by modal)
       if (e.patch.epicId && e.patch.epicId !== prev.epicId) {
         ensureOrder(state, prev.epicId);
         ensureOrder(state, e.patch.epicId);

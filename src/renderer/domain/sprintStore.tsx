@@ -166,7 +166,7 @@ type DispatchAction =
 function reducer(state: SprintState, a: DispatchAction): SprintState {
   switch (a.type) {
     case 'APPLY_EVENT_V2': {
-      const next = structuredClone(state); // or your existing immutability strategy
+      const next = structuredClone(state);
       applyEventV2(next, a.event);
 
       // store events in memory for now (later flush to disk)

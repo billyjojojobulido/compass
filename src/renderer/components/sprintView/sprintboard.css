@@ -305,7 +305,7 @@
   text-underline-offset: 3px;
 }
 
-/* content header actions layout helper (if you use it) */
+/* content header actions layout helper */
 .contentHeader {
   position: relative;
 }

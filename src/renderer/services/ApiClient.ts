@@ -50,7 +50,7 @@ export const apiClient = {
       }
     },
 
-    // NOTE: only implement when you add ipcMain.handle('compass:legacy:write')
+    // NOTE: only implement when add ipcMain.handle('compass:legacy:write')
     // async write(fileName: string, content: string): Promise<{ ok: true }> { ... }
   },
 
