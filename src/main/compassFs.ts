@@ -19,6 +19,9 @@ export function ensureCompassDirs() {
     path.join(root, 'snapshots'),
     path.join(root, 'reports'),
     path.join(root, 'legacy-weekly'),
+    /* sprint state & events data, specially handle */
+    path.join(root, 'sprint'),
+    path.join(root, 'sprint', 'events'),
   ];
 
   for (const d of dirs) {
@@ -248,24 +251,145 @@ export function sprintDir() {
   return path.join(getDataRoot(), 'sprint');
 }
 
+export function sprintEventsDir() {
+  return path.join(sprintDir(), 'events');
+}
+
 export function sprintStatePath() {
   return path.join(sprintDir(), 'state.json');
 }
-
-export function writeSprintState(doc: unknown) {
+function ensureSprintDirs() {
   ensureCompassDirs();
-  const dir = sprintDir();
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-  fs.writeFileSync(sprintStatePath(), JSON.stringify(doc, null, 2), 'utf-8');
-  return { ok: true, path: sprintStatePath() };
+  const dirs = [sprintDir(), sprintEventsDir()];
+  for (const d of dirs) {
+    if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
+  }
 }
 
-export function readSprintState(): unknown | null {
-  ensureCompassDirs();
+function monthKeyFromISO(iso: string) {
+  // "2026-02-03T..." -> "2026-02"
+  return iso.slice(0, 7);
+}
+
+export function sprintMonthEventPath(monthKey: string) {
+  // monthKey: "YYYY-MM"
+  return path.join(sprintEventsDir(), `${monthKey}.ndjson`);
+}
+
+/* 
+  --- Sprint: State ---
+*/
+export function readSprintState<T = any>(): T | null {
+  ensureSprintDirs();
   const full = sprintStatePath();
   if (!fs.existsSync(full)) return null;
   const raw = fs.readFileSync(full, 'utf-8');
   return JSON.parse(raw);
 }
+
+export function writeSprintState(state: unknown) {
+  ensureSprintDirs();
+  const full = sprintStatePath();
+  fs.writeFileSync(full, JSON.stringify(state, null, 2), 'utf-8');
+  return { ok: true as const, path: full };
+}
+
+/* 
+  --- Sprint: Event ---
+*/
+export type SprintEventRecord = {
+  id: string; // unique
+  ts: string; // ISO
+  type: string;
+  payload: any;
+};
+
+export function appendSprintEvent(ev: SprintEventRecord) {
+  ensureSprintDirs();
+  const monthKey = monthKeyFromISO(ev.ts);
+  const file = sprintMonthEventPath(monthKey);
+  const line = JSON.stringify(ev) + '\n';
+  fs.appendFileSync(file, line, 'utf-8');
+  return { ok: true as const, monthFile: `${monthKey}.ndjson` };
+}
+
+export type SprintEventCursor = {
+  monthFile: string; // "2026-02.ndjson"
+  lastEventId?: string;
+};
+
+// read events from cursor
+// TODO: in MVP read by monthly order & skip all events prior to lastEvent Id
+
+export function readSprintEvents(args?: {
+  from?: SprintEventCursor;
+  toMonthKey?: string; // optional "YYYY-MM"
+}): SprintEventRecord[] {
+  ensureSprintDirs();
+
+  const dir = sprintEventsDir();
+  if (!fs.existsSync(dir)) return [];
+
+  const files = fs
+    .readdirSync(dir)
+    .filter((f) => /\.ndjson$/i.test(f))
+    .sort(); // asc: "2026-01.ndjson" -> "2026-02.ndjson"
+
+  if (files.length === 0) return [];
+
+  let startIndex = 0;
+  let startFile = args?.from?.monthFile;
+  if (startFile) {
+    const idx = files.indexOf(startFile);
+    if (idx >= 0) startIndex = idx;
+  }
+
+  let endIndex = files.length - 1;
+  if (args?.toMonthKey) {
+    const endFile = `${args.toMonthKey}.ndjson`;
+    const idx = files.indexOf(endFile);
+    if (idx >= 0) endIndex = idx;
+  }
+
+  const out: SprintEventRecord[] = [];
+  let pastCursor = !args?.from?.lastEventId; // if no lastEventId, start immediately
+
+  for (let i = startIndex; i <= endIndex; i++) {
+    const f = files[i];
+    const full = path.join(dir, f);
+    if (!fs.existsSync(full)) continue;
+
+    const raw = fs.readFileSync(full, 'utf-8');
+    const lines = raw.split('\n').filter(Boolean);
+
+    for (const line of lines) {
+      let ev: SprintEventRecord | null = null;
+      try {
+        ev = JSON.parse(line);
+      } catch {
+        continue;
+      }
+      if (!ev) continue;
+
+      if (!pastCursor) {
+        if (ev.id === args?.from?.lastEventId) {
+          pastCursor = true; // start collecting AFTER this
+        }
+        continue;
+      }
+
+      out.push(ev);
+    }
+
+    // if cursor === start index & cannot find lastEventid
+    // it is equal to "starting from the first file"
+    if (i === startIndex && args?.from?.lastEventId && !pastCursor) {
+      pastCursor = true;
+      // then: all files after this will be read!!
+    }
+  }
+
+  return out;
+}
+
 //#endregion

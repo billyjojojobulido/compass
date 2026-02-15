@@ -4,6 +4,38 @@ Updates in minor version will be recorded in this file.
 
 ---
 
+## [0.1.5] - 2026-02-10
+
+### Added
+
+- 🚀 Weekly Workspace model
+  - Mon–Fri workspace derived from daily snapshots
+  - Supports day-off markers and UI-specific metadata
+  - Stored as editable workspace.json
+- ✨ Current Week View (MVP)
+  - Accordion-based Mon–Fri layout
+  - Snapshot presence & completion indicators
+  - Entry point for daily / weekly reporting
+- Legacy Weekly Report support
+  - Unified handling of generated and imported weekly markdown logs
+  - Sidebar history view backed by filesystem index
+
+### Changed
+
+- ✨ Clarified data responsibilities across layers:
+  - SprintState → working set only
+  - Snapshots → cold state checkpoints
+  - Workspace → editable weekly draft
+  - Legacy markdown → immutable history
+- ✨ Refined IPC boundary with explicit Compass APIs.
+- ✨ Imporved preload exposure and API safety guarantees
+
+### Fixed
+
+- eliminated invalid button nesting in CurrentWeekView
+- corrected snapshot loading edge cases for non-working days
+- improved error handling for missing snapshot files
+
 ## [0.1.4] - 2026-02-01
 
 ### Added

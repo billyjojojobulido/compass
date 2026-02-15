@@ -1,7 +1,11 @@
+import { SprintEventV2 } from './events/sprintEventV2';
+
 export type EntityType = 'epic' | 'task' | 'config';
 export type ActionType = 'create' | 'update' | 'delete' | 'move' | 'reorder';
 export type Tone = 'gray' | 'blue' | 'yellow' | 'green' | 'red';
 
+//#region SprintEventV2 migrated to /src/domain/events/..
+// TODO: this part need to be removed when
 export type SprintEvent = {
   id: string;
   ts: string;
@@ -11,6 +15,8 @@ export type SprintEvent = {
   diff?: { before?: Record<string, unknown>; after?: Record<string, unknown> };
   meta?: Record<string, unknown>;
 };
+
+//#endregion
 
 export type PriorityDef = {
   id: string;
@@ -68,10 +74,18 @@ export type SprintState = {
   taskOrderByEpic: Record<string, string[]>;
 
   // Event log（Stage 4）
-  events: SprintEvent[];
+  events: SprintEventV2[];
   // scroll to epicId
   ui?: SprintUIState;
 };
+
+export type PersistedSprintDocV1 = {
+  schemaVersion: 1;
+  generatedAt: string; // ISO
+  state: SprintState;
+};
+
+export type PersistedSprintDoc = PersistedSprintDocV1;
 
 export type DailySnapshot = {
   schemaVersion: 1;
@@ -226,7 +240,7 @@ export type WeeklyWorkspace = {
 
   // identity
   weekKey: WeekKey; // weekStart local day key: "2026-02-02"
-  weekNo?: number; // optional, later can compute from your existing numbering
+  weekNo?: number; // optional, later can compute from existing numbering
   title: string; // fixed format, user cannot edit
   generatedAt: string; // ISO
 
@@ -240,9 +254,9 @@ export type WeeklyWorkspace = {
   // weekly rollup (derived)
   rollup: WeeklyRollup;
 
-  // optional notes (if you ever want)
+  // optional notes
   notes?: {
-    techDebt?: string[]; // subjective panel (optional if you keep it)
+    techDebt?: string[]; // subjective panel (optional if keep it)
     priorityNotes?: string[]; // subjective panel
     weeklySummary?: string; // final summary (optional)
   };
@@ -260,7 +274,7 @@ export type WeeklyDay = {
   // the core content we display
   changelog: DailyChangelog;
 
-  // optional: allow a small manual appendix (if you later re-add customization)
+  // optional: allow a small manual appendix (if later re-add customization)
   appendix?: string[];
 };
 

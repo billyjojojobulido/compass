@@ -1,5 +1,28 @@
 import React, { createContext, useContext, useMemo, useReducer } from 'react';
-import type { Epic, SprintEvent, SprintState, Task } from './types';
+import type {
+  Epic,
+  SprintEvent,
+  SprintState,
+  Task,
+  PersistedSprintDoc,
+  SprintConfig,
+} from '@/domain/types';
+import type { SprintEventV2 } from '@/domain/events/sprintEventV2';
+import { applyEventV2 } from '@/domain/events/applyEventV2';
+
+function isPersistedSprintDocV1(x: any): x is PersistedSprintDoc {
+  return (
+    x && x.schemaVersion === 1 && x.state && typeof x.generatedAt === 'string'
+  );
+}
+
+function createDebouncer(ms: number) {
+  let t: any = null;
+  return (fn: () => void) => {
+    if (t) clearTimeout(t);
+    t = setTimeout(fn, ms);
+  };
+}
 
 export function nowISO() {
   return new Date().toISOString();
@@ -27,6 +50,59 @@ export function SprintProvider({
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const actions = useMemo(() => createActions(state, dispatch), [state]);
+  // add debounce
+  const debouncedSave = React.useMemo(() => createDebouncer(800), []);
+  const didHydrateRef = React.useRef(false);
+
+  React.useEffect(() => {
+    // hydrate once
+    (async () => {
+      const raw = await window.compass.sprint.stateRead();
+      if (!raw) {
+        didHydrateRef.current = true;
+        return;
+      }
+
+      if (!isPersistedSprintDocV1(raw)) {
+        console.warn(
+          '[SprintStore] persisted state has unknown format, ignored.',
+        );
+        didHydrateRef.current = true;
+        return;
+      }
+
+      // merge strategy:
+      // - keep runtime config as source of truth for now
+      // - but allow persisted state to bring epics/tasks/order/etc.
+      // can do merge config here, if users are allowed to edit config in future build
+      const next: SprintState = {
+        ...raw.state,
+        config: state.config, // overrdie using runtime-config - stable
+      };
+
+      dispatch({ type: 'HYDRATE', payload: next });
+      didHydrateRef.current = true;
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // only once
+
+  React.useEffect(() => {
+    // baocheng notes: this is critically important!
+    // to avoid override file with default state befroe hydrate
+    if (!didHydrateRef.current) return;
+
+    debouncedSave(() => {
+      const doc: PersistedSprintDoc = {
+        schemaVersion: 1,
+        generatedAt: nowISO(),
+        state, // incl config
+      };
+
+      window.compass.sprint
+        .stateWrite(doc)
+        .catch((e) => console.error('[SprintStore] save failed', e));
+    });
+  }, [state, debouncedSave]);
 
   return (
     <SprintContext.Provider value={{ state, actions }}>
@@ -44,7 +120,8 @@ export function useSprint() {
 /** ---------- reducer + action types ---------- */
 
 type DispatchAction =
-  | { type: 'EPIC_CREATE'; epic: Epic; event: SprintEvent }
+  | { type: 'APPLY_EVENT_V2'; event: SprintEventV2 }
+  | { type: 'EPIC_CREATE'; event: SprintEvent | SprintEventV2 }
   | {
       type: 'EPIC_UPDATE';
       epicId: string;
@@ -83,148 +160,19 @@ type DispatchAction =
       toEpicId: string;
       toIndex: number;
     }
-  | { type: 'UI_SCROLL_TO_EPIC'; epicId: string | null };
+  | { type: 'UI_SCROLL_TO_EPIC'; epicId: string | null }
+  | { type: 'HYDRATE'; payload: SprintState };
 
 function reducer(state: SprintState, a: DispatchAction): SprintState {
   switch (a.type) {
-    case 'EPIC_CREATE': {
-      return {
-        ...state,
-        epics: [...state.epics, a.epic],
-        events: [...state.events, a.event],
-      };
-    }
-    case 'EPIC_UPDATE': {
-      return {
-        ...state,
-        epics: state.epics.map((e) =>
-          e.id === a.epicId ? { ...e, ...a.patch } : e,
-        ),
-        events: [...state.events, a.event],
-      };
-    }
-    case 'EPIC_DELETE': {
-      const epicId = a.epicId;
-      const order = state.taskOrderByEpic[epicId] ?? [];
-      const tasksById = { ...state.tasksById };
-      for (const tid of order) delete tasksById[tid];
+    case 'APPLY_EVENT_V2': {
+      const next = structuredClone(state);
+      applyEventV2(next, a.event);
 
-      const taskOrderByEpic = { ...state.taskOrderByEpic };
-      delete taskOrderByEpic[epicId];
+      // store events in memory for now (later flush to disk)
+      next.events.push(a.event);
 
-      return {
-        ...state,
-        epics: state.epics.filter((e) => e.id !== epicId),
-        tasksById,
-        taskOrderByEpic,
-        events: [...state.events, a.event],
-      };
-    }
-    case 'TASK_CREATE': {
-      const t = a.task;
-      const list = [...(state.taskOrderByEpic[t.epicId] ?? [])].filter(
-        (x) => x !== t.id,
-      );
-      list.push(t.id);
-      return {
-        ...state,
-        tasksById: { ...state.tasksById, [t.id]: t },
-        taskOrderByEpic: { ...state.taskOrderByEpic, [t.epicId]: list },
-        events: [...state.events, a.event],
-      };
-    }
-    case 'TASK_UPDATE': {
-      const prev = state.tasksById[a.taskId];
-      if (!prev) return state;
-      const next: Task = { ...prev, ...a.patch };
-
-      let taskOrderByEpic = state.taskOrderByEpic;
-
-      // epic change: remove from old list, append to new list
-      if (next.epicId !== prev.epicId) {
-        const fromList = [...(taskOrderByEpic[prev.epicId] ?? [])].filter(
-          (x) => x !== next.id,
-        );
-        const toList = [...(taskOrderByEpic[next.epicId] ?? [])].filter(
-          (x) => x !== next.id,
-        );
-        toList.push(next.id);
-        taskOrderByEpic = {
-          ...taskOrderByEpic,
-          [prev.epicId]: fromList,
-          [next.epicId]: toList,
-        };
-      }
-
-      // auto close bottom (optional)
-      if (a.meta?.autoCloseBottom) {
-        const list = [...(taskOrderByEpic[next.epicId] ?? [])].filter(
-          (x) => x !== next.id,
-        );
-        list.push(next.id);
-        taskOrderByEpic = { ...taskOrderByEpic, [next.epicId]: list };
-      }
-
-      return {
-        ...state,
-        tasksById: { ...state.tasksById, [next.id]: next },
-        taskOrderByEpic,
-        events: [...state.events, a.event],
-      };
-    }
-    case 'TASK_DELETE': {
-      const prev = state.tasksById[a.taskId];
-      if (!prev) return state;
-      const list = [...(state.taskOrderByEpic[prev.epicId] ?? [])].filter(
-        (x) => x !== prev.id,
-      );
-      const tasksById = { ...state.tasksById };
-      delete tasksById[prev.id];
-      return {
-        ...state,
-        tasksById,
-        taskOrderByEpic: { ...state.taskOrderByEpic, [prev.epicId]: list },
-        events: [...state.events, a.event],
-      };
-    }
-    case 'TASK_MOVE': {
-      const prev = state.tasksById[a.taskId];
-      if (!prev) return state;
-
-      const fromList = [...(state.taskOrderByEpic[a.fromEpicId] ?? [])].filter(
-        (x) => x !== a.taskId,
-      );
-      const toListRaw = [...(state.taskOrderByEpic[a.toEpicId] ?? [])].filter(
-        (x) => x !== a.taskId,
-      );
-      const idx = Math.max(0, Math.min(a.toIndex, toListRaw.length));
-      toListRaw.splice(idx, 0, a.taskId);
-
-      return {
-        ...state,
-        tasksById: {
-          ...state.tasksById,
-          [a.taskId]: { ...prev, epicId: a.toEpicId },
-        },
-        taskOrderByEpic: {
-          ...state.taskOrderByEpic,
-          [a.fromEpicId]: fromList,
-          [a.toEpicId]: toListRaw,
-        },
-        events: [...state.events, a.event],
-      };
-    }
-    case 'TASK_REORDER': {
-      const listRaw = [...(state.taskOrderByEpic[a.epicId] ?? [])].filter(
-        (x) => x !== a.taskId,
-      );
-      const idx = Math.max(0, Math.min(a.toIndex, listRaw.length));
-      listRaw.splice(idx, 0, a.taskId);
-      return {
-        ...state,
-        taskOrderByEpic: { ...state.taskOrderByEpic, [a.epicId]: listRaw },
-        events: [...state.events, a.event],
-      };
+      return next;
     }
     case 'TASK_PREVIEW_MOVE': {
       const prev = state.tasksById[a.taskId];
@@ -261,6 +209,8 @@ function reducer(state: SprintState, a: DispatchAction): SprintState {
         ...state,
         ui: { ...(state.ui ?? {}), scrollToEpicId: a.epicId },
       };
+    case 'HYDRATE':
+      return a.payload;
     default:
       return state;
   }
@@ -280,6 +230,17 @@ function createActions(
     return { ...base, id: uid(), ts: nowISO() };
   }
 
+  function emitV2<T extends Omit<SprintEventV2, 'v' | 'id' | 'ts'>>(
+    base: T,
+  ): SprintEventV2 {
+    return {
+      ...base,
+      v: 2,
+      id: uid(),
+      ts: nowISO(),
+    } as unknown as SprintEventV2;
+  }
+
   return {
     isClosedStatus,
 
@@ -297,44 +258,41 @@ function createActions(
         statusId: input.statusId,
         pinned: input.pinned,
       };
-      const event = emit({
-        entity: { type: 'epic', id: epic.id },
-        action: 'create',
-        diff: { after: epic as any },
+      const event = emitV2({
+        type: 'EPIC_CREATED',
+        epic: epic,
       });
-      dispatch({ type: 'EPIC_CREATE', epic, event });
+      dispatch({ type: 'APPLY_EVENT_V2', event });
     },
 
     updateEpic(epicId: string, patch: Partial<Epic>) {
       const prev = state.epics.find((e) => e.id === epicId);
       if (!prev) return;
-      const after = { ...prev, ...patch };
-      const event = emit({
-        entity: { type: 'epic', id: epicId },
-        action: 'update',
-        diff: { before: prev as any, after: after as any },
+      const event = emitV2({
+        type: 'EPIC_UPDATED',
+        epicId: epicId,
+        patch: patch,
+        from: prev, // optional
       });
-      dispatch({ type: 'EPIC_UPDATE', epicId, patch, event });
+      dispatch({ type: 'APPLY_EVENT_V2', event });
     },
 
     deleteEpic(epicId: string) {
-      const prev = state.epics.find((e) => e.id === epicId);
-      const event = emit({
-        entity: { type: 'epic', id: epicId },
-        action: 'delete',
-        diff: { before: prev as any },
-        meta: { removedTasks: (state.taskOrderByEpic[epicId] ?? []).length },
+      const removedTaskIds = state.taskOrderByEpic[epicId] ?? [];
+      const event = emitV2({
+        type: 'EPIC_DELETED',
+        epicId: epicId,
+        removedTaskIds: removedTaskIds,
       });
-      dispatch({ type: 'EPIC_DELETE', epicId, event });
+      dispatch({ type: 'APPLY_EVENT_V2', event });
     },
 
     createTask(input: Task) {
-      const event = emit({
-        entity: { type: 'task', id: input.id },
-        action: 'create',
-        diff: { after: input as any },
+      const event = emitV2({
+        type: 'TASK_CREATED',
+        task: input,
       });
-      dispatch({ type: 'TASK_CREATE', task: input, event });
+      dispatch({ type: 'APPLY_EVENT_V2', event });
     },
 
     updateTask(taskId: string, patch: Partial<Task>) {
@@ -348,30 +306,27 @@ function createActions(
       const nextClosed = isClosedStatus(next.statusId);
       const autoCloseBottom = prevClosed !== nextClosed && nextClosed;
 
-      const event = emit({
-        entity: { type: 'task', id: taskId },
-        action: 'update',
-        diff: { before: prev as any, after: next as any },
-        meta: autoCloseBottom ? { reason: 'auto-close-bottom' } : undefined,
+      const event = emitV2({
+        type: 'TASK_UPDATED',
+        taskId: taskId,
+        patch: patch,
+        from: prev,
+        autoCloseBottom: autoCloseBottom,
       });
-
-      dispatch({
-        type: 'TASK_UPDATE',
-        taskId,
-        patch,
-        event,
-        meta: { autoCloseBottom },
-      });
+      dispatch({ type: 'APPLY_EVENT_V2', event });
     },
 
     deleteTask(taskId: string) {
       const prev = state.tasksById[taskId];
-      const event = emit({
-        entity: { type: 'task', id: taskId },
-        action: 'delete',
-        diff: { before: prev as any },
+      if (!prev) return;
+
+      const event = emitV2({
+        type: 'TASK_DELETED',
+        taskId: taskId,
+        epicId: prev.epicId,
       });
-      dispatch({ type: 'TASK_DELETE', taskId, event });
+
+      dispatch({ type: 'APPLY_EVENT_V2', event });
     },
 
     moveTask(args: {
@@ -380,32 +335,34 @@ function createActions(
       toEpicId: string;
       toIndex: number;
     }) {
-      const event = emit({
-        entity: { type: 'task', id: args.taskId },
-        action: 'move',
-        meta: { ...args, reason: 'user-dnd' },
+      const event = emitV2({
+        type: 'TASK_MOVED',
+        taskId: args.taskId,
+        fromEpicId: args.fromEpicId,
+        toEpicId: args.toEpicId,
+        toIndex: args.toIndex,
+        reason: 'user-dnd',
       });
-      dispatch({ type: 'TASK_MOVE', ...args, event });
+
+      dispatch({ type: 'APPLY_EVENT_V2', event });
     },
 
     reorderTask(args: {
       taskId: string;
       epicId: string;
       toIndex: number;
-      fromIndex?: number;
+      fromIndex: number;
     }) {
-      const event = emit({
-        entity: { type: 'task', id: args.taskId },
-        action: 'reorder',
-        meta: { ...args, reason: 'user-dnd' },
-      });
-      dispatch({
-        type: 'TASK_REORDER',
+      const event = emitV2({
+        type: 'TASK_REORDERED',
         taskId: args.taskId,
         epicId: args.epicId,
+        fromIndex: args.fromIndex,
         toIndex: args.toIndex,
-        event,
+        reason: 'user-dnd',
       });
+
+      dispatch({ type: 'APPLY_EVENT_V2', event });
     },
 
     previewMoveTask(args: {
@@ -423,6 +380,16 @@ function createActions(
 
     clearScrollToEpic() {
       dispatch({ type: 'UI_SCROLL_TO_EPIC', epicId: null });
+    },
+
+    updateConfig(patch: Partial<SprintConfig>) {
+      const event = emitV2({
+        type: 'CONFIG_UPDATED',
+        patch: patch,
+        from: state.config,
+      });
+
+      dispatch({ type: 'APPLY_EVENT_V2', event });
     },
   };
 }
