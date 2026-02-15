@@ -16,7 +16,6 @@ export type BaseEventV2 = {
   v: 2;
   id: string;
   ts: string; // ISO
-  actor?: string;
   // keep room for future "career semantics"
   tags?: string[]; // e.g. ["release", "mentorship"]
 };
