@@ -3,6 +3,7 @@ import { app } from 'electron';
 import { LegacyWeekItem } from '@/domain/types';
 import fs from 'fs';
 import path from 'path';
+import { SprintEventV2 } from '@/domain/events/sprintEventV2';
 
 export function getDataRoot() {
   // TODO: can change to configable dir in the future
@@ -304,13 +305,22 @@ export type SprintEventRecord = {
   payload: any;
 };
 
-export function appendSprintEvent(ev: SprintEventRecord) {
+export function appendSprintEventV2(ev: SprintEventV2) {
   ensureSprintDirs();
   const monthKey = monthKeyFromISO(ev.ts);
   const file = sprintMonthEventPath(monthKey);
   const line = JSON.stringify(ev) + '\n';
-  fs.appendFileSync(file, line, 'utf-8');
-  return { ok: true as const, monthFile: `${monthKey}.ndjson` };
+
+  // crash-safe append
+  const fd = fs.openSync(file, 'a');
+  try {
+    fs.writeSync(fd, line + '\n', undefined, 'utf-8');
+    fs.fsyncSync(fd);
+  } finally {
+    fs.closeSync(fd);
+  }
+
+  return { ok: true, monthKey, path: file };
 }
 
 export type SprintEventCursor = {
