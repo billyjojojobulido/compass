@@ -3,7 +3,6 @@ import { app } from 'electron';
 import { LegacyWeekItem } from '@/domain/types';
 import fs from 'fs';
 import path from 'path';
-import { SprintEventV2 } from '@/domain/events/sprintEventV2';
 
 export function getDataRoot() {
   // TODO: can change to configable dir in the future
@@ -305,22 +304,13 @@ export type SprintEventRecord = {
   payload: any;
 };
 
-export function appendSprintEventV2(ev: SprintEventV2) {
+export function appendSprintEvent(ev: SprintEventRecord) {
   ensureSprintDirs();
   const monthKey = monthKeyFromISO(ev.ts);
   const file = sprintMonthEventPath(monthKey);
   const line = JSON.stringify(ev) + '\n';
-
-  // crash-safe append
-  const fd = fs.openSync(file, 'a');
-  try {
-    fs.writeSync(fd, line + '\n', undefined, 'utf-8');
-    fs.fsyncSync(fd);
-  } finally {
-    fs.closeSync(fd);
-  }
-
-  return { ok: true, monthKey, path: file };
+  fs.appendFileSync(file, line, 'utf-8');
+  return { ok: true as const, monthFile: `${monthKey}.ndjson` };
 }
 
 export type SprintEventCursor = {
@@ -331,26 +321,73 @@ export type SprintEventCursor = {
 // read events from cursor
 // TODO: in MVP read by monthly order & skip all events prior to lastEvent Id
 
-export function readSprintEventsV2(monthKey: string): SprintEventV2[] {
+export function readSprintEvents(args?: {
+  from?: SprintEventCursor;
+  toMonthKey?: string; // optional "YYYY-MM"
+}): SprintEventRecord[] {
   ensureSprintDirs();
+  const dir = sprintEventsDir();
+  if (!fs.existsSync(dir)) return [];
 
-  const file = sprintMonthEventPath(monthKey);
-  if (!fs.existsSync(file)) return [];
+  const files = fs
+    .readdirSync(dir)
+    .filter((f) => /\.ndjson$/i.test(f))
+    .sort(); // asc: "2026-01.ndjson" -> "2026-02.ndjson"
 
-  const raw = fs.readFileSync(file, 'utf-8');
-  const lines = raw.split('\n');
-  const out: SprintEventV2[] = [];
-  for (let i = 0; i < lines.length; i++) {
-    const s = lines[i].trim();
-    if (!s) continue;
-    try {
-      out.push(JSON.parse(s));
-    } catch {
-      // crash-safe: ignore trailing partial line / corrupted line
-      // TODO: in MVP will just ignore :: later can log a warning here
-      continue;
+  if (files.length === 0) return [];
+
+  let startIndex = 0;
+  let startFile = args?.from?.monthFile;
+  if (startFile) {
+    const idx = files.indexOf(startFile);
+    if (idx >= 0) startIndex = idx;
+  }
+
+  let endIndex = files.length - 1;
+  if (args?.toMonthKey) {
+    const endFile = `${args.toMonthKey}.ndjson`;
+    const idx = files.indexOf(endFile);
+    if (idx >= 0) endIndex = idx;
+  }
+
+  const out: SprintEventRecord[] = [];
+  let pastCursor = !args?.from?.lastEventId; // if no lastEventId, start immediately
+
+  for (let i = startIndex; i <= endIndex; i++) {
+    const f = files[i];
+    const full = path.join(dir, f);
+    if (!fs.existsSync(full)) continue;
+
+    const raw = fs.readFileSync(full, 'utf-8');
+    const lines = raw.split('\n').filter(Boolean);
+
+    for (const line of lines) {
+      let ev: SprintEventRecord | null = null;
+      try {
+        ev = JSON.parse(line);
+      } catch {
+        continue;
+      }
+      if (!ev) continue;
+
+      if (!pastCursor) {
+        if (ev.id === args?.from?.lastEventId) {
+          pastCursor = true; // start collecting AFTER this
+        }
+        continue;
+      }
+
+      out.push(ev);
+    }
+
+    // if cursor === start index & cannot find lastEventid
+    // it is equal to "starting from the first file"
+    if (i === startIndex && args?.from?.lastEventId && !pastCursor) {
+      pastCursor = true;
+      // then: all files after this will be read!!
     }
   }
+
   return out;
 }
 

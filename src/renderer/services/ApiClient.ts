@@ -1,4 +1,3 @@
-import { SprintEventV2 } from '@/domain/events/sprintEventV2';
 import type {
   LegacyWeekItem,
   DailySnapshot,
@@ -140,10 +139,13 @@ export const apiClient = {
       },
     },
     events: {
-      async read(monthKey: string): Promise<SprintEventV2[]> {
+      async read(args?: {
+        from?: SprintEventCursor;
+        toMonthKey?: string;
+      }): Promise<SprintEventRecord[]> {
         try {
           const compass = assertCompass();
-          return await compass.sprint.events.read(monthKey);
+          return await compass.sprint.events.read(args);
         } catch (e) {
           throw new Error(
             `[ApiClient.sprint.events.read] ${toErrorMessage(e)}`,
@@ -152,25 +154,14 @@ export const apiClient = {
       },
 
       async append(
-        event: SprintEventV2,
-      ): Promise<{ ok: true; monthFile: string; path: string }> {
+        event: SprintEventRecord,
+      ): Promise<{ ok: true; monthFile: string }> {
         try {
           const compass = assertCompass();
           return await compass.sprint.events.append(event);
         } catch (e) {
           throw new Error(
             `[ApiClient.sprint.events.append] ${toErrorMessage(e)}`,
-          );
-        }
-      },
-
-      async list(): Promise<string[]> {
-        try {
-          const compass = assertCompass();
-          return await compass.sprint.events.list();
-        } catch (e) {
-          throw new Error(
-            `[ApiClient.sprint.events.list] ${toErrorMessage(e)}`,
           );
         }
       },

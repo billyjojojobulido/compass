@@ -14,9 +14,8 @@ import {
   // sprint ...
   readSprintState,
   writeSprintState,
-  readSprintEventsV2,
-  appendSprintEventV2,
-  listEventMonths,
+  appendSprintEvent,
+  readSprintEvents,
 } from './compassFs';
 import { DailySnapshot, WeeklyWorkspace } from '@/domain/types';
 
@@ -94,17 +93,20 @@ export function registerCompassIpc() {
   ipcMain.handle(
     'compass:sprint:events:append',
     async (_e, payload: { event: any }) => {
-      return appendSprintEventV2(payload.event);
+      return appendSprintEvent(payload.event);
     },
   );
 
   ipcMain.handle(
     'compass:sprint:events:read',
-    async (_e, payload?: { monthKey: string }) => {
-      return readSprintEventsV2(payload.monthKey);
+    async (
+      _e,
+      payload?: {
+        from?: { monthFile: string; lastEventId?: string };
+        toMonthKey?: string;
+      },
+    ) => {
+      return readSprintEvents(payload);
     },
   );
-  ipcMain.handle('compass:events:listMonths', async () => {
-    return listEventMonths();
-  });
 }

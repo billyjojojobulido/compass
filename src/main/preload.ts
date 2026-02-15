@@ -2,7 +2,6 @@
 /* eslint no-unused-vars: off */
 import { DailySnapshot, LegacyWeekItem, WeeklyWorkspace } from '@/domain/types';
 import { contextBridge, ipcRenderer } from 'electron';
-import { SprintEventV2 } from '@/domain/events/sprintEventV2';
 
 export type GeneralChannels = 'ipc-example';
 
@@ -46,10 +45,12 @@ export type CompassHandler = {
     stateWrite(doc: unknown): Promise<{ ok: true; path: string }>;
     events: {
       append(
-        event: SprintEventV2,
-      ): Promise<{ ok: true; monthFile: string; path: string }>;
-      read(monthKey: string): Promise<SprintEventV2[]>;
-      list(): Promise<string[]>;
+        event: SprintEventRecord,
+      ): Promise<{ ok: true; monthFile: string }>;
+      read(args?: {
+        from?: SprintEventCursor;
+        toMonthKey?: string;
+      }): Promise<SprintEventRecord[]>;
     };
   };
 };
@@ -70,8 +71,7 @@ export type CompassChannel =
   | 'compass:sprint:state:read'
   | 'compass:sprint:state:write'
   | 'compass:sprint:events:append'
-  | 'compass:sprint:events:read'
-  | 'compass:sprint:events:list';
+  | 'compass:sprint:events:read';
 
 type SprintEventRecord = { id: string; ts: string; type: string; payload: any };
 type SprintEventCursor = { monthFile: string; lastEventId?: string };
@@ -132,15 +132,15 @@ const compassHandler: CompassHandler = {
       ipcRenderer.invoke('compass:sprint:state:write', { doc }),
     events: {
       append(
-        event: SprintEventV2,
-      ): Promise<{ ok: true; monthFile: string; path: string }> {
+        event: SprintEventRecord,
+      ): Promise<{ ok: true; monthFile: string }> {
         return ipcRenderer.invoke('compass:sprint:events:append', { event });
       },
-      read(monthKey: string): Promise<SprintEventV2[]> {
-        return ipcRenderer.invoke('compass:sprint:events:read', monthKey);
-      },
-      list(): Promise<string[]> {
-        return ipcRenderer.invoke('compass:sprint:events:list');
+      read(args?: {
+        from?: SprintEventCursor;
+        toMonthKey?: string;
+      }): Promise<SprintEventRecord[]> {
+        return ipcRenderer.invoke('compass:sprint:events:read', args);
       },
     },
   },
