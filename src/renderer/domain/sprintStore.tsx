@@ -188,9 +188,6 @@ function reducer(state: SprintState, a: DispatchAction): SprintState {
         (x) => x !== a.taskId,
       );
 
-      const idx = Math.max(0, Math.min(a.toIndex, toList.length));
-      toList.splice(idx, 0, a.taskId);
-
       return {
         ...state,
         tasksById: {
