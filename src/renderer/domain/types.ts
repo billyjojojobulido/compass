@@ -1,3 +1,4 @@
+import { SprintEventCursor } from 'src/main/compassFs';
 import { SprintEventV2 } from './events/sprintEventV2';
 
 export type EntityType = 'epic' | 'task' | 'config';
@@ -85,7 +86,19 @@ export type PersistedSprintDocV1 = {
   state: SprintState;
 };
 
-export type PersistedSprintDoc = PersistedSprintDocV1;
+export type PersistedSprintDocV2 = {
+  schemaVersion: 2;
+  generatedAt: string; // ISO
+  state: SprintState;
+
+  meta?: {
+    eventCursor?: SprintEventCursor;
+    lastHydratedAt?: string; // ISO
+    lastPersistedAt?: string; // ISO
+  };
+};
+
+export type PersistedSprintDoc = PersistedSprintDocV2;
 
 export type DailySnapshot = {
   schemaVersion: 1;
