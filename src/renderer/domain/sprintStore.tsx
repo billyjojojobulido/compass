@@ -52,8 +52,6 @@ export function SprintProvider({
   const appendChainRef = React.useRef<Promise<void>>(Promise.resolve());
 
   const appendEvent = React.useCallback((ev: SprintEventV2) => {
-    console.log('🦁 ', ev);
-
     appendChainRef.current = appendChainRef.current
       .then(async () => {
         await window.compass.sprint.events.append(ev);
@@ -234,10 +232,6 @@ function createActions(
   const statusMap = new Map(state.config.statuses.map((s) => [s.id, s]));
   const isClosedStatus = (statusId: string) =>
     statusMap.get(statusId)?.toClose === true;
-
-  function emit(base: Omit<SprintEvent, 'id' | 'ts'>): SprintEvent {
-    return { ...base, id: uid(), ts: nowISO() };
-  }
 
   function emitV2<T extends Omit<SprintEventV2, 'v' | 'id' | 'ts'>>(
     base: T,
