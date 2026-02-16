@@ -1,19 +1,22 @@
 import React, { createContext, useContext, useMemo, useReducer } from 'react';
 import type {
   Epic,
-  SprintEvent,
   SprintState,
   Task,
   PersistedSprintDoc,
   SprintConfig,
+  PersistedSprintDocV2,
+  PersistedSprintDocV1,
 } from '@/domain/types';
 import type { SprintEventV2 } from '@/domain/events/sprintEventV2';
 import { applyEventV2 } from '@/domain/events/applyEventV2';
 
-function isPersistedSprintDocV1(x: any): x is PersistedSprintDoc {
-  return (
-    x && x.schemaVersion === 1 && x.state && typeof x.generatedAt === 'string'
-  );
+function isPersistedSprintDocV1(x: any): x is PersistedSprintDocV1 {
+  return x && x.schemaVersion === 1 && x.state;
+}
+
+export function isPersistedSprintDocV2(x: any): x is PersistedSprintDocV2 {
+  return x && x.schemaVersion === 2 && x.state;
 }
 
 function createDebouncer(ms: number) {
@@ -90,17 +93,43 @@ export function SprintProvider({
     // hydrate once
     (async () => {
       const raw = await window.compass.sprint.stateRead();
+
+      let docV2: PersistedSprintDoc | null = null;
+
       if (!raw) {
         didHydrateRef.current = true;
         return;
       }
 
-      if (!isPersistedSprintDocV1(raw)) {
+      if (isPersistedSprintDocV2(raw)) docV2 = raw;
+      else if (isPersistedSprintDocV1(raw)) {
+        docV2 = {
+          schemaVersion: 2,
+          generatedAt: raw.generatedAt,
+          state: raw.state,
+          meta: {},
+        };
+      } else {
         console.warn(
           '[SprintStore] persisted state has unknown format, ignored.',
         );
         didHydrateRef.current = true;
         return;
+      }
+
+      const cursor = docV2?.meta?.eventCursor;
+
+      const deltaEvents = await window.compass.sprint.events.read(
+        cursor ? { from: cursor } : undefined,
+      );
+
+      if (deltaEvents.length > 0) {
+        console.warn(
+          '[SprintStore] Found delta events not applied to state:',
+          deltaEvents.length,
+        );
+        // MVP - no replay at this stage :: but should be aware that the state might fall behind the events
+        // TODO: if want to replay later, just add to applyEvent(deltaEvents)
       }
 
       // merge strategy:
