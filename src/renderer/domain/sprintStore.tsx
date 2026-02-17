@@ -5,7 +5,6 @@ import type {
   Task,
   PersistedSprintDoc,
   SprintConfig,
-  PersistedSprintDocV2,
   PersistedSprintDocV1,
 } from '@/domain/types';
 import type { SprintEventV2 } from '@/domain/events/sprintEventV2';
@@ -13,10 +12,6 @@ import { applyEventV2 } from '@/domain/events/applyEventV2';
 
 function isPersistedSprintDocV1(x: any): x is PersistedSprintDocV1 {
   return x && x.schemaVersion === 1 && x.state;
-}
-
-export function isPersistedSprintDocV2(x: any): x is PersistedSprintDocV2 {
-  return x && x.schemaVersion === 2 && x.state;
 }
 
 function createDebouncer(ms: number) {
@@ -94,20 +89,19 @@ export function SprintProvider({
     (async () => {
       const raw = await window.compass.sprint.stateRead();
 
-      let docV2: PersistedSprintDoc | null = null;
+      let doc: PersistedSprintDoc | null = null;
 
       if (!raw) {
         didHydrateRef.current = true;
         return;
       }
 
-      if (isPersistedSprintDocV2(raw)) docV2 = raw;
+      if (isPersistedSprintDocV1(raw)) doc = raw;
       else if (isPersistedSprintDocV1(raw)) {
-        docV2 = {
-          schemaVersion: 2,
+        doc = {
+          schemaVersion: 1,
           generatedAt: raw.generatedAt,
           state: raw.state,
-          meta: {},
         };
       } else {
         console.warn(
@@ -117,7 +111,7 @@ export function SprintProvider({
         return;
       }
 
-      const cursor = docV2?.state?.meta?.cursor;
+      const cursor = doc?.state?.meta?.cursor;
 
       const deltaEvents = await window.compass.sprint.events.read(
         cursor ? { from: cursor } : undefined,
@@ -164,7 +158,7 @@ export function SprintProvider({
 
     debouncedSave(() => {
       const doc: PersistedSprintDoc = {
-        schemaVersion: 2,
+        schemaVersion: 1,
         generatedAt: nowISO(),
         state, // incl config
       };
