@@ -117,7 +117,7 @@ export function SprintProvider({
         return;
       }
 
-      const cursor = docV2?.meta?.eventCursor;
+      const cursor = docV2?.state?.meta?.cursor;
 
       const deltaEvents = await window.compass.sprint.events.read(
         cursor ? { from: cursor } : undefined,
