@@ -78,6 +78,10 @@ export type SprintState = {
   events: SprintEventV2[];
   // scroll to epicId
   ui?: SprintUIState;
+
+  meta?: {
+    cursor?: SprintEventCursor;
+  };
 };
 
 export type PersistedSprintDocV1 = {

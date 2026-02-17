@@ -164,7 +164,7 @@ export function SprintProvider({
 
     debouncedSave(() => {
       const doc: PersistedSprintDoc = {
-        schemaVersion: 1,
+        schemaVersion: 2,
         generatedAt: nowISO(),
         state, // incl config
       };
@@ -207,6 +207,17 @@ function reducer(state: SprintState, a: DispatchAction): SprintState {
     case 'APPLY_EVENT_V2': {
       const next = structuredClone(state);
       applyEventV2(next, a.event);
+
+      if (!state.meta) {
+        state.meta = {};
+      }
+
+      state.meta.cursor = {
+        monthFile: `${a.event.ts.slice(0, 7)}.ndjson'`,
+        lastEventId: a.event.id,
+      };
+
+      console.log(`🦁🦁 ${JSON.stringify(state.meta)}`);
 
       // store events in memory for now (later flush to disk)
       next.events.push(a.event);
