@@ -1,19 +1,17 @@
 import React, { createContext, useContext, useMemo, useReducer } from 'react';
 import type {
   Epic,
-  SprintEvent,
   SprintState,
   Task,
   PersistedSprintDoc,
   SprintConfig,
+  PersistedSprintDocV1,
 } from '@/domain/types';
 import type { SprintEventV2 } from '@/domain/events/sprintEventV2';
 import { applyEventV2 } from '@/domain/events/applyEventV2';
 
-function isPersistedSprintDocV1(x: any): x is PersistedSprintDoc {
-  return (
-    x && x.schemaVersion === 1 && x.state && typeof x.generatedAt === 'string'
-  );
+function isPersistedSprintDocV1(x: any): x is PersistedSprintDocV1 {
+  return x && x.schemaVersion === 1 && x.state;
 }
 
 function createDebouncer(ms: number) {
@@ -52,8 +50,6 @@ export function SprintProvider({
   const appendChainRef = React.useRef<Promise<void>>(Promise.resolve());
 
   const appendEvent = React.useCallback((ev: SprintEventV2) => {
-    console.log('🦁 ', ev);
-
     appendChainRef.current = appendChainRef.current
       .then(async () => {
         await window.compass.sprint.events.append(ev);
@@ -92,17 +88,42 @@ export function SprintProvider({
     // hydrate once
     (async () => {
       const raw = await window.compass.sprint.stateRead();
+
+      let doc: PersistedSprintDoc | null = null;
+
       if (!raw) {
         didHydrateRef.current = true;
         return;
       }
 
-      if (!isPersistedSprintDocV1(raw)) {
+      if (isPersistedSprintDocV1(raw)) doc = raw;
+      else if (isPersistedSprintDocV1(raw)) {
+        doc = {
+          schemaVersion: 1,
+          generatedAt: raw.generatedAt,
+          state: raw.state,
+        };
+      } else {
         console.warn(
           '[SprintStore] persisted state has unknown format, ignored.',
         );
         didHydrateRef.current = true;
         return;
+      }
+
+      const cursor = doc?.state?.meta?.cursor;
+
+      const deltaEvents = await window.compass.sprint.events.read(
+        cursor ? { from: cursor } : undefined,
+      );
+
+      if (deltaEvents.length > 0) {
+        console.warn(
+          '[SprintStore] Found delta events not applied to state:',
+          deltaEvents.length,
+        );
+        // MVP - no replay at this stage :: but should be aware that the state might fall behind the events
+        // TODO: if want to replay later, just add to applyEvent(deltaEvents)
       }
 
       // merge strategy:
@@ -181,6 +202,12 @@ function reducer(state: SprintState, a: DispatchAction): SprintState {
       const next = structuredClone(state);
       applyEventV2(next, a.event);
 
+      next.meta = next.meta ?? {};
+      next.meta.cursor = {
+        monthFile: `${a.event.ts.slice(0, 7)}.ndjson`,
+        lastEventId: a.event.id,
+      };
+
       // store events in memory for now (later flush to disk)
       next.events.push(a.event);
 
@@ -234,10 +261,6 @@ function createActions(
   const statusMap = new Map(state.config.statuses.map((s) => [s.id, s]));
   const isClosedStatus = (statusId: string) =>
     statusMap.get(statusId)?.toClose === true;
-
-  function emit(base: Omit<SprintEvent, 'id' | 'ts'>): SprintEvent {
-    return { ...base, id: uid(), ts: nowISO() };
-  }
 
   function emitV2<T extends Omit<SprintEventV2, 'v' | 'id' | 'ts'>>(
     base: T,

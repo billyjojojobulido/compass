@@ -1,3 +1,4 @@
+import { SprintEventCursor } from 'src/main/compassFs';
 import { SprintEventV2 } from './events/sprintEventV2';
 
 export type EntityType = 'epic' | 'task' | 'config';
@@ -77,6 +78,10 @@ export type SprintState = {
   events: SprintEventV2[];
   // scroll to epicId
   ui?: SprintUIState;
+
+  meta?: {
+    cursor?: SprintEventCursor;
+  };
 };
 
 export type PersistedSprintDocV1 = {
