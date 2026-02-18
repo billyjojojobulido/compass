@@ -227,6 +227,11 @@
   padding-right: 8px; /* save some space for scroll bar */
   overflow-y: auto;
 }
+
+.cwRight::-webkit-scrollbar {
+  width: 8px;
+}
+
 .cwAccordion {
   display: flex;
   flex-direction: column;
