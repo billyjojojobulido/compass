@@ -1,4 +1,4 @@
-import { DailySnapshot, DailyChangelog } from '@/domain/types';
+import { DailySnapshot, DailyChangelog, SprintConfig } from '@/domain/types';
 
 function epicIndex(snapshot: DailySnapshot) {
   const map = new Map<
@@ -40,6 +40,7 @@ function taskIndex(snapshot: DailySnapshot) {
 export function selectDailyChangelog(
   prev: DailySnapshot | null,
   curr: DailySnapshot,
+  config: SprintConfig, // things like closed / label / rank may be configured
   opts?: {
     eventFromId?: string;
     eventToId?: string;

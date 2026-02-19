@@ -7,6 +7,7 @@ import {
 } from '@/domain/types';
 import { selectDailyChangelog } from './chanelog';
 import { nowISO } from '@/domain/sprintStore';
+import { sprintConfig } from '@/config/sprintConfig';
 
 /**
  * weekStartLocalDate: the Monday Date object of that week (local)
@@ -60,7 +61,7 @@ export function selectWeeklyWorkspace(args: {
 
     usedSnapshots.push(snap.date);
 
-    const log = selectDailyChangelog(prevExisting, snap);
+    const log = selectDailyChangelog(prevExisting, snap, sprintConfig);
 
     days[k] = {
       date: snap.date,
@@ -78,7 +79,7 @@ export function selectWeeklyWorkspace(args: {
     schemaVersion: 1,
     weekKey: args.weekKey,
     title: args.title,
-    generatedAt: isoNow(),
+    generatedAt: nowISO(),
     range: { start: args.range.startISO, end: args.range.endISO },
     days,
     rollup,
