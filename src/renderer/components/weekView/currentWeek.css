@@ -226,6 +226,7 @@
   min-height: 0;
   padding-right: 8px; /* save some space for scroll bar */
   overflow-y: auto;
+  margin-bottom: 30px; /* to ensure last row can be fully seen when overflow */
 }
 
 .cwRight::-webkit-scrollbar {
