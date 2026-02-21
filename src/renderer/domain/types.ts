@@ -201,6 +201,10 @@ export type DailyChangelog = {
   epicMoved: EpicMove[];
   priorityChanged: PriorityChange[];
 
+  /* to make it easier for changelog generate */
+  touchedEpicIds?: string[]; // epic drawer list
+  touchedTaskIds?: string[]; // task highlight list
+
   meta?: {
     snapshotFrom?: string;
     snapshotTo?: string;

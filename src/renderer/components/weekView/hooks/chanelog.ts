@@ -59,6 +59,9 @@ export function selectDailyChangelog(
   const epicMoved: DailyChangelog['epicMoved'] = [];
   const priorityChanged: DailyChangelog['priorityChanged'] = [];
 
+  const touchedEpics = new Set<string>();
+  const touchedTasks = new Set<string>();
+
   // --- TASK LEVEL DIFF ---
   for (const [id, currTask] of currTasks) {
     const prevTask = prevTasks.get(id);
@@ -127,6 +130,7 @@ export function selectDailyChangelog(
         from: prevEpic.priorityId,
         to: currEpic.priorityId,
       });
+      touchedEpics.add(currEpic.id);
     }
   }
 
@@ -152,6 +156,9 @@ export function selectDailyChangelog(
     statusChanged,
     epicMoved,
     priorityChanged,
+
+    touchedEpicIds: Array.from(touchedEpics),
+    touchedTaskIds: Array.from(touchedTasks),
 
     meta: {
       snapshotFrom: prev?.date,
