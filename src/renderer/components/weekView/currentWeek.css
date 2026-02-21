@@ -248,3 +248,71 @@
   gap: 8px;
   align-items: center;
 }
+
+/* rows styles */
+/* base row */
+.cwChangeRow {
+  display: flex;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  align-items: flex-start;
+  transition:
+    background 120ms ease,
+    transform 120ms ease;
+}
+
+/* subtle hover */
+.cwChangeRow:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(2px);
+}
+
+/* icon */
+.cwChangeIcon {
+  width: 18px;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
+/* text */
+.cwChangeTitle {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.cwChangeDetail {
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+/* ---------- semantic colors ---------- */
+.cwChangeRow[data-kind='completed'] {
+  background: rgba(80, 200, 120, 0.1);
+  border-left: 3px solid #50c878;
+}
+
+.cwChangeRow[data-kind='added'] {
+  background: rgba(90, 160, 255, 0.1);
+  border-left: 3px solid #5aa0ff;
+}
+
+.cwChangeRow[data-kind='reopened'] {
+  background: rgba(255, 170, 80, 0.12);
+  border-left: 3px solid #ffb347;
+}
+
+.cwChangeRow[data-kind='statusChanged'] {
+  background: rgba(170, 120, 255, 0.1);
+  border-left: 3px solid #a678ff;
+}
+
+.cwChangeRow[data-kind='epicMoved'] {
+  background: rgba(80, 210, 210, 0.1);
+  border-left: 3px solid #4fd1c5;
+}
+
+.cwChangeRow[data-kind='priorityChanged'] {
+  background: rgba(255, 120, 180, 0.12);
+  border-left: 3px solid #ff78b4;
+}

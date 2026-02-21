@@ -159,7 +159,7 @@ function EpicDrawer({ group }: { group: EpicGroupVM }) {
 
 function ChangeRow({ item }: { item: ChangeItemVM }) {
   return (
-    <div className={`cwChangeRow kind-${item.kind}`}>
+    <div className={`cwChangeRow kind-${item.kind}`} data-kind={item.kind}>
       <span className="cwChangeIcon" aria-hidden>
         {item.icon}
       </span>
