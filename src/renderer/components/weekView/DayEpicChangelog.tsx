@@ -158,43 +158,19 @@ function EpicDrawer({ group }: { group: EpicGroupVM }) {
 }
 
 function ChangeRow({ item }: { item: ChangeItemVM }) {
-  switch (item.kind) {
-    case 'added':
-      return <Row tone="add" icon="➕" title={item.task.title} meta="added" />;
-    case 'completed':
-      return <Row tone="done" icon="✅" title={item.task.title} meta="done" />;
-    case 'reopened':
-      return (
-        <Row tone="reopen" icon="♻️" title={item.task.title} meta="reopened" />
-      );
-    case 'status':
-      return (
-        <Row
-          tone="status"
-          icon="🔁"
-          title={item.task.title}
-          meta={`${item.from} → ${item.to}`}
-        />
-      );
-    case 'move':
-      return (
-        <Row
-          tone="move"
-          icon="↔️"
-          title={item.task.title}
-          meta={`${item.fromEpicTitle} → ${item.toEpicTitle}`}
-        />
-      );
-    case 'priority':
-      return (
-        <Row
-          tone="prio"
-          icon="🔺"
-          title={item.epicTitle}
-          meta={`${item.from} → ${item.to}`}
-        />
-      );
-  }
+  return (
+    <div className={`cwChangeRow kind-${item.kind}`}>
+      <span className="cwChangeIcon" aria-hidden>
+        {item.icon}
+      </span>
+      <div className="cwChangeText">
+        <div className="cwChangeTitle">{item.title}</div>
+        {item.detail ? (
+          <div className="cwChangeDetail">{item.detail}</div>
+        ) : null}
+      </div>
+    </div>
+  );
 }
 
 function Row(props: {
