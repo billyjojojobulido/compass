@@ -55,7 +55,7 @@ export default function DayEpicChangelog(props: {
               <span className="pill outline">😴 Off</span>
             ) : props.log ? (
               <span className="pill outline">
-                ✅ {props.log.completed.length} / ➕ {props.log.added.length}
+                ✅ {props.log.completed.length} / 🆕 {props.log.added.length}
               </span>
             ) : (
               <span className="pill outline">—</span>
@@ -134,6 +134,7 @@ function DayHeader(props: {
 
 function EpicDrawer({ group }: { group: EpicGroupVM }) {
   const [open, setOpen] = useState(true);
+  const s = group.stats;
 
   return (
     <Drawer
@@ -143,8 +144,37 @@ function EpicDrawer({ group }: { group: EpicGroupVM }) {
       header={
         <div className="cwEpicHeaderRow">
           <span className={`cwCaret ${open ? 'open' : ''}`}>›</span>
+
           <div className="cwEpicTitle">{group.epicTitle}</div>
-          <div className="cwEpicCount">{group.items.length}</div>
+
+          <div className="cwEpicRight">
+            <div className="cwEpicPills" aria-hidden>
+              {s.completed ? (
+                <span className="cwPill kind-completed">✅ {s.completed}</span>
+              ) : null}
+              {s.added ? (
+                <span className="cwPill kind-added">🆕 {s.added}</span>
+              ) : null}
+              {s.statusChanged ? (
+                <span className="cwPill kind-statusChanged">
+                  🔄 {s.statusChanged}
+                </span>
+              ) : null}
+              {s.reopened ? (
+                <span className="cwPill kind-reopened">♻️ {s.reopened}</span>
+              ) : null}
+              {s.epicMoved ? (
+                <span className="cwPill kind-epicMoved">🩹 {s.epicMoved}</span>
+              ) : null}
+              {s.priorityChanged ? (
+                <span className="cwPill kind-priorityChanged">
+                  ⚠️ {s.priorityChanged}
+                </span>
+              ) : null}
+            </div>
+
+            <div className="cwEpicCount">{group.items.length}</div>
+          </div>
         </div>
       }
     >
@@ -158,43 +188,19 @@ function EpicDrawer({ group }: { group: EpicGroupVM }) {
 }
 
 function ChangeRow({ item }: { item: ChangeItemVM }) {
-  switch (item.kind) {
-    case 'added':
-      return <Row tone="add" icon="➕" title={item.task.title} meta="added" />;
-    case 'completed':
-      return <Row tone="done" icon="✅" title={item.task.title} meta="done" />;
-    case 'reopened':
-      return (
-        <Row tone="reopen" icon="♻️" title={item.task.title} meta="reopened" />
-      );
-    case 'status':
-      return (
-        <Row
-          tone="status"
-          icon="🔁"
-          title={item.task.title}
-          meta={`${item.from} → ${item.to}`}
-        />
-      );
-    case 'move':
-      return (
-        <Row
-          tone="move"
-          icon="↔️"
-          title={item.task.title}
-          meta={`${item.fromEpicTitle} → ${item.toEpicTitle}`}
-        />
-      );
-    case 'priority':
-      return (
-        <Row
-          tone="prio"
-          icon="🔺"
-          title={item.epicTitle}
-          meta={`${item.from} → ${item.to}`}
-        />
-      );
-  }
+  return (
+    <div className={`cwChangeRow kind-${item.kind}`} data-kind={item.kind}>
+      <span className="cwChangeIcon" aria-hidden>
+        {item.icon}
+      </span>
+      <div className="cwChangeText">
+        <div className="cwChangeTitle">{item.title}</div>
+        {item.detail ? (
+          <div className="cwChangeDetail">{item.detail}</div>
+        ) : null}
+      </div>
+    </div>
+  );
 }
 
 function Row(props: {

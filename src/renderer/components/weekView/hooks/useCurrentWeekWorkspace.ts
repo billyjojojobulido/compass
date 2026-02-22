@@ -14,6 +14,7 @@ export function useCurrentWeekWorkspace() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // TODO: use current week key, if not exist, then create one
   const weekKey = '2026-02-02';
   const reload = useCallback(async () => {
     setLoading(true);

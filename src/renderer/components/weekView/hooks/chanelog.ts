@@ -1,4 +1,4 @@
-import { DailySnapshot, DailyChangelog } from '@/domain/types';
+import { DailySnapshot, DailyChangelog, SprintConfig } from '@/domain/types';
 
 function epicIndex(snapshot: DailySnapshot) {
   const map = new Map<
@@ -40,6 +40,7 @@ function taskIndex(snapshot: DailySnapshot) {
 export function selectDailyChangelog(
   prev: DailySnapshot | null,
   curr: DailySnapshot,
+  config: SprintConfig, // things like closed / label / rank may be configured
   opts?: {
     eventFromId?: string;
     eventToId?: string;
@@ -57,6 +58,9 @@ export function selectDailyChangelog(
   const statusChanged: DailyChangelog['statusChanged'] = [];
   const epicMoved: DailyChangelog['epicMoved'] = [];
   const priorityChanged: DailyChangelog['priorityChanged'] = [];
+
+  const touchedEpics = new Set<string>();
+  const touchedTasks = new Set<string>();
 
   // --- TASK LEVEL DIFF ---
   for (const [id, currTask] of currTasks) {
@@ -126,6 +130,7 @@ export function selectDailyChangelog(
         from: prevEpic.priorityId,
         to: currEpic.priorityId,
       });
+      touchedEpics.add(currEpic.id);
     }
   }
 
@@ -151,6 +156,9 @@ export function selectDailyChangelog(
     statusChanged,
     epicMoved,
     priorityChanged,
+
+    touchedEpicIds: Array.from(touchedEpics),
+    touchedTaskIds: Array.from(touchedTasks),
 
     meta: {
       snapshotFrom: prev?.date,

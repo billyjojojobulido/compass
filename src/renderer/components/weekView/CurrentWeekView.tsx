@@ -30,6 +30,15 @@ export default function CurrentWeekView() {
   const [modalTitle, setModalTitle] = useState('');
   const [modalMarkdown, setModalMarkdown] = useState('');
 
+  // for changelog
+  const epicTitleById = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const e of state.epics) {
+      map[e.id] = e.title;
+    }
+    return map;
+  }, [state.epics]);
+
   const canArchiveThisWeek = useMemo(() => {
     if (!ws) return false;
     // only Mon-Fri: either napshotExists, or dayOff
@@ -127,18 +136,6 @@ export default function CurrentWeekView() {
       </div>
 
       <div className="cwGrid">
-        {/* <section className="cwLeft">
-          <div className="cwPanel">
-            <div className="cwPanelTitle">技术债务</div>
-            <div className="cwPanelBody">（TODO）</div>
-          </div>
-
-          <div className="cwPanel">
-            <div className="cwPanelTitle">优先级</div>
-            <div className="cwPanelBody">（TODO）</div>
-          </div>
-        </section> */}
-
         <section className="cwRight">
           <div className="cwAccordion">
             {WORKDAYS.map((d) => {
@@ -176,6 +173,7 @@ export default function CurrentWeekView() {
                     console.log('gen day report', d, dateKey)
                   }
                   defaultOpen={d === 'Mon'} // expand Monday by default
+                  epicTitleById={epicTitleById}
                 />
               );
             })}
