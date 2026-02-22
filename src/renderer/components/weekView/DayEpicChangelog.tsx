@@ -49,10 +49,10 @@ export default function DayEpicChangelog(props: {
           title={props.title}
           open={open}
           meta={
-            props.notArchived ? (
-              <span className="pill outline">No Change</span>
-            ) : props.tag ? (
+            props.tag ? (
               <span className="pill outline">{props.tag.label}</span>
+            ) : props.notArchived ? (
+              <span className="pill outline">No Change</span>
             ) : props.log ? (
               <span className="pill outline">
                 ✅ {props.log.completed.length} / 🆕 {props.log.added.length}
@@ -72,10 +72,10 @@ export default function DayEpicChangelog(props: {
         />
       }
     >
-      {props.notArchived ? (
-        <div className="cwDayEmpty">No snapshot</div>
-      ) : props.tag ? (
+      {props.tag ? (
         <div className="cwDayEmpty">{props.tag.label}</div>
+      ) : props.notArchived ? (
+        <div className="cwDayEmpty">No snapshot</div>
       ) : !props.log ? (
         <div className="cwDayEmpty">—</div>
       ) : !hasChanges ? (
