@@ -39,16 +39,6 @@ export default function CurrentWeekView() {
     return map;
   }, [state.epics]);
 
-  const canArchiveThisWeek = useMemo(() => {
-    if (!ws) return false;
-    // only Mon-Fri: either napshotExists, or dayOff
-    return (WORKDAYS as WorkdayKey[]).every((k) => {
-      const day = ws.days[k];
-      const off = ws.dayMeta?.[k]?.isOff ?? false;
-      return off || !!day?.snapshotExists;
-    });
-  }, [ws]);
-
   if (loading)
     return <div style={{ padding: 12, opacity: 0.75 }}>Loading week…</div>;
   if (error)
@@ -119,14 +109,10 @@ export default function CurrentWeekView() {
           <button
             className="btnPrimary"
             onClick={() => {
-              if (!canArchiveThisWeek) {
-                console.log('Archive Today');
-              } else {
-                console.log('Archive This Week');
-              }
+              ws && saveWs(ws);
             }}
           >
-            {canArchiveThisWeek ? 'Archive This Week' : 'Archive Today'}
+            Save
           </button>
 
           <button className="btnGhost" onClick={reload}>
