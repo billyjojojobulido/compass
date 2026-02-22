@@ -131,8 +131,8 @@ export default function CurrentWeekView() {
     const snap = (await apiClient.snapshots.read(day.date)) as DailySnapshot;
 
     // dayTagText：if is off / birthday
-    const isOff = ws.dayMeta?.[dayKey]?.isOff ?? false;
-    const dayTagText = isOff ? '😴' : undefined;
+    const tag = ws.dayMeta?.[dayKey]?.tag ?? undefined;
+    const dayTagText = tag ? tag.label : undefined;
 
     const md = renderDailyMarkdown({
       date: day.date,
@@ -183,19 +183,17 @@ export default function CurrentWeekView() {
               const day = ws.days[d];
               const label = LABEL[d] ?? d;
               const tag = ws.dayMeta?.[d]?.tag;
-              const title = `${label}${day?.date ? ` (${day.date})` : ''} ${
-                tag ? tag.label : ''
-              }`;
+              const title = `${label}${day?.date ? ` (${day.date})` : ''}`;
 
               const notArchived = !day?.snapshotExists;
-              const isOff = !!day?.isOff;
+              const tagText = tag?.label ?? undefined;
 
               const collapsed = ws.dayMeta?.[d]?.collapsed ?? d !== 'Mon'; // by right only expand Mon
 
               const pill = !day?.snapshotExists
-                ? 'Not archived'
-                : isOff
-                  ? '😴 Off'
+                ? 'No Change'
+                : tagText
+                  ? tagText
                   : `✅ ${day.changelog.completed.length} / ➕ ${day.changelog.added.length}`;
 
               return (
@@ -206,12 +204,8 @@ export default function CurrentWeekView() {
                   // future solution : later can use <weekKey+dayKey> as key
                   title={title}
                   notArchived={notArchived}
-                  isOff={isOff}
-                  log={
-                    day?.snapshotExists && !day.isOff
-                      ? day.changelog
-                      : undefined
-                  }
+                  tag={tag}
+                  log={day?.snapshotExists ? day.changelog : undefined}
                   onTag={(dateKey: WorkdayKey) => onClickTag(dateKey)}
                   onGenerateDayReport={(dateKey) =>
                     console.log('gen day report', d, dateKey)
