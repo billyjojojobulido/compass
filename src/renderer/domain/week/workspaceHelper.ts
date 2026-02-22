@@ -23,23 +23,19 @@ function mergeDayMeta(
   return next;
 }
 
-export function setDayOff(
+export function setDayTag(
   ws: WeeklyWorkspace,
-  dayKey: WorkdayKey,
-  isOff: boolean,
+  day: WorkdayKey,
+  tag?: DayTag,
 ): WeeklyWorkspace {
-  // MVP：isOff === true then auto add a "off" tag
-  // TODO: is this necessary?
-  const offTag: DayTag = { id: 'off', label: 'Day Off', emoji: '😴' };
+  const next = structuredClone(ws);
+  next.dayMeta ??= {};
+  next.dayMeta[day] ??= {};
 
-  const prevTags = ws.dayMeta?.[dayKey]?.tags ?? [];
-  const nextTags = isOff
-    ? prevTags.some((t) => t.id === 'off')
-      ? prevTags
-      : [offTag, ...prevTags]
-    : prevTags.filter((t) => t.id !== 'off');
+  if (!tag) delete next.dayMeta[day].tag;
+  else next.dayMeta[day].tag = tag;
 
-  return mergeDayMeta(ws, dayKey, { isOff, tags: nextTags });
+  return next;
 }
 
 export function toggleDayCollapsed(
@@ -48,25 +44,4 @@ export function toggleDayCollapsed(
 ): WeeklyWorkspace {
   const cur = ws.dayMeta?.[dayKey]?.collapsed ?? false;
   return mergeDayMeta(ws, dayKey, { collapsed: !cur });
-}
-
-export function upsertDayTag(
-  ws: WeeklyWorkspace,
-  dayKey: WorkdayKey,
-  tag: DayTag,
-): WeeklyWorkspace {
-  const tags = ws.dayMeta?.[dayKey]?.tags ?? [];
-  const next = tags.some((t) => t.id === tag.id)
-    ? tags.map((t) => (t.id === tag.id ? tag : t))
-    : [tag, ...tags];
-  return mergeDayMeta(ws, dayKey, { tags: next });
-}
-
-export function removeDayTag(
-  ws: WeeklyWorkspace,
-  dayKey: WorkdayKey,
-  tagId: string,
-): WeeklyWorkspace {
-  const tags = ws.dayMeta?.[dayKey]?.tags ?? [];
-  return mergeDayMeta(ws, dayKey, { tags: tags.filter((t) => t.id !== tagId) });
 }
