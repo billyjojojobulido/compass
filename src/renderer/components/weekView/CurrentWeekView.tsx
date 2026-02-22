@@ -16,7 +16,7 @@ import { apiClient } from '@/services/ApiClient';
 
 import TagModal, { TagModalValue } from './tag/TagModal';
 
-const LABEL: Record<string, string> = {
+export const LABEL: Record<string, string> = {
   Mon: 'Monday',
   Tue: 'Tuesday',
   Wed: 'Wednesday',

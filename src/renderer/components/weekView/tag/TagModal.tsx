@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DayTag } from '@/domain/types';
 import './tagModal.css';
+import { LABEL } from '../CurrentWeekView';
 
 export type TagModalValue = {
   day?: 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri';
@@ -63,7 +64,7 @@ export default function TagModal(props: {
   }, [type, custom]);
 
   const title = value.day
-    ? `Tag for ${value.day}${value.dateKey ? ` (${value.dateKey})` : ''}`
+    ? `Tag for ${LABEL[value.day]}${value.dateKey ? ` (${value.dateKey})` : ''}`
     : 'Tag';
 
   const onConfirm = () => {
