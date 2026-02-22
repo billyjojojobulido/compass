@@ -22,7 +22,7 @@ export default function DayEpicChangelog(props: {
   onToggle?: (dayKey: WorkdayKey) => void;
 
   // TODO: top-right buttons (placeholder)
-  onTag?: (dateKey: WorkdayKey) => void;
+  onTag?: (dayKey: WorkdayKey, dateKey: string) => void;
   onGenerateDayReport?: (dateKey: string) => void;
 
   defaultOpen?: boolean;
@@ -63,7 +63,7 @@ export default function DayEpicChangelog(props: {
           }
           onTag={(e) => {
             e.stopPropagation();
-            props.onTag?.(props.dayKey);
+            props.onTag?.(props.dayKey, props.dateKey);
           }}
           onGen={(e) => {
             e.stopPropagation();

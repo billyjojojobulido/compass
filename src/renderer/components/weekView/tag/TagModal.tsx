@@ -10,10 +10,10 @@ export type TagModalValue = {
 };
 
 const PRESETS: Array<{ type: string; label: string }> = [
-  { type: 'ML', label: '😷 ML' },
-  { type: 'AL', label: '🏖️ AL' },
-  { type: 'PH', label: '📅 PH' },
-  { type: 'BT', label: '✈️ BT' },
+  { type: 'ML', label: '😷 病假' },
+  { type: 'AL', label: '🏖️ 年假' },
+  { type: 'PH', label: '📅 公假' },
+  { type: 'BT', label: '✈️ 出差' },
 ];
 
 export default function TagModal(props: {

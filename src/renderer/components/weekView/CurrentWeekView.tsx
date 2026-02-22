@@ -14,7 +14,7 @@ import { renderDailyMarkdown } from '@/domain/week/renderDailyMarkdown';
 import { useSprint } from '@/domain/sprintStore';
 import { apiClient } from '@/services/ApiClient';
 
-import TagModal from './tag/TagModal';
+import TagModal, { TagModalValue } from './tag/TagModal';
 
 const LABEL: Record<string, string> = {
   Mon: 'Monday',
@@ -23,60 +23,6 @@ const LABEL: Record<string, string> = {
   Thu: 'Thursday',
   Fri: 'Friday',
 };
-
-// function TagModal({
-//   value,
-//   onConfirm,
-//   onClose,
-// }: {
-//   value: any;
-//   onConfirm: (tag: DayTag) => void;
-//   onClose: () => void;
-// }) {
-//   const [type, setType] = useState<DayTag['type']>('ML');
-//   const [custom, setCustom] = useState('');
-
-//   const buildTag = (): DayTag => {
-//     if (type === 'NO') {
-//       return undefined;
-//     } else if (type === 'CUSTOM') {
-//       return { type, label: custom.slice(0, 10) };
-//     }
-
-//     const map = {
-//       ML: '😷 病假',
-//       AL: '🏖️ 年假',
-//       PH: '📅 公假',
-//       BT: '✈️ 出差',
-//     };
-
-//     return { type: type, label: map[type] };
-//   };
-
-//   return (
-//     <div className="modal">
-//       <select value={type} onChange={(e) => setType(e.target.value as any)}>
-//         <option value="ML">😷 Sick Leave</option>
-//         <option value="AL">🏖️ Annual Leave</option>
-//         <option value="PH">📅 Public Holiday</option>
-//         <option value="BT">✈️ Business Trip</option>
-//         <option value="CUSTOM">✏️ Custom</option>
-//         <option value="NO">❌ No Tag</option>
-//       </select>
-
-//       {type === 'CUSTOM' && (
-//         <input
-//           value={custom}
-//           onChange={(e) => setCustom(e.target.value)}
-//           maxLength={10}
-//         />
-//       )}
-
-//       <button onClick={() => onConfirm(buildTag())}>Confirm</button>
-//       <button onClick={onClose}>Cancel</button>
-//     </div>
-//   );
-// }
 
 export default function CurrentWeekView() {
   const { state } = useSprint();
@@ -87,11 +33,7 @@ export default function CurrentWeekView() {
   const [modalTitle, setModalTitle] = useState('');
   const [modalMarkdown, setModalMarkdown] = useState('');
 
-  const [tagModal, setTagModal] = useState<{
-    day?: WorkdayKey;
-    custom?: string;
-    type?: DayTag['type'];
-  }>({});
+  const [tagModal, setTagModal] = useState<TagModalValue>({});
 
   // for changelog
   const epicTitleById = useMemo(() => {
@@ -117,8 +59,12 @@ export default function CurrentWeekView() {
     await persistWs(next);
   };
 
-  const onClickTag = async (dayKey: WorkdayKey) => {
-    setTagModal({ day: dayKey, type: 'ML' });
+  const onClickTag = async (dayKey: WorkdayKey, dateKey: string) => {
+    setTagModal({
+      day: dayKey,
+      dateKey: dateKey,
+      current: { type: 'ML', label: '😷 病假' },
+    });
   };
 
   const onClickGenerateDayReport = async (dayKey: WorkdayKey) => {
@@ -204,7 +150,9 @@ export default function CurrentWeekView() {
                   notArchived={notArchived}
                   tag={tag}
                   log={day?.snapshotExists ? day.changelog : undefined}
-                  onTag={(dateKey: WorkdayKey) => onClickTag(dateKey)}
+                  onTag={(dayKey: WorkdayKey, dateKey: string) =>
+                    onClickTag(dayKey, dateKey)
+                  }
                   onGenerateDayReport={(dateKey) =>
                     console.log('gen day report', d, dateKey)
                   }
@@ -223,7 +171,11 @@ export default function CurrentWeekView() {
           onConfirm={(tag) => {
             const next = setDayTag(ws, tagModal.day!, tag);
             saveWs(next);
-            setTagModal({});
+            setTagModal({
+              day: tagModal.day,
+              dateKey: tagModal.dateKey,
+              current: tag,
+            });
           }}
         />
       )}
