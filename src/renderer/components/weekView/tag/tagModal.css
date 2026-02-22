@@ -134,6 +134,8 @@
   background: rgba(0, 0, 0, 0.2);
   padding: 10px 12px;
   outline: none;
+  color: rgba(255, 255, 255, 1);
+  font-weight: 500;
 }
 .tmInput:focus {
   border-color: rgba(255, 255, 255, 0.24);
