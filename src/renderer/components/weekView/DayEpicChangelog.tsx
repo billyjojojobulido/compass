@@ -55,7 +55,7 @@ export default function DayEpicChangelog(props: {
               <span className="pill outline">😴 Off</span>
             ) : props.log ? (
               <span className="pill outline">
-                ✅ {props.log.completed.length} / ➕ {props.log.added.length}
+                ✅ {props.log.completed.length} / 🆕 {props.log.added.length}
               </span>
             ) : (
               <span className="pill outline">—</span>
@@ -134,6 +134,7 @@ function DayHeader(props: {
 
 function EpicDrawer({ group }: { group: EpicGroupVM }) {
   const [open, setOpen] = useState(true);
+  const s = group.stats;
 
   return (
     <Drawer
@@ -143,8 +144,37 @@ function EpicDrawer({ group }: { group: EpicGroupVM }) {
       header={
         <div className="cwEpicHeaderRow">
           <span className={`cwCaret ${open ? 'open' : ''}`}>›</span>
+
           <div className="cwEpicTitle">{group.epicTitle}</div>
-          <div className="cwEpicCount">{group.items.length}</div>
+
+          <div className="cwEpicRight">
+            <div className="cwEpicPills" aria-hidden>
+              {s.completed ? (
+                <span className="cwPill kind-completed">✅ {s.completed}</span>
+              ) : null}
+              {s.added ? (
+                <span className="cwPill kind-added">🆕 {s.added}</span>
+              ) : null}
+              {s.statusChanged ? (
+                <span className="cwPill kind-statusChanged">
+                  🔄 {s.statusChanged}
+                </span>
+              ) : null}
+              {s.reopened ? (
+                <span className="cwPill kind-reopened">♻️ {s.reopened}</span>
+              ) : null}
+              {s.epicMoved ? (
+                <span className="cwPill kind-epicMoved">🩹 {s.epicMoved}</span>
+              ) : null}
+              {s.priorityChanged ? (
+                <span className="cwPill kind-priorityChanged">
+                  ⚠️ {s.priorityChanged}
+                </span>
+              ) : null}
+            </div>
+
+            <div className="cwEpicCount">{group.items.length}</div>
+          </div>
         </div>
       }
     >

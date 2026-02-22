@@ -28,7 +28,38 @@ export type EpicGroupVM = {
   epicId: string;
   epicTitle: string;
   items: ChangeItemVM[];
+  // for UI effects
+  stats: Record<ChangeKind, number>;
+  score: number;
 };
+
+const KIND_WEIGHT: Record<ChangeKind, number> = {
+  completed: 6,
+  added: 5,
+  reopened: 5,
+  statusChanged: 3,
+  epicMoved: 2,
+  priorityChanged: 1,
+};
+
+function blankStats(): Record<ChangeKind, number> {
+  return {
+    added: 0,
+    completed: 0,
+    reopened: 0,
+    statusChanged: 0,
+    epicMoved: 0,
+    priorityChanged: 0,
+  };
+}
+
+function computeScore(stats: Record<ChangeKind, number>) {
+  let s = 0;
+  (Object.keys(stats) as ChangeKind[]).forEach((k) => {
+    s += stats[k] * KIND_WEIGHT[k];
+  });
+  return s;
+}
 
 export function selectDayEpicGroups(
   log: DailyChangelog,
@@ -61,6 +92,8 @@ export function selectDayEpicGroups(
       epicId,
       epicTitle: epicTitleById[epicId] ?? epicId,
       items: [],
+      stats: blankStats(),
+      score: 0,
     };
     map.set(epicId, created);
     return created;
@@ -69,13 +102,14 @@ export function selectDayEpicGroups(
   const push = (epicId: string, item: ChangeItemVM) => {
     if (!touched.has(epicId)) return;
     ensure(epicId).items.push({ ...item, epicId });
+    ensure(epicId).stats[item.kind] += 1;
   };
 
   // --- tasks ---
   for (const t of log.added) {
     push(t.epicId, {
       kind: 'added',
-      icon: '➕',
+      icon: '🆕',
       title: t.title,
       detail: undefined,
       taskId: t.id,
@@ -119,7 +153,7 @@ export function selectDayEpicGroups(
   for (const m of log.epicMoved) {
     push(m.fromEpic.id, {
       kind: 'epicMoved',
-      icon: '↗️',
+      icon: '🛫',
       title: m.task.title,
       detail: `Moved to ${m.toEpic.title}`,
       taskId: m.task.id,
@@ -128,7 +162,7 @@ export function selectDayEpicGroups(
 
     push(m.toEpic.id, {
       kind: 'epicMoved',
-      icon: '↘️',
+      icon: '🛬',
       title: m.task.title,
       detail: `Moved from ${m.fromEpic.title}`,
       taskId: m.task.id,
@@ -151,28 +185,16 @@ export function selectDayEpicGroups(
   const groups = Array.from(map.values()).filter((g) => g.items.length > 0);
 
   // sorting: epic with more changes show at first (tie breaker: title)
-  groups.sort((a, b) => {
-    const d = b.items.length - a.items.length;
-    return d !== 0 ? d : a.epicTitle.localeCompare(b.epicTitle);
-  });
-
-  // in-group sorting: Priority > Move > Status > Completed > Added
-  const weight = (k: ChangeItemVM['kind']) =>
-    k === 'priorityChanged'
-      ? 0
-      : k === 'epicMoved'
-        ? 1
-        : k === 'statusChanged'
-          ? 2
-          : k === 'reopened'
-            ? 3
-            : k === 'completed'
-              ? 4
-              : 5;
 
   for (const g of groups) {
-    g.items.sort((a, b) => weight(a.kind) - weight(b.kind));
+    g.score = computeScore(g.stats);
+
+    // in group sorting:: DONE & New TODO at top
+    g.items.sort((a, b) => KIND_WEIGHT[b.kind] - KIND_WEIGHT[a.kind]);
   }
+
+  // Epic group sort desc by score
+  groups.sort((a, b) => b.score - a.score);
 
   return groups;
 }

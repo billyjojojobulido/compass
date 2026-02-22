@@ -145,24 +145,68 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 8px 10px;
 }
 .cwEpicTitle {
   flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.9;
   min-width: 0;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.cwEpicRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cwEpicPills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cwPill {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  opacity: 0.9;
+}
+
 .cwEpicCount {
   font-size: 11px;
   opacity: 0.7;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* semantic pills */
+.cwPill.kind-completed {
+  border-color: rgba(80, 200, 120, 0.35);
+}
+.cwPill.kind-added {
+  border-color: rgba(90, 160, 255, 0.35);
+}
+.cwPill.kind-reopened {
+  border-color: rgba(255, 170, 80, 0.4);
+}
+.cwPill.kind-statusChanged {
+  border-color: rgba(170, 120, 255, 0.35);
+}
+.cwPill.kind-epicMoved {
+  border-color: rgba(80, 210, 210, 0.35);
+}
+.cwPill.kind-priorityChanged {
+  border-color: rgba(255, 120, 180, 0.4);
 }
 
 .cwChanges {
