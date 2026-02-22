@@ -71,7 +71,7 @@ export default function TagModal(props: {
     if (type === 'CUSTOM') {
       const text = custom.trim().slice(0, 10);
       if (!text) return; // keep it strict: must type something
-      props.onConfirm({ type: 'CUSTOM', label: `✏️ ${text}` });
+      props.onConfirm({ type: 'CUSTOM', label: text });
       return;
     }
     const preset = PRESETS.find((p) => p.type === type);
@@ -122,7 +122,7 @@ export default function TagModal(props: {
                 onClick={() => setKind('CUSTOM')}
                 type="button"
               >
-                <span className="tmChipText">✏️ CUSTOM</span>
+                <span className="tmChipText">✏️ 自定义</span>
               </button>
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function TagModal(props: {
           ) : null}
 
           <div className="tmHint">
-            Tips: ML/AL/PH/BT are MVP tags. CUSTOM is for short notes (≤10).
+            Hints: 如果没有工作进度可以用Tag备注。可以自定义 (字数≤10).
           </div>
         </div>
 
