@@ -9,7 +9,7 @@ import {
 import './currentWeek.css';
 
 export default function DayEpicChangelog(props: {
-  dayKey: string; // "Mon | Tue | Wed..."
+  dayKey: WorkdayKey; // "Mon | Tue | Wed..."
   dateKey: string; // "2026-02-02"
   title: string;
   notArchived?: boolean;
@@ -22,7 +22,7 @@ export default function DayEpicChangelog(props: {
   onToggle?: (dayKey: WorkdayKey) => void;
 
   // TODO: top-right buttons (placeholder)
-  onTag?: (dateKey: string) => void;
+  onTag?: (dateKey: WorkdayKey) => void;
   onGenerateDayReport?: (dateKey: string) => void;
 
   defaultOpen?: boolean;
@@ -63,7 +63,7 @@ export default function DayEpicChangelog(props: {
           }
           onTag={(e) => {
             e.stopPropagation();
-            props.onTag?.(props.dateKey);
+            props.onTag?.(props.dayKey);
           }}
           onGen={(e) => {
             e.stopPropagation();
@@ -113,7 +113,7 @@ function DayHeader(props: {
           role="button"
           tabIndex={0}
           onClick={props.onTag}
-          title="Tag / Day Off"
+          title="Tag"
         >
           🏷️
         </div>

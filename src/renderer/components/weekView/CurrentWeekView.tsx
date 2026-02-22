@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   DailySnapshot,
+  DayTag,
   WeeklyWorkspace,
   WorkdayKey,
   WORKDAYS,
@@ -8,7 +9,7 @@ import {
 import DayEpicChangelog from '@/components/weekView/DayEpicChangelog';
 import { useCurrentWeekWorkspace } from '@/components/weekView/hooks/useCurrentWeekWorkspace';
 import './currentWeek.css';
-import { setDayOff, toggleDayCollapsed } from '@/domain/week/workspaceHelper';
+import { setDayTag, toggleDayCollapsed } from '@/domain/week/workspaceHelper';
 import { renderDailyMarkdown } from '@/domain/week/renderDailyMarkdown';
 import { useSprint } from '@/domain/sprintStore';
 import { apiClient } from '@/services/ApiClient';
@@ -21,6 +22,57 @@ const LABEL: Record<string, string> = {
   Fri: 'Friday',
 };
 
+function TagModal({
+  value,
+  onConfirm,
+  onClose,
+}: {
+  value: any;
+  onConfirm: (tag: DayTag) => void;
+  onClose: () => void;
+}) {
+  const [type, setType] = useState<DayTag['type']>('ML');
+  const [custom, setCustom] = useState('');
+
+  const buildTag = (): DayTag => {
+    if (type === 'CUSTOM') {
+      return { type, label: custom.slice(0, 10) };
+    }
+
+    const map = {
+      ML: '😷 病假',
+      AL: '🏖️ 年假',
+      PH: '📅 公假',
+      BT: '✈️ 出差',
+    };
+
+    return { type: type, label: map[type] };
+  };
+
+  return (
+    <div className="modal">
+      <select value={type} onChange={(e) => setType(e.target.value as any)}>
+        <option value="ML">😷 Sick Leave</option>
+        <option value="AL">🏖️ Annual Leave</option>
+        <option value="PH">📅 Public Holiday</option>
+        <option value="BT">✈️ Business Trip</option>
+        <option value="CUSTOM">✏️ Custom</option>
+      </select>
+
+      {type === 'CUSTOM' && (
+        <input
+          value={custom}
+          onChange={(e) => setCustom(e.target.value)}
+          maxLength={10}
+        />
+      )}
+
+      <button onClick={() => onConfirm(buildTag())}>Confirm</button>
+      <button onClick={onClose}>Cancel</button>
+    </div>
+  );
+}
+
 export default function CurrentWeekView() {
   const { state } = useSprint();
   const { loading, error, ws, setWs, persistWs, reload } =
@@ -29,6 +81,12 @@ export default function CurrentWeekView() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalMarkdown, setModalMarkdown] = useState('');
+
+  const [tagModal, setTagModal] = useState<{
+    day?: WorkdayKey;
+    custom?: string;
+    type?: DayTag['type'];
+  }>({});
 
   // for changelog
   const epicTitleById = useMemo(() => {
@@ -55,10 +113,7 @@ export default function CurrentWeekView() {
   };
 
   const onClickTag = async (dayKey: WorkdayKey) => {
-    // MVP: click to set dayOff
-    const cur = ws.dayMeta?.[dayKey]?.isOff ?? false;
-    const next = setDayOff(ws, dayKey, !cur);
-    await saveWs(next);
+    setTagModal({ day: dayKey, type: 'ML' });
   };
 
   const onClickGenerateDayReport = async (dayKey: WorkdayKey) => {
@@ -127,7 +182,10 @@ export default function CurrentWeekView() {
             {WORKDAYS.map((d) => {
               const day = ws.days[d];
               const label = LABEL[d] ?? d;
-              const title = `${label}${day?.date ? ` (${day.date})` : ''}`;
+              const tag = ws.dayMeta?.[d]?.tag;
+              const title = `${label}${day?.date ? ` (${day.date})` : ''} ${
+                tag ? tag.label : ''
+              }`;
 
               const notArchived = !day?.snapshotExists;
               const isOff = !!day?.isOff;
@@ -154,7 +212,7 @@ export default function CurrentWeekView() {
                       ? day.changelog
                       : undefined
                   }
-                  onTag={(dateKey) => console.log('tag day', d, dateKey)}
+                  onTag={(dateKey: WorkdayKey) => onClickTag(dateKey)}
                   onGenerateDayReport={(dateKey) =>
                     console.log('gen day report', d, dateKey)
                   }
@@ -166,6 +224,17 @@ export default function CurrentWeekView() {
           </div>
         </section>
       </div>
+      {tagModal.day && (
+        <TagModal
+          value={tagModal}
+          onClose={() => setTagModal({})}
+          onConfirm={(tag) => {
+            const next = setDayTag(ws, tagModal.day!, tag);
+            saveWs(next);
+            setTagModal({});
+          }}
+        />
+      )}
     </div>
   );
 }
