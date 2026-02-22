@@ -232,15 +232,26 @@ export type LegacyWeekItem = {
 export type WorkdayKey = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri';
 export const WORKDAYS: WorkdayKey[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
-export type DayTag = {
-  id: string; // e.g. "off" | "birthday" | "payday" | ...
-  label: string; // display text
-  emoji?: string; // optional
+// export type DayTag = {
+//   id: string; // e.g. "off" | "birthday" | "payday" | ...
+//   label: string; // display text
+//   emoji?: string; // optional
+// };
+
+export type DayTag = { type: string; label: string };
+// | { type: 'ML'; label: '😷 病假' }
+// | { type: 'AL'; label: '🏖️ 年假' }
+// | { type: 'PH'; label: '📅 公假' }
+// | { type: 'BT'; label: '✈️ 出差' }
+// | { type: 'CUSTOM'; label: string };
+
+export type DayMeta = {
+  collapsed?: boolean;
+  tag?: DayTag;
 };
 
 export type WeeklyDayMeta = {
-  tags?: DayTag[]; // future: birthday/payday/etc
-  isOff?: boolean; // MVP required
+  tag?: DayTag; // only 1 tag allowed
   collapsed?: boolean; // UI state: day drawer collapsed
 };
 
@@ -277,7 +288,6 @@ export type WeeklyWorkspace = {
 
 export type WeeklyDay = {
   date: string; // "YYYY-MM-DD" local day key
-  isOff?: boolean; // 😴 day off
   snapshotExists: boolean;
 
   // the core content we display

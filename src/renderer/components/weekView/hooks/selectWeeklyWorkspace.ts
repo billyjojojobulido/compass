@@ -27,13 +27,11 @@ export function selectWeeklyWorkspace(args: {
 
   for (const k of WORKDAYS) {
     const snap = args.dayToSnapshot[k] ?? null;
-    const isOff = args.dayOff?.[k] ?? false;
 
     if (!snap) {
       // no snapshot: still create a placeholder day (UI can show "not archived")
       days[k] = {
         date: '', // unknown
-        isOff,
         snapshotExists: false,
         changelog: {
           schemaVersion: 1,
@@ -65,7 +63,6 @@ export function selectWeeklyWorkspace(args: {
 
     days[k] = {
       date: snap.date,
-      isOff,
       snapshotExists: true,
       changelog: log,
     };

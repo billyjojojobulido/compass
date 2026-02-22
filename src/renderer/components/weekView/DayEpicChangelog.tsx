@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import Drawer from './Drawer';
-import type { DailyChangelog, WorkdayKey } from '@/domain/types';
+import type { DailyChangelog, DayTag, WorkdayKey } from '@/domain/types';
 import {
   selectDayEpicGroups,
   EpicGroupVM,
@@ -9,11 +9,11 @@ import {
 import './currentWeek.css';
 
 export default function DayEpicChangelog(props: {
-  dayKey: string; // "Mon | Tue | Wed..."
+  dayKey: WorkdayKey; // "Mon | Tue | Wed..."
   dateKey: string; // "2026-02-02"
   title: string;
   notArchived?: boolean;
-  isOff?: boolean;
+  tag?: DayTag;
 
   log: DailyChangelog;
   epicTitleById?: Record<string, string>;
@@ -22,7 +22,7 @@ export default function DayEpicChangelog(props: {
   onToggle?: (dayKey: WorkdayKey) => void;
 
   // TODO: top-right buttons (placeholder)
-  onTag?: (dateKey: string) => void;
+  onTag?: (dayKey: WorkdayKey, dateKey: string) => void;
   onGenerateDayReport?: (dateKey: string) => void;
 
   defaultOpen?: boolean;
@@ -49,10 +49,10 @@ export default function DayEpicChangelog(props: {
           title={props.title}
           open={open}
           meta={
-            props.notArchived ? (
-              <span className="pill outline">Not archived</span>
-            ) : props.isOff ? (
-              <span className="pill outline">😴 Off</span>
+            props.tag ? (
+              <span className="pill outline">{props.tag.label}</span>
+            ) : props.notArchived ? (
+              <span className="pill outline">No Change</span>
             ) : props.log ? (
               <span className="pill outline">
                 ✅ {props.log.completed.length} / 🆕 {props.log.added.length}
@@ -63,7 +63,7 @@ export default function DayEpicChangelog(props: {
           }
           onTag={(e) => {
             e.stopPropagation();
-            props.onTag?.(props.dateKey);
+            props.onTag?.(props.dayKey, props.dateKey);
           }}
           onGen={(e) => {
             e.stopPropagation();
@@ -72,10 +72,10 @@ export default function DayEpicChangelog(props: {
         />
       }
     >
-      {props.notArchived ? (
+      {props.tag ? (
+        <div className="cwDayEmpty">{props.tag.label}</div>
+      ) : props.notArchived ? (
         <div className="cwDayEmpty">No snapshot</div>
-      ) : props.isOff ? (
-        <div className="cwDayEmpty">😴 Day Off</div>
       ) : !props.log ? (
         <div className="cwDayEmpty">—</div>
       ) : !hasChanges ? (
@@ -107,13 +107,12 @@ function DayHeader(props: {
       </div>
 
       <div className="cwDayRight">
-        {/* TODO: placeholder : Tag（MVP -> only supports day off） */}
         <div
           className="cwIconBtn"
           role="button"
           tabIndex={0}
           onClick={props.onTag}
-          title="Tag / Day Off"
+          title="Tag"
         >
           🏷️
         </div>

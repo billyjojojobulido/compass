@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   DailySnapshot,
+  DayTag,
   WeeklyWorkspace,
   WorkdayKey,
   WORKDAYS,
@@ -8,12 +9,16 @@ import {
 import DayEpicChangelog from '@/components/weekView/DayEpicChangelog';
 import { useCurrentWeekWorkspace } from '@/components/weekView/hooks/useCurrentWeekWorkspace';
 import './currentWeek.css';
-import { setDayOff, toggleDayCollapsed } from '@/domain/week/workspaceHelper';
+import { setDayTag, toggleDayCollapsed } from '@/domain/week/workspaceHelper';
 import { renderDailyMarkdown } from '@/domain/week/renderDailyMarkdown';
 import { useSprint } from '@/domain/sprintStore';
 import { apiClient } from '@/services/ApiClient';
 
-const LABEL: Record<string, string> = {
+import TagModal, { TagModalValue } from './tag/TagModal';
+import { useToast } from '../core/toast/useToast';
+import ToastContainer from '../core/toast/ToastContainer';
+
+export const LABEL: Record<string, string> = {
   Mon: 'Monday',
   Tue: 'Tuesday',
   Wed: 'Wednesday',
@@ -25,10 +30,13 @@ export default function CurrentWeekView() {
   const { state } = useSprint();
   const { loading, error, ws, setWs, persistWs, reload } =
     useCurrentWeekWorkspace();
+  const { toasts, show } = useToast();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalMarkdown, setModalMarkdown] = useState('');
+
+  const [tagModal, setTagModal] = useState<TagModalValue>({});
 
   // for changelog
   const epicTitleById = useMemo(() => {
@@ -38,16 +46,6 @@ export default function CurrentWeekView() {
     }
     return map;
   }, [state.epics]);
-
-  const canArchiveThisWeek = useMemo(() => {
-    if (!ws) return false;
-    // only Mon-Fri: either napshotExists, or dayOff
-    return (WORKDAYS as WorkdayKey[]).every((k) => {
-      const day = ws.days[k];
-      const off = ws.dayMeta?.[k]?.isOff ?? false;
-      return off || !!day?.snapshotExists;
-    });
-  }, [ws]);
 
   if (loading)
     return <div style={{ padding: 12, opacity: 0.75 }}>Loading week…</div>;
@@ -64,11 +62,12 @@ export default function CurrentWeekView() {
     await persistWs(next);
   };
 
-  const onClickTag = async (dayKey: WorkdayKey) => {
-    // MVP: click to set dayOff
-    const cur = ws.dayMeta?.[dayKey]?.isOff ?? false;
-    const next = setDayOff(ws, dayKey, !cur);
-    await saveWs(next);
+  const onClickTag = async (dayKey: WorkdayKey, dateKey: string) => {
+    setTagModal({
+      day: dayKey,
+      dateKey: dateKey,
+      current: { type: 'ML', label: '😷 病假' },
+    });
   };
 
   const onClickGenerateDayReport = async (dayKey: WorkdayKey) => {
@@ -86,8 +85,8 @@ export default function CurrentWeekView() {
     const snap = (await apiClient.snapshots.read(day.date)) as DailySnapshot;
 
     // dayTagText：if is off / birthday
-    const isOff = ws.dayMeta?.[dayKey]?.isOff ?? false;
-    const dayTagText = isOff ? '😴' : undefined;
+    const tag = ws.dayMeta?.[dayKey]?.tag ?? undefined;
+    const dayTagText = tag ? tag.label : undefined;
 
     const md = renderDailyMarkdown({
       date: day.date,
@@ -119,14 +118,10 @@ export default function CurrentWeekView() {
           <button
             className="btnPrimary"
             onClick={() => {
-              if (!canArchiveThisWeek) {
-                console.log('Archive Today');
-              } else {
-                console.log('Archive This Week');
-              }
+              ws && saveWs(ws);
             }}
           >
-            {canArchiveThisWeek ? 'Archive This Week' : 'Archive Today'}
+            Save
           </button>
 
           <button className="btnGhost" onClick={reload}>
@@ -141,18 +136,12 @@ export default function CurrentWeekView() {
             {WORKDAYS.map((d) => {
               const day = ws.days[d];
               const label = LABEL[d] ?? d;
+              const tag = ws.dayMeta?.[d]?.tag;
               const title = `${label}${day?.date ? ` (${day.date})` : ''}`;
 
               const notArchived = !day?.snapshotExists;
-              const isOff = !!day?.isOff;
 
               const collapsed = ws.dayMeta?.[d]?.collapsed ?? d !== 'Mon'; // by right only expand Mon
-
-              const pill = !day?.snapshotExists
-                ? 'Not archived'
-                : isOff
-                  ? '😴 Off'
-                  : `✅ ${day.changelog.completed.length} / ➕ ${day.changelog.added.length}`;
 
               return (
                 <DayEpicChangelog
@@ -162,13 +151,11 @@ export default function CurrentWeekView() {
                   // future solution : later can use <weekKey+dayKey> as key
                   title={title}
                   notArchived={notArchived}
-                  isOff={isOff}
-                  log={
-                    day?.snapshotExists && !day.isOff
-                      ? day.changelog
-                      : undefined
+                  tag={tag}
+                  log={day?.snapshotExists ? day.changelog : undefined}
+                  onTag={(dayKey: WorkdayKey, dateKey: string) =>
+                    onClickTag(dayKey, dateKey)
                   }
-                  onTag={(dateKey) => console.log('tag day', d, dateKey)}
                   onGenerateDayReport={(dateKey) =>
                     console.log('gen day report', d, dateKey)
                   }
@@ -180,6 +167,22 @@ export default function CurrentWeekView() {
           </div>
         </section>
       </div>
+      {tagModal.day && (
+        <TagModal
+          value={tagModal}
+          onClose={() => setTagModal({})}
+          onConfirm={(tag) => {
+            const next = setDayTag(ws, tagModal.day!, tag);
+            saveWs(next);
+
+            if (tag) show('Tag saved');
+            else show('Tag removed');
+
+            setTagModal({});
+          }}
+        />
+      )}
+      <ToastContainer toasts={toasts} />
     </div>
   );
 }
