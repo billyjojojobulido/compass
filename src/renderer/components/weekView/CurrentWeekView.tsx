@@ -35,7 +35,9 @@ function TagModal({
   const [custom, setCustom] = useState('');
 
   const buildTag = (): DayTag => {
-    if (type === 'CUSTOM') {
+    if (type === 'NO') {
+      return undefined;
+    } else if (type === 'CUSTOM') {
       return { type, label: custom.slice(0, 10) };
     }
 
@@ -57,6 +59,7 @@ function TagModal({
         <option value="PH">📅 Public Holiday</option>
         <option value="BT">✈️ Business Trip</option>
         <option value="CUSTOM">✏️ Custom</option>
+        <option value="NO">❌ No Tag</option>
       </select>
 
       {type === 'CUSTOM' && (
