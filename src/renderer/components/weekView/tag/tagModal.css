@@ -1,0 +1,177 @@
+.tmBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 18, 0.55);
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+}
+
+.tmCard {
+  position: relative;
+  width: min(520px, calc(100vw - 24px));
+  border-radius: 16px;
+  padding: 14px;
+  overflow: hidden;
+
+  /* Linear base */
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.35),
+    0 2px 0 rgba(255, 255, 255, 0.06) inset;
+  backdrop-filter: blur(14px);
+}
+
+.tmRay {
+  position: absolute;
+  inset: -120px -120px auto auto;
+  width: 520px;
+  height: 520px;
+
+  /* Raycast sparkle */
+  background:
+    radial-gradient(
+      circle at 30% 30%,
+      rgba(255, 255, 255, 0.28) 0%,
+      rgba(255, 255, 255, 0.12) 28%,
+      rgba(255, 255, 255, 0) 60%
+    ),
+    conic-gradient(
+      from 210deg,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0)
+    );
+  filter: blur(2px);
+  opacity: 0.85;
+  pointer-events: none;
+  transform: rotate(8deg);
+}
+
+.tmHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px 10px 6px;
+}
+
+.tmTitle {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.tmIconBtn {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+}
+.tmIconBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tmBody {
+  padding: 6px;
+  display: grid;
+  gap: 10px;
+}
+
+.tmRow {
+  display: grid;
+  gap: 8px;
+}
+
+.tmLabel {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.tmChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tmChip {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.tmChip:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tmChip.active {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.06) inset;
+}
+
+.tmChipText {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tmInput {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px 12px;
+  outline: none;
+}
+.tmInput:focus {
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+
+.tmHint {
+  font-size: 12px;
+  opacity: 0.75;
+  line-height: 1.35;
+}
+
+.tmFooter {
+  display: flex;
+  gap: 8px;
+  padding: 10px 6px 6px 6px;
+  align-items: center;
+}
+
+.tmSpacer {
+  flex: 1;
+}
+
+.tmBtn {
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+}
+.tmBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tmBtn.primary {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.16);
+  font-weight: 700;
+}
+
+.tmBtn.ghost {
+  background: rgba(255, 255, 255, 0.04);
+}

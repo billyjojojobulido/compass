@@ -14,6 +14,8 @@ import { renderDailyMarkdown } from '@/domain/week/renderDailyMarkdown';
 import { useSprint } from '@/domain/sprintStore';
 import { apiClient } from '@/services/ApiClient';
 
+import TagModal from './tag/TagModal';
+
 const LABEL: Record<string, string> = {
   Mon: 'Monday',
   Tue: 'Tuesday',
@@ -22,59 +24,59 @@ const LABEL: Record<string, string> = {
   Fri: 'Friday',
 };
 
-function TagModal({
-  value,
-  onConfirm,
-  onClose,
-}: {
-  value: any;
-  onConfirm: (tag: DayTag) => void;
-  onClose: () => void;
-}) {
-  const [type, setType] = useState<DayTag['type']>('ML');
-  const [custom, setCustom] = useState('');
+// function TagModal({
+//   value,
+//   onConfirm,
+//   onClose,
+// }: {
+//   value: any;
+//   onConfirm: (tag: DayTag) => void;
+//   onClose: () => void;
+// }) {
+//   const [type, setType] = useState<DayTag['type']>('ML');
+//   const [custom, setCustom] = useState('');
 
-  const buildTag = (): DayTag => {
-    if (type === 'NO') {
-      return undefined;
-    } else if (type === 'CUSTOM') {
-      return { type, label: custom.slice(0, 10) };
-    }
+//   const buildTag = (): DayTag => {
+//     if (type === 'NO') {
+//       return undefined;
+//     } else if (type === 'CUSTOM') {
+//       return { type, label: custom.slice(0, 10) };
+//     }
 
-    const map = {
-      ML: '😷 病假',
-      AL: '🏖️ 年假',
-      PH: '📅 公假',
-      BT: '✈️ 出差',
-    };
+//     const map = {
+//       ML: '😷 病假',
+//       AL: '🏖️ 年假',
+//       PH: '📅 公假',
+//       BT: '✈️ 出差',
+//     };
 
-    return { type: type, label: map[type] };
-  };
+//     return { type: type, label: map[type] };
+//   };
 
-  return (
-    <div className="modal">
-      <select value={type} onChange={(e) => setType(e.target.value as any)}>
-        <option value="ML">😷 Sick Leave</option>
-        <option value="AL">🏖️ Annual Leave</option>
-        <option value="PH">📅 Public Holiday</option>
-        <option value="BT">✈️ Business Trip</option>
-        <option value="CUSTOM">✏️ Custom</option>
-        <option value="NO">❌ No Tag</option>
-      </select>
+//   return (
+//     <div className="modal">
+//       <select value={type} onChange={(e) => setType(e.target.value as any)}>
+//         <option value="ML">😷 Sick Leave</option>
+//         <option value="AL">🏖️ Annual Leave</option>
+//         <option value="PH">📅 Public Holiday</option>
+//         <option value="BT">✈️ Business Trip</option>
+//         <option value="CUSTOM">✏️ Custom</option>
+//         <option value="NO">❌ No Tag</option>
+//       </select>
 
-      {type === 'CUSTOM' && (
-        <input
-          value={custom}
-          onChange={(e) => setCustom(e.target.value)}
-          maxLength={10}
-        />
-      )}
+//       {type === 'CUSTOM' && (
+//         <input
+//           value={custom}
+//           onChange={(e) => setCustom(e.target.value)}
+//           maxLength={10}
+//         />
+//       )}
 
-      <button onClick={() => onConfirm(buildTag())}>Confirm</button>
-      <button onClick={onClose}>Cancel</button>
-    </div>
-  );
-}
+//       <button onClick={() => onConfirm(buildTag())}>Confirm</button>
+//       <button onClick={onClose}>Cancel</button>
+//     </div>
+//   );
+// }
 
 export default function CurrentWeekView() {
   const { state } = useSprint();
