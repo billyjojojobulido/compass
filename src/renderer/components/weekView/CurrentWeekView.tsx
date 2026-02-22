@@ -186,15 +186,8 @@ export default function CurrentWeekView() {
               const title = `${label}${day?.date ? ` (${day.date})` : ''}`;
 
               const notArchived = !day?.snapshotExists;
-              const tagText = tag?.label ?? undefined;
 
               const collapsed = ws.dayMeta?.[d]?.collapsed ?? d !== 'Mon'; // by right only expand Mon
-
-              const pill = !day?.snapshotExists
-                ? 'No Change'
-                : tagText
-                  ? tagText
-                  : `✅ ${day.changelog.completed.length} / ➕ ${day.changelog.added.length}`;
 
               return (
                 <DayEpicChangelog
