@@ -15,6 +15,8 @@ import { useSprint } from '@/domain/sprintStore';
 import { apiClient } from '@/services/ApiClient';
 
 import TagModal, { TagModalValue } from './tag/TagModal';
+import { useToast } from '../core/toast/useToast';
+import ToastContainer from '../core/toast/ToastContainer';
 
 export const LABEL: Record<string, string> = {
   Mon: 'Monday',
@@ -28,6 +30,7 @@ export default function CurrentWeekView() {
   const { state } = useSprint();
   const { loading, error, ws, setWs, persistWs, reload } =
     useCurrentWeekWorkspace();
+  const { toasts, show } = useToast();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
@@ -171,14 +174,15 @@ export default function CurrentWeekView() {
           onConfirm={(tag) => {
             const next = setDayTag(ws, tagModal.day!, tag);
             saveWs(next);
-            setTagModal({
-              day: tagModal.day,
-              dateKey: tagModal.dateKey,
-              current: tag,
-            });
+
+            if (tag) show('Tag saved');
+            else show('Tag removed');
+
+            setTagModal({});
           }}
         />
       )}
+      <ToastContainer toasts={toasts} />
     </div>
   );
 }
