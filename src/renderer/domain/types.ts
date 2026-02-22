@@ -246,14 +246,12 @@ export type DayTag = { type: string; label: string };
 // | { type: 'CUSTOM'; label: string };
 
 export type DayMeta = {
-  isOff?: boolean;
   collapsed?: boolean;
   tag?: DayTag;
 };
 
 export type WeeklyDayMeta = {
   tag?: DayTag; // only 1 tag allowed
-  isOff?: boolean; // MVP required
   collapsed?: boolean; // UI state: day drawer collapsed
 };
 
@@ -290,7 +288,6 @@ export type WeeklyWorkspace = {
 
 export type WeeklyDay = {
   date: string; // "YYYY-MM-DD" local day key
-  isOff?: boolean; // 😴 day off
   snapshotExists: boolean;
 
   // the core content we display

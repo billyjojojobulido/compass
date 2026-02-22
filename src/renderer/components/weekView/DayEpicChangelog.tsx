@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import Drawer from './Drawer';
-import type { DailyChangelog, WorkdayKey } from '@/domain/types';
+import type { DailyChangelog, DayTag, WorkdayKey } from '@/domain/types';
 import {
   selectDayEpicGroups,
   EpicGroupVM,
@@ -13,7 +13,7 @@ export default function DayEpicChangelog(props: {
   dateKey: string; // "2026-02-02"
   title: string;
   notArchived?: boolean;
-  isOff?: boolean;
+  tag?: DayTag;
 
   log: DailyChangelog;
   epicTitleById?: Record<string, string>;
@@ -50,9 +50,9 @@ export default function DayEpicChangelog(props: {
           open={open}
           meta={
             props.notArchived ? (
-              <span className="pill outline">Not archived</span>
-            ) : props.isOff ? (
-              <span className="pill outline">😴 Off</span>
+              <span className="pill outline">No Change</span>
+            ) : props.tag ? (
+              <span className="pill outline">{props.tag.label}</span>
             ) : props.log ? (
               <span className="pill outline">
                 ✅ {props.log.completed.length} / 🆕 {props.log.added.length}
@@ -74,8 +74,8 @@ export default function DayEpicChangelog(props: {
     >
       {props.notArchived ? (
         <div className="cwDayEmpty">No snapshot</div>
-      ) : props.isOff ? (
-        <div className="cwDayEmpty">😴 Day Off</div>
+      ) : props.tag ? (
+        <div className="cwDayEmpty">{props.tag.label}</div>
       ) : !props.log ? (
         <div className="cwDayEmpty">—</div>
       ) : !hasChanges ? (
@@ -107,7 +107,6 @@ function DayHeader(props: {
       </div>
 
       <div className="cwDayRight">
-        {/* TODO: placeholder : Tag（MVP -> only supports day off） */}
         <div
           className="cwIconBtn"
           role="button"
