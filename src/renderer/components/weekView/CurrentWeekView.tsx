@@ -17,6 +17,7 @@ import { apiClient } from '@/services/ApiClient';
 import TagModal, { TagModalValue } from './tag/TagModal';
 import { useToast } from '../core/toast/useToast';
 import ToastContainer from '../core/toast/ToastContainer';
+import DailyReportModal from '../reportView/DailyReportModal';
 
 export const LABEL: Record<string, string> = {
   Mon: 'Monday',
@@ -106,6 +107,30 @@ export default function CurrentWeekView() {
     await saveWs(next);
   };
 
+  const onGenerateDayReport = async (dayKey: WorkdayKey) => {
+    const day = ws.days[dayKey];
+    if (!day?.snapshotExists || !day.date) {
+      show(`Snapshot Not Created Yet for ${day.date}`);
+      return;
+    }
+
+    try {
+      const snap = await window.compass.snapshot.read(day.date);
+      const md = renderDailyMarkdown({
+        date: day.date,
+        snapshot: snap,
+        config: state.config,
+        dayTagText: ws.dayMeta?.[dayKey]?.tag?.label,
+      });
+
+      setModalTitle(`${day.date} Daily Report`);
+      setModalMarkdown(md);
+      setModalOpen(true);
+    } catch (error) {
+      show(`Snapshot Not Found for ${day.date}`);
+    }
+  };
+
   return (
     <div className="cwRoot">
       <div className="contentHeader">
@@ -156,8 +181,8 @@ export default function CurrentWeekView() {
                   onTag={(dayKey: WorkdayKey, dateKey: string) =>
                     onClickTag(dayKey, dateKey)
                   }
-                  onGenerateDayReport={(dateKey) =>
-                    console.log('gen day report', d, dateKey)
+                  onGenerateDayReport={(dayKey: WorkdayKey) =>
+                    onGenerateDayReport(dayKey)
                   }
                   defaultOpen={d === 'Mon'} // expand Monday by default
                   epicTitleById={epicTitleById}
@@ -182,6 +207,18 @@ export default function CurrentWeekView() {
           }}
         />
       )}
+      <DailyReportModal
+        open={modalOpen}
+        title={modalTitle}
+        markdown={modalMarkdown}
+        onClose={() => {
+          setModalOpen(false);
+          setModalMarkdown(undefined);
+          setModalTitle(undefined);
+        }}
+        onCopied={() => show('Copied to clipboard')}
+      ></DailyReportModal>
+
       <ToastContainer toasts={toasts} />
     </div>
   );
