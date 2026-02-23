@@ -210,6 +210,7 @@ export default function CurrentWeekView() {
           setModalMarkdown(undefined);
           setModalTitle(undefined);
         }}
+        onCopied={() => show('Copied to clipboard')}
       ></DailyReportModal>
 
       <ToastContainer toasts={toasts} />
