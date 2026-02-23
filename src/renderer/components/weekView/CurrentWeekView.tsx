@@ -12,12 +12,12 @@ import './currentWeek.css';
 import { setDayTag, toggleDayCollapsed } from '@/domain/week/workspaceHelper';
 import { renderDailyMarkdown } from '@/domain/week/renderDailyMarkdown';
 import { useSprint } from '@/domain/sprintStore';
-import { apiClient } from '@/services/ApiClient';
 
 import TagModal, { TagModalValue } from './tag/TagModal';
 import { useToast } from '../core/toast/useToast';
 import ToastContainer from '../core/toast/ToastContainer';
 import DailyReportModal from '../reportView/DailyReportModal';
+import { apiClient } from '@/services/ApiClient';
 
 export const LABEL: Record<string, string> = {
   Mon: 'Monday',
@@ -71,37 +71,6 @@ export default function CurrentWeekView() {
     });
   };
 
-  const onClickGenerateDayReport = async (dayKey: WorkdayKey) => {
-    const day = ws.days[dayKey];
-    if (!day?.snapshotExists || !day.date) {
-      setModalTitle(`${LABEL[dayKey]} (No snapshot)`);
-      setModalMarkdown(
-        `No snapshot for ${dayKey}. Please archive the day first.`,
-      );
-      setModalOpen(true);
-      return;
-    }
-
-    // read snapshot data of that day (upstream)
-    const snap = (await apiClient.snapshots.read(day.date)) as DailySnapshot;
-
-    // dayTagText：if is off / birthday
-    const tag = ws.dayMeta?.[dayKey]?.tag ?? undefined;
-    const dayTagText = tag ? tag.label : undefined;
-
-    const md = renderDailyMarkdown({
-      date: day.date,
-      snapshot: snap,
-      config: state.config,
-      // changelog: day.changelog, // can pass in if want changelog to be sorted by touched
-      dayTagText,
-    });
-
-    setModalTitle(`${day.date} Daily Report`);
-    setModalMarkdown(md);
-    setModalOpen(true);
-  };
-
   const onToggleDay = async (dayKey: WorkdayKey) => {
     const next = toggleDayCollapsed(ws, dayKey);
     await saveWs(next);
@@ -115,7 +84,7 @@ export default function CurrentWeekView() {
     }
 
     try {
-      const snap = await window.compass.snapshot.read(day.date);
+      const snap = await apiClient.snapshots.read(day.date);
       const md = renderDailyMarkdown({
         date: day.date,
         snapshot: snap,
