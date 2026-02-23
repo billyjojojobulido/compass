@@ -82,6 +82,8 @@
 .drmBody {
   padding: 12px;
   overflow: hidden;
+  min-height: 200px;
+  height: 40vh;
 }
 
 .drmTextarea {
