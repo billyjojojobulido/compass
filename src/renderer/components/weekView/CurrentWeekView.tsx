@@ -109,20 +109,26 @@ export default function CurrentWeekView() {
 
   const onGenerateDayReport = async (dayKey: WorkdayKey) => {
     const day = ws.days[dayKey];
-    if (!day?.snapshotExists || !day.date) return;
+    if (!day?.snapshotExists || !day.date) {
+      show(`Snapshot Not Created Yet for ${day.date}`);
+      return;
+    }
 
-    const snap = await window.compass.snapshot.read(day.date);
+    try {
+      const snap = await window.compass.snapshot.read(day.date);
+      const md = renderDailyMarkdown({
+        date: day.date,
+        snapshot: snap,
+        config: state.config,
+        dayTagText: ws.dayMeta?.[dayKey]?.tag?.label,
+      });
 
-    const md = renderDailyMarkdown({
-      date: day.date,
-      snapshot: snap,
-      config: state.config,
-      dayTagText: ws.dayMeta?.[dayKey]?.tag?.label,
-    });
-
-    setModalTitle(`${day.date} Daily Report`);
-    setModalMarkdown(md);
-    setModalOpen(true);
+      setModalTitle(`${day.date} Daily Report`);
+      setModalMarkdown(md);
+      setModalOpen(true);
+    } catch (error) {
+      show(`Snapshot Not Found for ${day.date}`);
+    }
   };
 
   return (
