@@ -9,7 +9,9 @@ export default function DailyReportModal(props: {
 }) {
   const { open, title, markdown, onClose, onCopied } = props;
 
-  const canCopy = useMemo(() => markdown.trim().length > 0, [markdown]);
+  const md = typeof markdown === 'string' ? markdown : '';
+
+  const canCopy = useMemo(() => md.trim().length > 0, [md]);
   const [copied, setCopied] = useState(false);
 
   const cardRef = useRef<HTMLDivElement | null>(null);
@@ -51,17 +53,17 @@ export default function DailyReportModal(props: {
       window.removeEventListener('keydown', onKeyDown);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, canCopy, markdown]);
+  }, [open, canCopy, md]);
 
   useEffect(() => {
     if (!open) return;
     setCopied(false);
-  }, [open, markdown]);
+  }, [open, md]);
 
   async function doCopy() {
     if (!canCopy) return;
 
-    await navigator.clipboard.writeText(markdown);
+    await navigator.clipboard.writeText(md);
     setCopied(true);
     onCopied?.();
 
@@ -106,7 +108,7 @@ export default function DailyReportModal(props: {
             ref={textRef}
             className="drmTextarea"
             readOnly
-            value={markdown}
+            value={md}
             spellCheck={false}
           />
         </div>
