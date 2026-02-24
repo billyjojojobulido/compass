@@ -1,11 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import {
-  DailySnapshot,
-  DayTag,
-  WeeklyWorkspace,
-  WorkdayKey,
-  WORKDAYS,
-} from '@/domain/types';
+import { WeeklyWorkspace, WorkdayKey, WORKDAYS } from '@/domain/types';
 import DayEpicChangelog from '@/components/weekView/DayEpicChangelog';
 import { useCurrentWeekWorkspace } from '@/components/weekView/hooks/useCurrentWeekWorkspace';
 import './currentWeek.css';
@@ -18,6 +12,7 @@ import { useToast } from '../core/toast/useToast';
 import ToastContainer from '../core/toast/ToastContainer';
 import DailyReportModal from '../reportView/DailyReportModal';
 import { apiClient } from '@/services/ApiClient';
+import { renderWeeklyMarkdown } from '@/domain/week/renderWeeklyMarkdown';
 
 export const LABEL: Record<string, string> = {
   Mon: 'Monday',
@@ -27,7 +22,11 @@ export const LABEL: Record<string, string> = {
   Fri: 'Friday',
 };
 
-export default function CurrentWeekView() {
+export default function CurrentWeekView({
+  reloadSidebar,
+}: {
+  reloadSidebar: () => void;
+}) {
   const { state } = useSprint();
   const { loading, error, ws, setWs, persistWs, reload } =
     useCurrentWeekWorkspace();
@@ -56,6 +55,7 @@ export default function CurrentWeekView() {
     );
   if (!ws) return <div style={{ padding: 12 }}>No workspace</div>;
 
+  /* Save */
   const saveWs = async (next: WeeklyWorkspace) => {
     // 1) opti update UI
     setWs(next);
@@ -63,6 +63,7 @@ export default function CurrentWeekView() {
     await persistWs(next);
   };
 
+  /* Tag */
   const onClickTag = async (dayKey: WorkdayKey, dateKey: string) => {
     setTagModal({
       day: dayKey,
@@ -76,6 +77,7 @@ export default function CurrentWeekView() {
     await saveWs(next);
   };
 
+  /* Day Report */
   const onGenerateDayReport = async (dayKey: WorkdayKey) => {
     const day = ws.days[dayKey];
     if (!day?.snapshotExists || !day.date) {
@@ -100,6 +102,14 @@ export default function CurrentWeekView() {
     }
   };
 
+  /* Week Report */
+  const onArchiveWeek = async () => {
+    const md = renderWeeklyMarkdown(ws);
+    await apiClient.legacyWeekly.write(`${ws.weekKey}.md`, md);
+
+    reloadSidebar();
+  };
+
   return (
     <div className="cwRoot">
       <div className="contentHeader">
@@ -109,6 +119,9 @@ export default function CurrentWeekView() {
         </div>
 
         <div className="contentActions">
+          <button className="btnGhost" onClick={reload}>
+            Refresh
+          </button>{' '}
           <button
             className="btnPrimary"
             onClick={() => {
@@ -117,9 +130,8 @@ export default function CurrentWeekView() {
           >
             Save
           </button>
-
-          <button className="btnGhost" onClick={reload}>
-            Refresh
+          <button className="btnPrimary" onClick={onArchiveWeek}>
+            Archive Week {ws.weekKey}
           </button>
         </div>
       </div>
