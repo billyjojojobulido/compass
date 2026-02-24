@@ -80,6 +80,28 @@ export function readLegacyWeekly(fileName: string): string {
   if (!fs.existsSync(full)) throw new Error(`Legacy weekly not found: ${safe}`);
   return fs.readFileSync(full, 'utf-8');
 }
+
+export function writeWeeklyReport(fileName: string, content: string) {
+  ensureCompassDirs();
+
+  // 1) force to be a safe file name (prevent path traversal)
+  let safe = path.basename(fileName);
+
+  // 2) force extension .md
+  if (!/\.md$/i.test(safe)) safe = `${safe}.md`;
+
+  const full = path.join(legacyWeeklyDir(), safe);
+
+  // 3) ensure directory exists (just in case)
+  const dir = path.dirname(full);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  // 4) write markdown
+  fs.writeFileSync(full, content ?? '', 'utf-8');
+
+  return { ok: true, path: full };
+}
+
 //#endregion
 
 //#region ---- Daily Snapshot -----

@@ -50,6 +50,17 @@ export const apiClient = {
         throw new Error(`[ApiClient.legacyWeekly.read] ${toErrorMessage(e)}`);
       }
     },
+    async write(
+      fileName: string,
+      content: string,
+    ): Promise<{ ok: true; path: string }> {
+      try {
+        const compass = assertCompass();
+        return await compass.legacyWeekly.write(fileName, content);
+      } catch (e) {
+        throw new Error(`[ApiClient.legacyWeekly.write] ${toErrorMessage(e)}`);
+      }
+    },
 
     // NOTE: only implement when add ipcMain.handle('compass:legacy:write')
     // async write(fileName: string, content: string): Promise<{ ok: true }> { ... }
