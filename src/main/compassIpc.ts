@@ -3,6 +3,7 @@ import {
   // legacy ...
   listLegacyWeekly,
   readLegacyWeekly,
+  writeWeeklyReport,
   // snapshot ...
   writeDailySnapshot,
   readDailySnapshot,
@@ -29,6 +30,13 @@ export function registerCompassIpc() {
     'compass:legacy:read',
     async (_e, payload: { fileName: string }) => {
       return readLegacyWeekly(payload.fileName);
+    },
+  );
+
+  ipcMain.handle(
+    'compass:legacy:write',
+    async (__electronLog, payload: { fileName: string; content: string }) => {
+      return writeWeeklyReport(payload.fileName, payload.content);
     },
   );
 

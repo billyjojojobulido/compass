@@ -17,6 +17,11 @@ export default function AppShell() {
     apiClient.legacyWeekly.list().then(setLegacyWeeks);
   }, []);
 
+  async function reloadSidebar() {
+    const list = await window.compass.legacyWeekly.list();
+    setLegacyWeeks(list);
+  }
+
   return (
     <div className="appRoot">
       <TopBar
@@ -51,6 +56,7 @@ export default function AppShell() {
             if (nav !== '历史周总结') setActiveWeekFile(null);
           }}
           activeWeekFile={activeWeekFile}
+          reloadSidebar={reloadSidebar}
         />
       </div>
     </div>

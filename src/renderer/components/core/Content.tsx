@@ -11,10 +11,12 @@ export default function Content({
   activeNav,
   onChangeNav,
   activeWeekFile,
+  reloadSidebar,
 }: {
   activeNav: NavKey;
   onChangeNav: (nav: NavKey) => void;
   activeWeekFile: string | null;
+  reloadSidebar: () => void;
 }) {
   const { state, actions } = useSprint();
   const [savingSnap, setSavingSnap] = useState(false);
@@ -42,7 +44,9 @@ export default function Content({
       {activeNav === '待做事项' && <SprintBoardView />}
       {activeNav === '优先级管理' && <PriorityView onRedirect={jumpToEpic} />}
 
-      {activeNav === '周总结' && <CurrentWeekView />}
+      {activeNav === '周总结' && (
+        <CurrentWeekView reloadSidebar={reloadSidebar} />
+      )}
 
       {activeNav === '历史周总结' &&
         (activeWeekFile ? (

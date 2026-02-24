@@ -21,6 +21,10 @@ export type CompassHandler = {
     once(channel: GeneralChannels, func: (...args: unknown[]) => void): any;
   };
   legacyWeekly: {
+    write(
+      fileName: string,
+      content: string,
+    ): Promise<{ ok: true; path: string }>;
     list(): Promise<LegacyWeekItem[]>;
     read(fileName: string): Promise<string>; // easier to return content as string
   };
@@ -64,6 +68,7 @@ export type CompassChannel =
   | 'compass:snapshot:list'
   | 'compass:legacy:list'
   | 'compass:legacy:read'
+  | 'compass:legacy:write'
   | 'compass:workspace:read'
   | 'compass:workspace:write'
   | 'compass:workspace:delete'
@@ -92,6 +97,12 @@ const compassHandler: CompassHandler = {
     },
     read(fileName: string): Promise<string> {
       return invoke('compass:legacy:read', { fileName });
+    },
+    write(
+      fileName: string,
+      content: string,
+    ): Promise<{ ok: true; path: string }> {
+      return invoke('compass:legacy:write', { fileName, content });
     },
   },
 
