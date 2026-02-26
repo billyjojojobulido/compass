@@ -1,3 +1,4 @@
+import { sprintConfig } from '@/config/sprintConfig.ts';
 import type { DailyChangelog, TaskRef } from '@/domain/types';
 
 export type ChangeKind =
@@ -172,11 +173,24 @@ export function selectDayEpicGroups(
 
   // --- epic priority ---
   for (const p of log.priorityChanged) {
+    let pFrom = p.from;
+    let pTo = p.to;
+
+    if (sprintConfig && sprintConfig.priorities) {
+      sprintConfig.priorities.forEach((pr) => {
+        if (pr.id === p.from) {
+          pFrom = pr.icon ? `${pr.icon} ${pr.label}` : pr.label;
+        }
+        if (pr.id === p.to) {
+          pTo = pr.icon ? `${pr.icon} ${pr.label}` : pr.label;
+        }
+      });
+    }
     push(p.epic.id, {
       kind: 'priorityChanged',
       icon: '⚠️',
       title: 'Priority changed',
-      detail: `${p.from} → ${p.to}`,
+      detail: `${pFrom} → ${pTo}`,
       severity: 3,
     });
   }
