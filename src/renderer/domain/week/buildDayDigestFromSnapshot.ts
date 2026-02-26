@@ -1,6 +1,8 @@
 import { DailySnapshot, SprintConfig } from '@/domain/types';
+import { apiClient } from '@/services/ApiClient';
 
 function statusLabelOf(statusId: string, config: SprintConfig) {
+  console.log('🦁 ', config);
   const s = config.statuses.find((x) => x.id === statusId);
   return s?.label ?? statusId;
 }
@@ -23,8 +25,8 @@ export type DayDigest = Array<{
   }>;
 }>;
 
-export function buildDayDigestFromSnapshot(
-  snap: DailySnapshot,
+export async function buildDayDigestFromSnapshot(
+  date: string,
   config: SprintConfig,
 ) {
   const groups: Record<
@@ -39,25 +41,33 @@ export function buildDayDigestFromSnapshot(
     }
   > = {};
 
-  for (const task of Object.values(snap.tasksById)) {
-    const epic = snap.epics.find((e) => e.id === task.epicId);
-    if (!epic) continue;
+  try {
+    const snap = await apiClient.snapshots.read(date);
 
-    if (!groups[epic.id]) {
-      groups[epic.id] = {
-        epicTitle: epic.title,
-        items: [],
-      };
+    for (const task of Object.values(snap.tasksById)) {
+      const epic = snap.epics.find((e) => e.id === task.epicId);
+      if (!epic) continue;
+
+      if (!groups[epic.id]) {
+        groups[epic.id] = {
+          epicTitle: epic.title,
+          items: [],
+        };
+      }
+
+      const statusLabel = statusLabelOf(task.statusId, config);
+      const handoff = stakeholderLabelOf(task.stakeholderId, config);
+
+      groups[epic.id].items.push({
+        statusLabel,
+        title: task.title,
+        handoff,
+      });
     }
 
-    const statusLabel = statusLabelOf(task.statusId, config);
-    const handoff = stakeholderLabelOf(task.stakeholderId, config);
-
-    groups[epic.id].items.push({
-      statusLabel,
-      title: task.title,
-      handoff,
-    });
+    console.log('What the fuck: ', groups);
+  } catch (e) {
+    console.log('delay no more: ', e);
   }
 
   // sorting
