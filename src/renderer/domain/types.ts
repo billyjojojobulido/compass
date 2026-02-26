@@ -286,6 +286,21 @@ export type WeeklyDay = {
   appendix?: string[];
 };
 
+export type WeeklyDayV2 = WeeklyDay & {
+  digest?: Array<{
+    epicTitle: string;
+    items: Array<{
+      statusLabel: string;
+      title: string;
+      handoff?: string;
+    }>;
+  }>;
+};
+
+export type WeeklyDayMetaV2 = WeeklyDayMeta & {
+  tag?: DayTag;
+};
+
 export type WeeklyRollup = {
   tasksAdded: number;
   tasksCompleted: number;
