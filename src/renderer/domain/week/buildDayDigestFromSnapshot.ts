@@ -2,7 +2,6 @@ import { DailySnapshot, SprintConfig } from '@/domain/types';
 import { apiClient } from '@/services/ApiClient';
 
 function statusLabelOf(statusId: string, config: SprintConfig) {
-  console.log('🦁 ', config);
   const s = config.statuses.find((x) => x.id === statusId);
   return s?.label ?? statusId;
 }
@@ -48,9 +47,19 @@ export async function buildDayDigestFromSnapshot(
       const epic = snap.epics.find((e) => e.id === task.epicId);
       if (!epic) continue;
 
+      let priorityIcon = '';
+
+      config.priorities.forEach((def) => {
+        if (def.id === epic.priorityId) {
+          priorityIcon = def?.icon ?? '';
+        }
+      });
+
       if (!groups[epic.id]) {
         groups[epic.id] = {
-          epicTitle: epic.title,
+          epicTitle: priorityIcon
+            ? `${priorityIcon} ${epic.title}`
+            : epic.title,
           items: [],
         };
       }
@@ -64,10 +73,8 @@ export async function buildDayDigestFromSnapshot(
         handoff,
       });
     }
-
-    console.log('What the fuck: ', groups);
   } catch (e) {
-    console.log('delay no more: ', e);
+    console.log('Build Day Digest From Snapshot Failed: ', e);
   }
 
   // sorting
