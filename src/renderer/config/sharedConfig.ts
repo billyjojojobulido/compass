@@ -14,7 +14,6 @@ export function loadSharedConfig(): SharedConfig {
   // directly import from JSON :: and then pack to renderer
   // TODO: in future can change to read file from main process and then return from IPC
   const cfg = raw as SharedConfig;
-  console.log('🦁 ', cfg);
   return cfg;
 }
 
