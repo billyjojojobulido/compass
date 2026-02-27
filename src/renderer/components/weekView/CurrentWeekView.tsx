@@ -105,7 +105,10 @@ export default function CurrentWeekView({
   /* Week Report */
   const onArchiveWeek = async () => {
     const md = await renderWeeklyMarkdown(ws);
-    await apiClient.legacyWeekly.write(`${ws.weekKey}.md`, md);
+    await apiClient.legacyWeekly.write(
+      `Week ${ws.weekNo} (${ws.weekKey}).md`,
+      md,
+    );
 
     reloadSidebar();
   };
