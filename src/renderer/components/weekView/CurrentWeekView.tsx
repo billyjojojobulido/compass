@@ -13,6 +13,8 @@ import ToastContainer from '../core/toast/ToastContainer';
 import DailyReportModal from '../reportView/DailyReportModal';
 import { apiClient } from '@/services/ApiClient';
 import { renderWeeklyMarkdown } from '@/domain/week/renderWeeklyMarkdown';
+import { calcWeekIndex } from '@/domain/time';
+import { sharedConfig } from '@/config/sharedConfig.ts';
 
 export const LABEL: Record<string, string> = {
   Mon: 'Monday',
@@ -105,10 +107,17 @@ export default function CurrentWeekView({
   /* Week Report */
   const onArchiveWeek = async () => {
     const md = await renderWeeklyMarkdown(ws);
-    await apiClient.legacyWeekly.write(
-      `Week ${ws.weekNo} (${ws.weekKey}).md`,
-      md,
-    );
+
+    let weekNo = ws.weekNo;
+
+    if (!ws.weekNo) {
+      if (!sharedConfig?.startDate) {
+        weekNo = 404;
+      }
+      weekNo = calcWeekIndex(sharedConfig.startDate, ws.weekKey);
+    }
+
+    await apiClient.legacyWeekly.write(`Week ${weekNo} (${ws.weekKey}).md`, md);
 
     reloadSidebar();
   };
