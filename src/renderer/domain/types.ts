@@ -1,6 +1,11 @@
 import { SprintEventCursor } from 'src/main/compassFs';
 import { SprintEventV2 } from './events/sprintEventV2';
 
+export type SharedConfig = {
+  // TODO: add more
+  startDate: WeekKey;
+};
+
 export type EntityType = 'epic' | 'task' | 'config';
 export type ActionType = 'create' | 'update' | 'delete' | 'move' | 'reorder';
 export type Tone = 'gray' | 'blue' | 'yellow' | 'green' | 'red';
