@@ -96,7 +96,7 @@ body {
 
 /* Content */
 .content {
-  height: 100%;
+  height: calc(95vh - 20px);
   padding: 14px;
   overflow: hidden;
   display: flex;
@@ -152,7 +152,7 @@ body {
     transform: translateX(-110%);
   }
   .content {
-    height: 100%;
+    height: calc(95vh - 30px);
     overflow: hidden;
     padding: 14px;
   }
