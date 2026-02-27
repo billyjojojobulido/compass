@@ -108,14 +108,12 @@ export default function CurrentWeekView({
   const onArchiveWeek = async () => {
     const md = await renderWeeklyMarkdown(ws);
 
-    let weekNo = ws.weekNo;
+    let weekNo: number;
 
-    if (!ws.weekNo) {
-      if (!sharedConfig?.startDate) {
-        weekNo = 404;
-      }
-      weekNo = calcWeekIndex(sharedConfig.startDate, ws.weekKey);
+    if (!sharedConfig?.startDate) {
+      weekNo = 404;
     }
+    weekNo = calcWeekIndex(sharedConfig.startDate, ws.weekKey);
 
     await apiClient.legacyWeekly.write(`Week ${weekNo} (${ws.weekKey}).md`, md);
 
