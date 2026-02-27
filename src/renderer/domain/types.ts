@@ -254,7 +254,6 @@ export type WeeklyWorkspace = {
 
   // identity
   weekKey: WeekKey; // weekStart local day key: "2026-02-02"
-  weekNo?: number; // optional, later can compute from existing numbering
   title: string; // fixed format, user cannot edit
   generatedAt: string; // ISO
 
