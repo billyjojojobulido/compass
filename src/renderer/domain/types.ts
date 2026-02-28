@@ -279,6 +279,13 @@ export type WeeklyWorkspace = {
   };
 };
 
+export type WeekEpicChange = {
+  epicId: string;
+  epicTitle: string;
+  epicStatus: string;
+  epicPriority: string;
+};
+
 export type WeeklyDay = {
   date: string; // "YYYY-MM-DD" local day key
   snapshotExists: boolean;
