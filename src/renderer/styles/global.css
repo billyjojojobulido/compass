@@ -96,7 +96,7 @@ body {
 
 /* Content */
 .content {
-  height: 100%;
+  height: calc(95vh - 20px);
   padding: 14px;
   overflow: hidden;
   display: flex;
@@ -152,7 +152,7 @@ body {
     transform: translateX(-110%);
   }
   .content {
-    height: 100%;
+    height: calc(95vh - 30px);
     overflow: hidden;
     padding: 14px;
   }
@@ -161,4 +161,39 @@ body {
 /* Backdrop overlay (for mobile sidebar drawer) */
 .backdrop {
   display: none;
+}
+
+/* buttons */
+.btnPrimary {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(96, 165, 250, 0.22);
+  color: rgba(255, 255, 255, 0.92);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btnPrimary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btnGhost {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.88);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.btnDanger {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(248, 113, 113, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
 }

@@ -1,5 +1,5 @@
 import raw from '@/config/sprintConfig.json';
-import { SprintConfig } from '@/domain/types';
+import { PriorityDef, SprintConfig } from '@/domain/types';
 
 function assertUniqueIds(list: { id: string }[], name: string) {
   const seen = new Set<string>();
@@ -20,6 +20,16 @@ export function loadSprintConfig(): SprintConfig {
   assertUniqueIds(cfg.stakeholders, 'stakeholders');
 
   return cfg;
+}
+
+export function getPriorityConfig(priroityId: string): PriorityDef {
+  let ret = undefined;
+  sprintConfig?.priorities.forEach((p) => {
+    if (p.id === priroityId) {
+      ret = p;
+    }
+  });
+  return ret;
 }
 
 export function byId<T extends { id: string }>(arr: T[]) {

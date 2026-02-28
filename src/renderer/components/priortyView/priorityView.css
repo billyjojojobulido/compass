@@ -380,12 +380,10 @@
   }
 
   .pvDrawerInner {
-    /* position: fixed; */
     left: 14px;
     right: 14px;
     bottom: 14px;
     top: auto;
-    z-index: 50;
   }
 
   .pvDrawerCard,

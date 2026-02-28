@@ -48,26 +48,26 @@
     }
   ],
   "stakeholders": [
-    { "id": "ME", "label": "Me" },
-    { "id": "FE", "label": "Frontend" },
-    { "id": "BE", "label": "Backend" },
+    { "id": "ME", "label": "我" },
+    { "id": "FE", "label": "前端" },
+    { "id": "BE", "label": "后端" },
     { "id": "QA", "label": "QA" },
-    { "id": "ART", "label": "Artist" },
-    { "id": "COPY", "label": "Copywriter" },
-    { "id": "MATH", "label": "Math Team" },
-    { "id": "EXT", "label": "External / 3rd Party" }
+    { "id": "ART", "label": "设计" },
+    { "id": "COPY", "label": "文案" },
+    { "id": "MATH", "label": "Math" },
+    { "id": "EXT", "label": "第三方" }
   ],
   "statuses": [
-    { "id": "TODO", "label": "To Do", "tone": "gray", "toClose": false },
-    { "id": "WIP", "label": "In Progress", "tone": "blue", "toClose": false },
+    { "id": "TODO", "label": "TODO", "tone": "gray", "toClose": false },
+    { "id": "WIP", "label": "WIP", "tone": "blue", "toClose": false },
     {
       "id": "READY",
-      "label": "Ready To Test",
+      "label": "RTT",
       "tone": "orange",
       "toClose": false
     },
     { "id": "BLOCKED", "label": "Blocked", "tone": "red", "toClose": false },
-    { "id": "DONE", "label": "Done", "tone": "green", "toClose": true },
+    { "id": "DONE", "label": "DONE", "tone": "green", "toClose": true },
     { "id": "ARCHIVED", "label": "Archived", "tone": "muted", "toClose": true }
   ]
 }

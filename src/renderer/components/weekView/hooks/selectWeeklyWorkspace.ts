@@ -7,7 +7,7 @@ import {
 } from '@/domain/types';
 import { selectDailyChangelog } from './chanelog';
 import { nowISO } from '@/domain/sprintStore';
-import { sprintConfig } from '@/config/sprintConfig';
+import { sprintConfig } from '@/config/sprintConfig.ts';
 
 /**
  * weekStartLocalDate: the Monday Date object of that week (local)

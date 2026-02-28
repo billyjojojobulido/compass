@@ -155,3 +155,28 @@ export function localDayKeyFromEventTs(ts: string): ISODate {
 export function isoWeekIdFromEventTsLocal(ts: string): WeekId {
   return getISOWeekIdFromDateLocal(new Date(ts));
 }
+
+/**
+ * start: startDate week 1  (YYYY-MM-DD)
+ * target: random Date (YYYY-MM-DD)
+ */
+export function calcWeekIndex(start: string, target: string): number {
+  const startDate = parseISODate(start);
+  const targetDate = parseISODate(target);
+
+  const diffMs = targetDate.getTime() - startDate.getTime();
+  const diffDays = Math.floor(diffMs / DAY);
+
+  return Math.floor(diffDays / 7) + 1;
+}
+
+const DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * this is important! to avoid impact of timezone
+ * use local YYYY-MM-DD to construct Date
+ */
+function parseISODate(s: string): Date {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}

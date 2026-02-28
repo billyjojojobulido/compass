@@ -1,6 +1,11 @@
 import { SprintEventCursor } from 'src/main/compassFs';
 import { SprintEventV2 } from './events/sprintEventV2';
 
+export type SharedConfig = {
+  // TODO: add more
+  startDate: WeekKey;
+};
+
 export type EntityType = 'epic' | 'task' | 'config';
 export type ActionType = 'create' | 'update' | 'delete' | 'move' | 'reorder';
 export type Tone = 'gray' | 'blue' | 'yellow' | 'green' | 'red';
@@ -232,18 +237,7 @@ export type LegacyWeekItem = {
 export type WorkdayKey = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri';
 export const WORKDAYS: WorkdayKey[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
-// export type DayTag = {
-//   id: string; // e.g. "off" | "birthday" | "payday" | ...
-//   label: string; // display text
-//   emoji?: string; // optional
-// };
-
 export type DayTag = { type: string; label: string };
-// | { type: 'ML'; label: '😷 病假' }
-// | { type: 'AL'; label: '🏖️ 年假' }
-// | { type: 'PH'; label: '📅 公假' }
-// | { type: 'BT'; label: '✈️ 出差' }
-// | { type: 'CUSTOM'; label: string };
 
 export type DayMeta = {
   collapsed?: boolean;
@@ -260,7 +254,6 @@ export type WeeklyWorkspace = {
 
   // identity
   weekKey: WeekKey; // weekStart local day key: "2026-02-02"
-  weekNo?: number; // optional, later can compute from existing numbering
   title: string; // fixed format, user cannot edit
   generatedAt: string; // ISO
 
@@ -286,6 +279,13 @@ export type WeeklyWorkspace = {
   };
 };
 
+export type WeekEpicChange = {
+  epicId: string;
+  epicTitle: string;
+  epicStatus: string;
+  epicPriority: string;
+};
+
 export type WeeklyDay = {
   date: string; // "YYYY-MM-DD" local day key
   snapshotExists: boolean;
@@ -295,6 +295,21 @@ export type WeeklyDay = {
 
   // optional: allow a small manual appendix (if later re-add customization)
   appendix?: string[];
+};
+
+export type WeeklyDayV2 = WeeklyDay & {
+  digest?: Array<{
+    epicTitle: string;
+    items: Array<{
+      statusLabel: string;
+      title: string;
+      handoff?: string;
+    }>;
+  }>;
+};
+
+export type WeeklyDayMetaV2 = WeeklyDayMeta & {
+  tag?: DayTag;
 };
 
 export type WeeklyRollup = {
