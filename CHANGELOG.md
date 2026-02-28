@@ -4,6 +4,23 @@ Updates in minor version will be recorded in this file.
 
 ---
 
+## [0.1.7] - 2026-xx-xx
+
+### Added
+
+- ✨ Week Report Summary Modal
+  - allow users to manually edit & save week summary
+
+### Changed
+
+- 🔥 updated archive week report flow
+  - click archive btn -> show week report edit modal -> click confirm btn -> do the archive
+
+### Fixed
+
+- fixed declared wrong data type when reading workspace summary issue
+- fixed blocked aria-hidden on an element issue on Week Summary modal issue
+
 ## [0.1.6] - 2026-02-28
 
 ### Added
