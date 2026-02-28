@@ -4,6 +4,46 @@ Updates in minor version will be recorded in this file.
 
 ---
 
+## [0.1.6] - 2026-02-28
+
+### Added
+
+- 🚀 Sprint Event Log
+  - implemented append-only monthly NDJSON event log
+  - events are now written to persisting file.
+  - now offically move to `"Event-driven" age`
+  - added `meta.cursor`
+  - reducer starts to write cursor info
+- ✨ Changelog Projection Refinement
+  - added `selectDailyChangelog` to better distinguish events for changelog
+  - added `selectDayEpicGroups` to help display :: divide projection from UI
+- 🚀 Week View UI : Major renovation
+  - 🔥 added DayEpicChangelog Drawer structure
+  - events are now written to persisting file.
+  - now offically move to `"Event-driven" age`
+  - added `meta.cursor`
+  - reducer starts to write cursor info
+- 🚀 Tag System
+  - 🔥 TagModal added to support linear / raycast style
+
+### Changed
+
+- ✨ State & Events are now separated
+  - events & state writing are no longer mixed together
+  - `PersistedSprintDoc` updated from `v1` to `v2`
+- ✨ Weekly Workspace / Report System
+  - `WeeklyWorkspace` updated to `v2` with more data to support fancier week report, incl (dayMeta, notes, meta.fromSnapshots)
+- ✨ Markdown Export - Major Update
+  - updated `renderDailyMarkdown`
+  - updated `renderWeeklyMarkdown` :: priroty, daily digest done, week summary & tech debt WIP
+  - arhchive week finally implemented
+
+### Fixed
+
+- fixed content overflow issue when height shrinks issue
+- fixed click on Daily Markdown hitting undefined error issue
+- fixed some button color issue
+
 ## [0.1.5] - 2026-02-10
 
 ### Added
