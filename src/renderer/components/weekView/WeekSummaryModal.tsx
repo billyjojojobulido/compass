@@ -4,7 +4,6 @@ export function WeekSummaryModal(props: {
   value: string;
   onChange: (v: string) => void;
   onClose: () => void;
-  onSkip: () => void;
   onConfirm: () => void;
 }) {
   if (!props.open) return null;
@@ -38,8 +37,8 @@ export function WeekSummaryModal(props: {
         </div>
 
         <div className="modalFooter">
-          <button className="btnGhost" onClick={props.onSkip}>
-            Skip
+          <button className="btnDanger" onClick={props.onClose}>
+            Cancel
           </button>
           <button className="btnPrimary" onClick={props.onConfirm}>
             Archive

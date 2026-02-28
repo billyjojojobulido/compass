@@ -237,10 +237,6 @@ export default function CurrentWeekView({
           value={weekSummaryDraft}
           onChange={setWeekSummaryDraft}
           onClose={() => setWeekSummaryOpen(false)}
-          onSkip={async () => {
-            setWeekSummaryOpen(false);
-            await onConfirmArchive('');
-          }}
           onConfirm={async () => {
             setWeekSummaryOpen(false);
             await onConfirmArchive(weekSummaryDraft);
