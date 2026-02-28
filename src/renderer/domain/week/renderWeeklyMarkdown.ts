@@ -93,11 +93,11 @@ export async function renderWeeklyMarkdown(
 
   // TODO: Weekly Summary
   pushSectionTitle(lines, '周总结：');
-  const summary = ws.notes?.weeklySummary ?? [];
-  if (summary.length === 0) {
+  const summary = ws.notes?.weeklySummary ?? '';
+  if (!summary || summary.length === 0) {
     lines.push('- （空）');
   } else {
-    for (const s of summary) lines.push(`- ${s}`);
+    lines.push(summary);
   }
   lines.push('');
 
