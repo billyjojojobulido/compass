@@ -15,6 +15,7 @@ import { apiClient } from '@/services/ApiClient';
 import { renderWeeklyMarkdown } from '@/domain/week/renderWeeklyMarkdown';
 import { calcWeekIndex } from '@/domain/time';
 import { sharedConfig } from '@/config/sharedConfig.ts';
+import { WeekSummaryModal } from './WeekSummaryModal';
 
 export const LABEL: Record<string, string> = {
   Mon: 'Monday',
@@ -34,9 +35,13 @@ export default function CurrentWeekView({
     useCurrentWeekWorkspace();
   const { toasts, show } = useToast();
 
+  // Day
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalMarkdown, setModalMarkdown] = useState('');
+  // Week
+  const [weekSummaryOpen, setWeekSummaryOpen] = useState(false);
+  const [weekSummaryDraft, setWeekSummaryDraft] = useState('');
 
   const [tagModal, setTagModal] = useState<TagModalValue>({});
 
@@ -106,7 +111,21 @@ export default function CurrentWeekView({
 
   /* Week Report */
   const onArchiveWeek = async () => {
-    const md = await renderWeeklyMarkdown(ws);
+    setWeekSummaryDraft(ws.notes?.weeklySummary ?? '');
+    setWeekSummaryOpen(true);
+  };
+
+  const onConfirmArchive = async (summaryText: string) => {
+    const nextWs = {
+      ...ws,
+      notes: {
+        ...(ws.notes ?? {}),
+        weeklySummary: summaryText.trim() ? summaryText.trim() : undefined,
+      },
+    };
+    await saveWs(nextWs);
+
+    const md = await renderWeeklyMarkdown(nextWs);
 
     let weekNo: number;
 
@@ -211,7 +230,23 @@ export default function CurrentWeekView({
         }}
         onCopied={() => show('Copied to clipboard')}
       ></DailyReportModal>
-
+      {weekSummaryOpen && (
+        <WeekSummaryModal
+          open={weekSummaryOpen}
+          title={`Archive ${ws.title}`}
+          value={weekSummaryDraft}
+          onChange={setWeekSummaryDraft}
+          onClose={() => setWeekSummaryOpen(false)}
+          onSkip={async () => {
+            setWeekSummaryOpen(false);
+            await onConfirmArchive('');
+          }}
+          onConfirm={async () => {
+            setWeekSummaryOpen(false);
+            await onConfirmArchive(weekSummaryDraft);
+          }}
+        />
+      )}
       <ToastContainer toasts={toasts} />
     </div>
   );
