@@ -117,6 +117,7 @@ export default function CurrentWeekView({
 
     await apiClient.legacyWeekly.write(`Week ${weekNo} (${ws.weekKey}).md`, md);
 
+    show('✅ Archive Success');
     reloadSidebar();
   };
 
@@ -136,6 +137,7 @@ export default function CurrentWeekView({
             className="btnPrimary"
             onClick={() => {
               ws && saveWs(ws);
+              show('✅ Save Success');
             }}
           >
             Save
