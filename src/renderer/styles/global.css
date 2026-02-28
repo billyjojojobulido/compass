@@ -177,7 +177,9 @@ body {
   opacity: 0.55;
   cursor: not-allowed;
 }
-
+.btnPrimary:active {
+  transform: scale(0.95);
+}
 .btnGhost {
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.06);
@@ -187,7 +189,9 @@ body {
   font-weight: 650;
   cursor: pointer;
 }
-
+.btnGhost:active {
+  transform: scale(0.95);
+}
 .btnDanger {
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(248, 113, 113, 0.18);

@@ -222,6 +222,9 @@
   color: rgba(255, 255, 255, 0.92);
   cursor: pointer;
 }
+.pvBtnPrimary:active {
+  transform: scale(0.95);
+}
 .pvBtnGhost {
   height: 30px;
   padding: 0 10px;
@@ -230,7 +233,9 @@
   background: rgba(255, 255, 255, 0.8);
   cursor: pointer;
 }
-
+.pvBtnGhost:active {
+  transform: scale(0.95);
+}
 .pvBtnDanger {
   height: 34px;
   padding: 0 12px;
@@ -239,6 +244,9 @@
   background: rgba(255, 0, 0, 0.12);
   color: rgba(255, 255, 255, 0.92);
   cursor: pointer;
+}
+.pvBtnDanger:active {
+  transform: scale(0.95);
 }
 
 /* drawer */
