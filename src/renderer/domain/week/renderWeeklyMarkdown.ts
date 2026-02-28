@@ -1,6 +1,12 @@
-import type { WeeklyWorkspace, WorkdayKey, DayTag } from '@/domain/types';
+import type {
+  WeeklyWorkspace,
+  WorkdayKey,
+  DayTag,
+  WeekEpicChange,
+} from '@/domain/types';
 import { buildDayDigestFromSnapshot } from './buildDayDigestFromSnapshot';
-import { sprintConfig } from '@/config/sprintConfig.ts';
+import { getPriorityConfig, sprintConfig } from '@/config/sprintConfig.ts';
+import { apiClient } from '@/services/ApiClient';
 
 const WORKDAYS: WorkdayKey[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
@@ -48,15 +54,39 @@ export async function renderWeeklyMarkdown(
   }
   lines.push('');
 
-  // TODO: Priority
-  pushSectionTitle(lines, '优先级');
-  const pri = ws.notes?.priorityNotes ?? [];
-  if (pri.length === 0) {
+  // Priority
+
+  pushSectionTitle(lines, '优先级'); // Mon-Fri
+  const pri: Record<string, WeekEpicChange> = {};
+  for (const dayKey of WORKDAYS) {
+    const day = ws.days?.[dayKey];
+    if (day?.snapshotExists) {
+      const snap = await apiClient.snapshots.read(day.date);
+      snap.epics.forEach((e) => {
+        if (e.id in pri) {
+          pri[e.id].epicStatus = e.statusId;
+        } else {
+          pri[e.id] = {
+            epicId: e.id,
+            epicStatus: e.statusId,
+            epicTitle: e.title,
+            epicPriority: e.priorityId,
+          };
+        }
+      });
+    }
+  }
+
+  if (Object.keys(pri).length === 0) {
     lines.push('- （空）');
   } else {
-    for (const it of pri) {
-      // TODO:
-      // lines.push(`- [${it.checked ? 'x' : ' '}] [${it.badge}] ${it.text}`);
+    for (const key in pri) {
+      const it = pri[key];
+      let priorityDef = getPriorityConfig(it.epicPriority);
+      const pIcon = priorityDef?.icon ?? '❓';
+      lines.push(
+        `- [${it.epicStatus === 'DONE' ? 'x' : ' '}] [${pIcon}] ${it.epicTitle}`,
+      );
     }
   }
   lines.push('');
