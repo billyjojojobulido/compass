@@ -10,7 +10,7 @@ export function WeekSummaryModal(props: {
   if (!props.open) return null;
 
   return (
-    <div className="modalOverlay" onMouseDown={props.onClose} aria-hidden>
+    <div className="modalOverlay" onMouseDown={props.onClose}>
       <div
         className="modalCard"
         role="dialog"
