@@ -18,6 +18,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { TechDebtItem, TechDebtStatus } from '@/domain/types';
 import { reorderByIds } from './techDebtService';
 
+import './techDebt.css';
+
 export default function TechDebtView() {
   const {
     loading,
