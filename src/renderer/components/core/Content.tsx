@@ -5,6 +5,7 @@ import PriorityView from '@/components/priortyView/PriorityView';
 import { useSprint } from '@/domain/sprintStore';
 import LegacyWeekView from '@/components/logView/LegacyWeekView';
 import CurrentWeekView from '../weekView/CurrentWeekView';
+import TechDebtView from '@/components/debtView/TechDebtView';
 
 export default function Content({
   activeNav,
@@ -18,7 +19,6 @@ export default function Content({
   reloadSidebar: () => void;
 }) {
   const { state, actions } = useSprint();
-  const [savingSnap, setSavingSnap] = useState(false);
 
   const jumpToEpic = (epicId: string) => {
     onChangeNav('待做事项');
@@ -43,9 +43,7 @@ export default function Content({
           </div>
         ))}
 
-      {activeNav === '技术债务' && (
-        <div style={{ padding: 12, opacity: 0.75 }}>TechDebt placeholder</div>
-      )}
+      {activeNav === '技术债务' && <TechDebtView></TechDebtView>}
     </main>
   );
 }
