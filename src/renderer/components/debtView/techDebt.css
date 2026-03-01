@@ -1,0 +1,120 @@
+/* src/renderer/components/techDebt/techDebt.css */
+
+.tdCard {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tdAddRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tdInput {
+  flex: 1;
+  height: 38px;
+  border-radius: 10px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.25);
+  color: inherit;
+  outline: none;
+}
+
+.tdInput:focus {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.tdSectionTitle {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+  margin: 10px 0 8px;
+}
+
+.tdList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tdEmpty {
+  opacity: 0.6;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.tdRow {
+  display: grid;
+  grid-template-columns: 34px 1fr 36px 34px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.tdRow.done {
+  opacity: 0.7;
+}
+
+.tdCheck {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+}
+
+.tdTitle {
+  height: 30px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+}
+
+.tdRow.done .tdTitle {
+  text-decoration: line-through;
+  opacity: 0.85;
+}
+
+.tdDragHandle {
+  width: 34px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  cursor: grab;
+  user-select: none;
+  opacity: 0.75;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.tdDragHandle:active {
+  cursor: grabbing;
+}
+
+.tdDragHandle.disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.tdRemove {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  opacity: 0.8;
+}

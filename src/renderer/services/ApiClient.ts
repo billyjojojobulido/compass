@@ -3,6 +3,7 @@ import type {
   LegacyWeekItem,
   DailySnapshot,
   WeeklyWorkspace,
+  TechDebtDoc,
 } from '@/domain/types';
 import { SprintEventCursor } from 'src/main/compassFs';
 
@@ -177,6 +178,15 @@ export const apiClient = {
           );
         }
       },
+    },
+  },
+  techDebt: {
+    read: async () => {
+      return window.compass.techDebt.read();
+    },
+
+    write: async (doc: TechDebtDoc) => {
+      return window.compass.techDebt.write(doc);
     },
   },
   // TODO: Future expansion points (implement when IPC exists)

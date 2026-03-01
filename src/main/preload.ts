@@ -1,7 +1,12 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
 import { SprintEventV2 } from '@/domain/events/sprintEventV2';
-import { DailySnapshot, LegacyWeekItem, WeeklyWorkspace } from '@/domain/types';
+import {
+  DailySnapshot,
+  LegacyWeekItem,
+  TechDebtDoc,
+  WeeklyWorkspace,
+} from '@/domain/types';
 import { contextBridge, ipcRenderer } from 'electron';
 
 export type GeneralChannels = 'ipc-example';
@@ -56,6 +61,10 @@ export type CompassHandler = {
       }): Promise<SprintEventV2[]>;
     };
   };
+  techDebt: {
+    read(): Promise<TechDebtDoc>;
+    write(doc: TechDebtDoc): Promise<{ ok: true; path: string }>;
+  };
 };
 
 export type CompassChannel =
@@ -75,7 +84,8 @@ export type CompassChannel =
   | 'compass:sprint:state:read'
   | 'compass:sprint:state:write'
   | 'compass:sprint:events:append'
-  | 'compass:sprint:events:read';
+  | 'compass:techdebt:read'
+  | 'compass:techdebt:write';
 
 type SprintEventCursor = { monthFile: string; lastEventId?: string };
 
@@ -150,6 +160,10 @@ const compassHandler: CompassHandler = {
         return ipcRenderer.invoke('compass:sprint:events:read', args);
       },
     },
+  },
+  techDebt: {
+    read: () => ipcRenderer.invoke('compass:techdebt:read'),
+    write: (doc) => ipcRenderer.invoke('compass:techdebt:write', doc),
   },
 };
 

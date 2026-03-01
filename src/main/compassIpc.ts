@@ -17,6 +17,8 @@ import {
   writeSprintState,
   appendSprintEvent,
   readSprintEvents,
+  readTechDebt,
+  writeTechDebt,
 } from './compassFs';
 import { DailySnapshot, WeeklyWorkspace } from '@/domain/types';
 
@@ -117,4 +119,12 @@ export function registerCompassIpc() {
       return readSprintEvents(payload);
     },
   );
+  /* ---- tech debt ---- */
+  ipcMain.handle('compass:techdebt:read', async () => {
+    return readTechDebt();
+  });
+
+  ipcMain.handle('compass:techdebt:write', (_e, doc) => {
+    return writeTechDebt(doc);
+  });
 }

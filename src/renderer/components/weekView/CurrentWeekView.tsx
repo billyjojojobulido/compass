@@ -1,9 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { WeeklyWorkspace, WorkdayKey, WORKDAYS } from '@/domain/types';
+import { DayTag, WeeklyWorkspace, WorkdayKey, WORKDAYS } from '@/domain/types';
 import DayEpicChangelog from '@/components/weekView/DayEpicChangelog';
 import { useCurrentWeekWorkspace } from '@/components/weekView/hooks/useCurrentWeekWorkspace';
 import './currentWeek.css';
-import { setDayTag, toggleDayCollapsed } from '@/domain/week/workspaceHelper';
 import { renderDailyMarkdown } from '@/domain/week/renderDailyMarkdown';
 import { useSprint } from '@/domain/sprintStore';
 
@@ -24,6 +23,21 @@ export const LABEL: Record<string, string> = {
   Thu: 'Thursday',
   Fri: 'Friday',
 };
+
+export function setDayTag(
+  ws: WeeklyWorkspace,
+  day: WorkdayKey,
+  tag?: DayTag,
+): WeeklyWorkspace {
+  const next = structuredClone(ws);
+  next.dayMeta ??= {};
+  next.dayMeta[day] ??= {};
+
+  if (!tag) delete next.dayMeta[day].tag;
+  else next.dayMeta[day].tag = tag;
+
+  return next;
+}
 
 export default function CurrentWeekView({
   reloadSidebar,
@@ -77,11 +91,6 @@ export default function CurrentWeekView({
       dateKey: dateKey,
       current: { type: 'ML', label: '😷 病假' },
     });
-  };
-
-  const onToggleDay = async (dayKey: WorkdayKey) => {
-    const next = toggleDayCollapsed(ws, dayKey);
-    await saveWs(next);
   };
 
   /* Day Report */

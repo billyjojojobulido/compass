@@ -325,3 +325,30 @@ export type WeeklyRollup = {
 };
 
 //#endregion
+
+//#region tech debt
+export enum TechDebtStatus {
+  TODO = 'TODO',
+  WIP = 'WIP',
+  DONE = 'DONE',
+}
+
+export type TechDebtItem = {
+  // schemaVersion: 1;
+  id: string;
+  title: string;
+  status: TechDebtStatus;
+  createdAt: string; // ISO
+  doneAt?: string; // ISO
+
+  // TODO: optional at the moment for manual ordering (drag reorder)
+  order: number;
+};
+
+export type TechDebtDoc = {
+  schemaVersion: 1;
+  updatedAt: string;
+  items: Array<TechDebtItem>;
+};
+
+//#endregion

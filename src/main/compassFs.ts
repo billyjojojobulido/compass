@@ -1,4 +1,4 @@
-import { DailySnapshot, WeeklyWorkspace } from '@/domain/types';
+import { DailySnapshot, TechDebtDoc, WeeklyWorkspace } from '@/domain/types';
 import { app } from 'electron';
 import { LegacyWeekItem } from '@/domain/types';
 import fs from 'fs';
@@ -23,6 +23,7 @@ export function ensureCompassDirs() {
     /* sprint state & events data, specially handle */
     path.join(root, 'sprint'),
     path.join(root, 'sprint', 'events'),
+    path.join(root, 'tech-debt'),
   ];
 
   for (const d of dirs) {
@@ -418,6 +419,62 @@ export function listEventMonths(): string[] {
     .filter((f) => /^\d{4}-\d{2}\.ndjson$/i.test(f))
     .map((f) => f.replace(/\.ndjson$/i, ''))
     .sort();
+}
+
+//#endregion
+
+//#region tech debt
+function techDebtDir() {
+  return path.join(getDataRoot(), 'tech-debt');
+}
+
+function techDebtFilePath() {
+  return path.join(techDebtDir(), 'techDebt.json');
+}
+
+function ensureTechDebtDir() {
+  const dir = techDebtDir();
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
+
+export function readTechDebt(): TechDebtDoc {
+  ensureTechDebtDir();
+  const file = techDebtFilePath();
+
+  if (!fs.existsSync(file)) {
+    return {
+      schemaVersion: 1,
+      updatedAt: new Date().toISOString(),
+      items: [],
+    };
+  }
+
+  try {
+    const raw = fs.readFileSync(file, 'utf-8');
+    return JSON.parse(raw);
+  } catch {
+    return {
+      schemaVersion: 1,
+      updatedAt: new Date().toISOString(),
+      items: [],
+    };
+  }
+}
+
+export function writeTechDebt(doc: TechDebtDoc) {
+  ensureTechDebtDir();
+  const file = techDebtFilePath();
+
+  const toWrite: TechDebtDoc = {
+    ...doc,
+    updatedAt: new Date().toISOString(),
+  };
+
+  fs.writeFileSync(file, JSON.stringify(toWrite, null, 2), 'utf-8');
+
+  return { ok: true as const, path: file };
 }
 
 //#endregion
