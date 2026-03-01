@@ -8,6 +8,8 @@ Updates in minor version will be recorded in this file.
 
 ### Added
 
+- 🚀 Tech Debt View
+  - finalized MVP stage of Tech Debt page to display & persist long-term tasks that shall not be stored in SprintBoard
 - ✨ Week Report Summary Modal
   - allow users to manually edit & save week summary
 
