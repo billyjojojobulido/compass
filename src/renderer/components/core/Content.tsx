@@ -4,7 +4,6 @@ import SprintBoardView from '@/components/sprintView/SprintBoardView';
 import PriorityView from '@/components/priortyView/PriorityView';
 import { useSprint } from '@/domain/sprintStore';
 import LegacyWeekView from '@/components/logView/LegacyWeekView';
-import { archiveTodaySnapshot } from '@/domain/snapshot/snapshotService';
 import CurrentWeekView from '../weekView/CurrentWeekView';
 
 export default function Content({
@@ -25,19 +24,6 @@ export default function Content({
     onChangeNav('待做事项');
     actions.requestScrollToEpic(epicId);
   };
-
-  async function onArchiveToday() {
-    if (savingSnap) return;
-    try {
-      setSavingSnap(true);
-      const { date } = await archiveTodaySnapshot(state, {
-        source: 'manual',
-      });
-      console.log('[SNAPSHOT] saved', date);
-    } finally {
-      setSavingSnap(false);
-    }
-  }
 
   return (
     <main className="content">
