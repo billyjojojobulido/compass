@@ -334,7 +334,7 @@ export enum TechDebtStatus {
 }
 
 export type TechDebtItem = {
-  schemaVersion: 1;
+  // schemaVersion: 1;
   id: string;
   title: string;
   status: TechDebtStatus;
