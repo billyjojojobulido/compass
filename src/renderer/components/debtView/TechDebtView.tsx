@@ -113,7 +113,7 @@ export default function TechDebtView() {
           </button>
         </div>
 
-        <div className="tdSectionTitle">TODO</div>
+        <div className="tdSectionTitle">TODO ⏳</div>
 
         <DndContext
           sensors={sensors}
@@ -143,7 +143,7 @@ export default function TechDebtView() {
         </DndContext>
 
         <div className="tdSectionTitle" style={{ marginTop: 16 }}>
-          DONE
+          DONE ✅
         </div>
         <div className="tdList">
           {doneItems.length === 0 ? (
