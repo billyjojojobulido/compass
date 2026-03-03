@@ -28,8 +28,7 @@
 .tdInput:focus {
   border-color: rgba(255, 255, 255, 0.22);
 }
-
-.tdSectionTitle {
+a .tdSectionTitle {
   font-size: 16px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -118,6 +117,103 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.02);
   color: rgba(255, 255, 255, 1);
+  cursor: pointer;
+  opacity: 0.8;
+}
+.tdSwitchRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 8px 0 10px;
+}
+
+.tdSwitch {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.tdSwitch.active {
+  opacity: 1;
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tdToggle {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  opacity: 0.85;
+  font-size: 12px;
+  user-select: none;
+}
+
+.tdTitleBtn {
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  padding: 0;
+  cursor: text;
+}
+
+.tdTitleBtn:hover {
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.25);
+}
+
+.tdTitleEdit {
+  height: 30px;
+  border-radius: 10px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.25);
+  color: inherit;
+  outline: none;
+}
+
+.tdOverlay {
+  pointer-events: none;
+}
+
+.tdRowOverlay {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.tdOverlayTitle {
+  font-size: 13px;
+  opacity: 0.95;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tdPager {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.tdPagerInfo {
+  opacity: 0.75;
+  font-size: 12px;
+}
+
+.tdHide {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
   cursor: pointer;
   opacity: 0.8;
 }
