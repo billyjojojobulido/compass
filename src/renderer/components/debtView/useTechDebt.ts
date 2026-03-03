@@ -67,6 +67,16 @@ export function useTechDebt() {
     [debouncedSave, persist],
   );
 
+  const setHidden = React.useCallback(
+    (id: string, hidden: boolean) => {
+      if (!doc) return;
+      const now = new Date().toISOString();
+      const items = doc.items.map((x) => (x.id === id ? { ...x, hidden } : x));
+      setAndSave({ ...doc, updatedAt: now, items });
+    },
+    [doc, setAndSave],
+  );
+
   const add = React.useCallback(
     (title: string) => {
       if (!doc) return;
@@ -169,6 +179,7 @@ export function useTechDebt() {
     toggleDone,
     updateTitle,
     setOrder,
+    setHidden,
 
     // TODO: do we need manual save button?
     saveNow: async () => {
