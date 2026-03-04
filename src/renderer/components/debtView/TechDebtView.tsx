@@ -159,7 +159,7 @@ function DebtRow(props: {
       {/* DONE item hide button; only pass in onHide callback when = DONE */}
       {props.onHide ? (
         <button className="tdHide" onClick={props.onHide} aria-label="Hide">
-          🙈
+          {item.hidden ? '👀' : '🙈'}
         </button>
       ) : null}
 
@@ -355,7 +355,8 @@ export default function TechDebtView() {
                     onHide={
                       mode === 'DONE'
                         ? () => {
-                            setHidden(it.id, true);
+                            const ret = it.hidden ?? false;
+                            setHidden(it.id, !ret);
                           }
                         : undefined
                     }
