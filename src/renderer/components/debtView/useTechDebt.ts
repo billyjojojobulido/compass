@@ -133,6 +133,7 @@ export function useTechDebt() {
                     ? TechDebtStatus.WIP
                     : TechDebtStatus.DONE,
                 doneAt: x.status === TechDebtStatus.DONE ? now : undefined,
+                hidden: false,
               },
         )
         .sort(sortTechDebtItems)
