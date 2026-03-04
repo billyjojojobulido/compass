@@ -340,6 +340,7 @@ export type TechDebtItem = {
   status: TechDebtStatus;
   createdAt: string; // ISO
   doneAt?: string; // ISO
+  hidden?: boolean;
 
   // TODO: optional at the moment for manual ordering (drag reorder)
   order: number;

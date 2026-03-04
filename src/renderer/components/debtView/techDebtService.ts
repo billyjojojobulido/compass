@@ -31,6 +31,7 @@ export function normalizeTechDebtDoc(raw: any): TechDebtDoc {
     status: it.status,
     createdAt: String(it.createdAt ?? new Date().toISOString()),
     doneAt: it.doneAt ? String(it.doneAt) : undefined,
+    hidden: !!it.hidden,
     order: Number.isFinite(it.order) ? Number(it.order) : idx,
   }));
 
