@@ -3,6 +3,8 @@
 // MVP assumption: group by machine local timezone (Electron user's timezone).
 // Events store ts as ISO string; we interpret it with Date(ts) then group in LOCAL time.
 
+import { WeekRangeISO } from './types';
+
 export type ISODate = `${number}-${string}-${string}`; // "YYYY-MM-DD"
 export type WeekId = `${number}-W${string}`; // "2026-W03"
 
@@ -179,4 +181,18 @@ const DAY = 24 * 60 * 60 * 1000;
 function parseISODate(s: string): Date {
   const [y, m, d] = s.split('-').map(Number);
   return new Date(y, m - 1, d);
+}
+
+export function isDoneInWeek(
+  doneAtISO: string | undefined,
+  range: WeekRangeISO,
+) {
+  if (!doneAtISO) return false;
+
+  const done = new Date(doneAtISO).getTime();
+  const start = new Date(range.start).getTime();
+  const end = new Date(range.end).getTime();
+
+  // start inclusive, end exclusive
+  return done >= start && done < end;
 }
