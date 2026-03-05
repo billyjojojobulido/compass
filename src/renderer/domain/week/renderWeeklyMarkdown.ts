@@ -46,11 +46,16 @@ export async function renderWeeklyMarkdown(
 
   // TODO: Tech Debt
   pushSectionTitle(lines, '历史遗留（技术债务）');
-  const techDebt = ws.notes?.techDebt ?? [];
-  if (techDebt.length === 0) {
-    lines.push('- （空）');
-  } else {
-    for (const it of techDebt) lines.push(`- ${it}`);
+
+  const techDebtDoc = await apiClient.techDebt.read();
+
+  if (techDebtDoc) {
+    const techDebts = techDebtDoc.items;
+    if (!techDebts || techDebtDoc.items?.length === 0) {
+      lines.push('- （空）');
+    } else {
+      // techDebts.forEach()
+    }
   }
   lines.push('');
 
