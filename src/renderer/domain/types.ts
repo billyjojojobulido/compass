@@ -329,7 +329,6 @@ export type WeeklyRollup = {
 //#region tech debt
 export enum TechDebtStatus {
   TODO = 'TODO',
-  WIP = 'WIP',
   DONE = 'DONE',
 }
 
