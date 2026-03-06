@@ -130,7 +130,7 @@ export function useTechDebt() {
                 ...x,
                 status:
                   x.status === TechDebtStatus.DONE
-                    ? TechDebtStatus.WIP
+                    ? TechDebtStatus.TODO
                     : TechDebtStatus.DONE,
                 doneAt: x.status === TechDebtStatus.DONE ? now : undefined,
                 hidden: false,
