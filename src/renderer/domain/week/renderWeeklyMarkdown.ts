@@ -1,12 +1,14 @@
-import type {
-  WeeklyWorkspace,
-  WorkdayKey,
-  DayTag,
-  WeekEpicChange,
+import {
+  type WeeklyWorkspace,
+  type WorkdayKey,
+  type DayTag,
+  type WeekEpicChange,
+  TechDebtStatus,
 } from '@/domain/types';
 import { buildDayDigestFromSnapshot } from './buildDayDigestFromSnapshot';
 import { getPriorityConfig, sprintConfig } from '@/config/sprintConfig.ts';
 import { apiClient } from '@/services/ApiClient';
+import { isDoneInWeek } from '../time';
 
 const WORKDAYS: WorkdayKey[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
@@ -54,7 +56,20 @@ export async function renderWeeklyMarkdown(
     if (!techDebts || techDebtDoc.items?.length === 0) {
       lines.push('- （空）');
     } else {
-      // techDebts.forEach()
+      techDebts.forEach((item) => {
+        if (item.status === TechDebtStatus.DONE) {
+          if (
+            isDoneInWeek(item.doneAt, {
+              start: ws.range.start,
+              end: ws.range.end,
+            })
+          ) {
+            lines.push('- [x] ', item.title);
+          }
+        } else {
+          lines.push('- [ ] ', item.title);
+        }
+      });
     }
   }
   lines.push('');
