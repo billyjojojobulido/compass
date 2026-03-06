@@ -21,6 +21,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { TechDebtItem, TechDebtStatus } from '@/domain/types';
 import { reorderByIds } from './techDebtService';
 import './techDebt.css';
+import ToastContainer from '../core/toast/ToastContainer';
+import { useToast } from '../core/toast/useToast';
 
 function TechDebtAddInput(props: {
   value: string;
@@ -62,6 +64,7 @@ function DebtRow(props: {
   onToggle: () => void;
   onRemove: () => void;
   onChangeTitle: (t: string) => void;
+  show?: (msg: string) => void;
   onHide?: () => void;
 }) {
   const { item, done, draggable = true } = props;
@@ -163,7 +166,14 @@ function DebtRow(props: {
         </button>
       ) : null}
 
-      <button className="tdRemove" onClick={props.onRemove} aria-label="Remove">
+      <button
+        className="tdRemove"
+        onClick={() => {
+          props.onRemove();
+          props.show('✅ Tech Debt Removed');
+        }}
+        aria-label="Remove"
+      >
         ✕
       </button>
     </div>
@@ -191,6 +201,8 @@ export default function TechDebtView() {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
   const [showHiddenDone, setShowHiddenDone] = useState(false);
+
+  const { toasts, show } = useToast();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -268,6 +280,7 @@ export default function TechDebtView() {
               setDraft('');
               setPage(1);
               setMode('TODO');
+              show('✅ Tech Debt Added');
             }}
           />
           <button
@@ -277,6 +290,7 @@ export default function TechDebtView() {
               setDraft('');
               setPage(1);
               setMode('TODO');
+              show('✅ Tech Debt Added');
             }}
           >
             Add
@@ -356,10 +370,15 @@ export default function TechDebtView() {
                       mode === 'DONE'
                         ? () => {
                             const ret = it.hidden ?? false;
+                            const message = ret ? 'Hide' : 'Show';
+                            show(`✅ ${message} Tech Debt`);
                             setHidden(it.id, !ret);
                           }
                         : undefined
                     }
+                    show={(msg: string) => {
+                      show(msg);
+                    }}
                   />
                 ))
               )}
@@ -416,6 +435,8 @@ export default function TechDebtView() {
           </button>
         </div>
       </div>
+
+      <ToastContainer toasts={toasts} />
     </div>
   );
 }

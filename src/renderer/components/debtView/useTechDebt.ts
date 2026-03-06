@@ -123,19 +123,21 @@ export function useTechDebt() {
       if (!doc) return;
       const now = new Date().toISOString();
       const items = doc.items
-        .map((x) =>
-          x.id !== id
-            ? x
-            : {
-                ...x,
-                status:
-                  x.status === TechDebtStatus.DONE
-                    ? TechDebtStatus.WIP
-                    : TechDebtStatus.DONE,
-                doneAt: x.status === TechDebtStatus.DONE ? now : undefined,
-                hidden: false,
-              },
-        )
+        .map((x) => {
+          if (x.id === id) {
+            const newStatus =
+              x.status === TechDebtStatus.DONE
+                ? TechDebtStatus.TODO
+                : TechDebtStatus.DONE;
+            return {
+              ...x,
+              status: newStatus,
+              doneAt: newStatus === TechDebtStatus.DONE ? now : undefined,
+              hidden: false,
+            };
+          }
+          return x;
+        })
         .sort(sortTechDebtItems)
         .map((x, i) => ({ ...x, order: i }));
 

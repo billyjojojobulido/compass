@@ -1,12 +1,14 @@
-import type {
-  WeeklyWorkspace,
-  WorkdayKey,
-  DayTag,
-  WeekEpicChange,
+import {
+  type WeeklyWorkspace,
+  type WorkdayKey,
+  type DayTag,
+  type WeekEpicChange,
+  TechDebtStatus,
 } from '@/domain/types';
 import { buildDayDigestFromSnapshot } from './buildDayDigestFromSnapshot';
 import { getPriorityConfig, sprintConfig } from '@/config/sprintConfig.ts';
 import { apiClient } from '@/services/ApiClient';
+import { isDoneInWeek } from '../time';
 
 const WORKDAYS: WorkdayKey[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
@@ -46,11 +48,29 @@ export async function renderWeeklyMarkdown(
 
   // TODO: Tech Debt
   pushSectionTitle(lines, '历史遗留（技术债务）');
-  const techDebt = ws.notes?.techDebt ?? [];
-  if (techDebt.length === 0) {
-    lines.push('- （空）');
-  } else {
-    for (const it of techDebt) lines.push(`- ${it}`);
+
+  const techDebtDoc = await apiClient.techDebt.read();
+
+  if (techDebtDoc) {
+    const techDebts = techDebtDoc.items;
+    if (!techDebts || techDebtDoc.items?.length === 0) {
+      lines.push('- （空）');
+    } else {
+      techDebts.forEach((item) => {
+        if (item.status === TechDebtStatus.DONE) {
+          if (
+            isDoneInWeek(item.doneAt, {
+              start: ws.range.start,
+              end: ws.range.end,
+            })
+          ) {
+            lines.push('- [x] ', item.title);
+          }
+        } else {
+          lines.push('- [ ] ', item.title);
+        }
+      });
+    }
   }
   lines.push('');
 
