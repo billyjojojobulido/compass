@@ -10,6 +10,7 @@ Updates in minor version will be recorded in this file.
 
 - 🚀 Tech Debt View
   - finalized MVP stage of Tech Debt page to display & persist long-term tasks that shall not be stored in SprintBoard
+  - enhanced the UI & interaction features on Tech Debt UI.
 - ✨ Week Report Summary Modal
   - allow users to manually edit & save week summary
 
@@ -17,11 +18,13 @@ Updates in minor version will be recorded in this file.
 
 - 🔥 updated archive week report flow
   - click archive btn -> show week report edit modal -> click confirm btn -> do the archive
+- 🔥 Week Report now supports the summary of Tech Debt writing
 
 ### Fixed
 
 - fixed declared wrong data type when reading workspace summary issue
 - fixed blocked aria-hidden on an element issue on Week Summary modal issue
+- fixed some data issue & type issue in Tech Debt related data types
 
 ## [0.1.6] - 2026-02-28
 
