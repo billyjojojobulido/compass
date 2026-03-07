@@ -13,7 +13,7 @@ import DailyReportModal from '../reportView/DailyReportModal';
 import { apiClient } from '@/services/ApiClient';
 import { renderWeeklyMarkdown } from '@/domain/week/renderWeeklyMarkdown';
 import { calcWeekIndex } from '@/domain/time';
-import { sharedConfig } from '@/config/sharedConfig.ts';
+import { userConfig } from '@/config/userConfig.ts';
 import { WeekSummaryModal } from './WeekSummaryModal';
 
 export const LABEL: Record<string, string> = {
@@ -138,10 +138,10 @@ export default function CurrentWeekView({
 
     let weekNo: number;
 
-    if (!sharedConfig?.startDate) {
+    if (!userConfig?.startDate) {
       weekNo = 404;
     }
-    weekNo = calcWeekIndex(sharedConfig.startDate, ws.weekKey);
+    weekNo = calcWeekIndex(userConfig.startDate, ws.weekKey);
 
     await apiClient.legacyWeekly.write(`Week ${weekNo} (${ws.weekKey}).md`, md);
 
