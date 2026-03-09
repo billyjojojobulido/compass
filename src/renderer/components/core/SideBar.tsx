@@ -6,7 +6,8 @@ export type NavKey =
   | '待做事项'
   | '优先级管理'
   | '周总结'
-  | '历史周总结';
+  | '历史周总结'
+  | '设置';
 
 type Props = {
   sidebarOpen: boolean;

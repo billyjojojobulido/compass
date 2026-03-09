@@ -28,7 +28,7 @@ export default function AppShell() {
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         onOpenSettings={() => {
-          console.log('APP ROOT :: open settings');
+          setActiveNav('设置');
         }}
       />
 
