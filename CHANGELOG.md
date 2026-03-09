@@ -4,6 +4,19 @@ Updates in minor version will be recorded in this file.
 
 ---
 
+## [0.1.8] - 2026-xx-xx
+
+### Added
+
+- 🚀 Setting Menu View
+  - implemented setting menu view that allows user to setup some custom config.
+  - enhanced the UI & interaction features on Setting Menu UI.
+
+### Changed
+
+- 🔥 upgarded UserConfig data type to support setting feature
+  - incl. Langauge & Theme & Time Zone
+
 ## [0.1.7] - 2026-03-07
 
 ### Added
