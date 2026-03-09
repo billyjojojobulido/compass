@@ -1,4 +1,9 @@
-import { DailySnapshot, TechDebtDoc, WeeklyWorkspace } from '@/domain/types';
+import {
+  DailySnapshot,
+  TechDebtDoc,
+  UserConfig,
+  WeeklyWorkspace,
+} from '@/domain/types';
 import { app } from 'electron';
 import { LegacyWeekItem } from '@/domain/types';
 import fs from 'fs';
@@ -477,4 +482,53 @@ export function writeTechDebt(doc: TechDebtDoc) {
   return { ok: true as const, path: file };
 }
 
+//#endregion
+
+//#region user setting
+export function userConfigDir() {
+  return path.join(getDataRoot(), 'config');
+}
+
+function userConfigFilePath() {
+  return path.join(userConfigDir(), 'userConfig.json');
+}
+
+function ensureUserConfigDir() {
+  const dir = userConfigDir();
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
+export function readUserConfig(): UserConfig {
+  ensureUserConfigDir();
+  const file = userConfigFilePath();
+
+  if (!fs.existsSync(file)) {
+    return {
+      startDate: undefined,
+    };
+  }
+
+  try {
+    const raw = fs.readFileSync(file, 'utf-8');
+    return JSON.parse(raw);
+  } catch {
+    return {
+      startDate: undefined,
+    };
+  }
+}
+
+export function writeUserConfig(doc: UserConfig) {
+  ensureUserConfigDir();
+  const file = userConfigFilePath();
+
+  const toWrite: UserConfig = {
+    ...doc,
+  };
+
+  fs.writeFileSync(file, JSON.stringify(toWrite, null, 2), 'utf-8');
+
+  return { ok: true as const, path: file };
+}
 //#endregion

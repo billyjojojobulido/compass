@@ -5,6 +5,7 @@ import {
   DailySnapshot,
   LegacyWeekItem,
   TechDebtDoc,
+  UserConfig,
   WeeklyWorkspace,
 } from '@/domain/types';
 import { contextBridge, ipcRenderer } from 'electron';
@@ -65,6 +66,10 @@ export type CompassHandler = {
     read(): Promise<TechDebtDoc>;
     write(doc: TechDebtDoc): Promise<{ ok: true; path: string }>;
   };
+  setting: {
+    read(): UserConfig;
+    write(doc: UserConfig): Promise<{ ok: true; path: string }>;
+  };
 };
 
 export type CompassChannel =
@@ -85,7 +90,9 @@ export type CompassChannel =
   | 'compass:sprint:state:write'
   | 'compass:sprint:events:append'
   | 'compass:techdebt:read'
-  | 'compass:techdebt:write';
+  | 'compass:techdebt:write'
+  | 'compass:setting:read'
+  | 'compass:setting:write';
 
 type SprintEventCursor = { monthFile: string; lastEventId?: string };
 
@@ -164,6 +171,10 @@ const compassHandler: CompassHandler = {
   techDebt: {
     read: () => ipcRenderer.invoke('compass:techdebt:read'),
     write: (doc) => ipcRenderer.invoke('compass:techdebt:write', doc),
+  },
+  setting: {
+    read: () => ipcRenderer.invoke('compass:setting:read'),
+    write: (doc) => ipcRenderer.invoke('compass:setting:write', doc),
   },
 };
 
