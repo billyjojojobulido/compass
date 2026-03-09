@@ -4,6 +4,7 @@ import type {
   DailySnapshot,
   WeeklyWorkspace,
   TechDebtDoc,
+  UserConfig,
 } from '@/domain/types';
 import { SprintEventCursor } from 'src/main/compassFs';
 
@@ -187,6 +188,16 @@ export const apiClient = {
 
     write: async (doc: TechDebtDoc) => {
       return window.compass.techDebt.write(doc);
+    },
+  },
+
+  setting: {
+    read: async () => {
+      return window.compass.setting.read();
+    },
+
+    write: async (doc: UserConfig) => {
+      return window.compass.setting.write(doc);
     },
   },
   // TODO: Future expansion points (implement when IPC exists)
