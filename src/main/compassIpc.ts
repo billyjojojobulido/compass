@@ -19,6 +19,8 @@ import {
   readSprintEvents,
   readTechDebt,
   writeTechDebt,
+  readUserConfig,
+  writeUserConfig,
 } from './compassFs';
 import { DailySnapshot, WeeklyWorkspace } from '@/domain/types';
 
@@ -126,5 +128,14 @@ export function registerCompassIpc() {
 
   ipcMain.handle('compass:techdebt:write', (_e, doc) => {
     return writeTechDebt(doc);
+  });
+
+  /* ---- user setting ---- */
+  ipcMain.handle('compass:setting:read', async () => {
+    return readUserConfig();
+  });
+
+  ipcMain.handle('compass:setting:write', (_e, doc) => {
+    return writeUserConfig(doc);
   });
 }

@@ -1,9 +1,12 @@
 import { SprintEventCursor } from 'src/main/compassFs';
 import { SprintEventV2 } from './events/sprintEventV2';
 
-export type SharedConfig = {
+export type UserConfig = {
   // TODO: add more
   startDate: WeekKey;
+  language: 'en' | 'zh';
+  timezone: string;
+  theme: string;
 };
 
 export type EntityType = 'epic' | 'task' | 'config';

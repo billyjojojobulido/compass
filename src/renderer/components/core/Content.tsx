@@ -6,6 +6,7 @@ import { useSprint } from '@/domain/sprintStore';
 import LegacyWeekView from '@/components/logView/LegacyWeekView';
 import CurrentWeekView from '../weekView/CurrentWeekView';
 import TechDebtView from '@/components/debtView/TechDebtView';
+import SettingsView from '../settingView/SettingView';
 
 export default function Content({
   activeNav,
@@ -44,6 +45,7 @@ export default function Content({
         ))}
 
       {activeNav === '技术债务' && <TechDebtView></TechDebtView>}
+      {activeNav === '设置' && <SettingsView></SettingsView>}
     </main>
   );
 }

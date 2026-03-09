@@ -1,0 +1,75 @@
+.settingsRoot {
+  padding: 12px;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(320px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.settingsCard {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.settingsCardDisabled {
+  opacity: 0.7;
+}
+
+.settingsCardTitle {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
+.settingsField {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.settingsLabel {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.settingsInput,
+.settingsSelect {
+  height: 38px;
+  border-radius: 10px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.22);
+  color: inherit;
+  outline: none;
+}
+
+.settingsInput:focus,
+.settingsSelect:focus {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.settingsHint {
+  font-size: 12px;
+  line-height: 1.4;
+  opacity: 0.65;
+}
+
+.settingsError {
+  margin-top: 12px;
+  color: crimson;
+  font-size: 12px;
+}
+
+.btnPrimary.saving {
+  opacity: 0.85;
+}
+
+.btnPrimary.done {
+  opacity: 0.95;
+}
