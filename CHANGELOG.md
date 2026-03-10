@@ -4,7 +4,7 @@ Updates in minor version will be recorded in this file.
 
 ---
 
-## [0.1.8] - 2026-xx-xx
+## [0.2.0] - 2026-xx-xx
 
 ### Added
 
