@@ -3,11 +3,12 @@ import AppShell from './components/core/AppShell';
 
 /* -- Provider -- */
 import { SprintProvider } from '@/domain/sprintStore';
-import type { SprintState } from '@/domain/types';
+import type { SprintState, UserConfig } from '@/domain/types';
 import { sprintConfig } from '@/config/sprintConfig.ts';
 /* -- Styles -- */
 import '@/styles/global.css';
 import '@/styles/layout.css';
+import { SettingsProvider } from './services/settings/SettingsContext';
 
 //#region MOCK DATA
 const mockEpics = [
@@ -66,10 +67,15 @@ const initialState: SprintState = {
   events: [],
 };
 
-export default function App() {
+export default function App(props: { initialSettings?: UserConfig }) {
+  if (!props.initialSettings) {
+    return <div>Failed to load settings.</div>;
+  }
   return (
-    <SprintProvider initialState={initialState}>
-      <AppShell />
-    </SprintProvider>
+    <SettingsProvider initialSettings={props.initialSettings}>
+      <SprintProvider initialState={initialState}>
+        <AppShell />
+      </SprintProvider>
+    </SettingsProvider>
   );
 }
