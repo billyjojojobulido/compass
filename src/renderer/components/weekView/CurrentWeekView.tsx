@@ -15,6 +15,7 @@ import { renderWeeklyMarkdown } from '@/domain/week/renderWeeklyMarkdown';
 import { calcWeekIndex } from '@/domain/time';
 import { userConfig } from '@/config/userConfig.ts';
 import { WeekSummaryModal } from './WeekSummaryModal';
+import { useSettings } from '@/services/settings/SettingsContext';
 
 export const LABEL: Record<string, string> = {
   Mon: 'Monday',
@@ -44,6 +45,7 @@ export default function CurrentWeekView({
 }: {
   reloadSidebar: () => void;
 }) {
+  const { settings } = useSettings();
   const { state } = useSprint();
   const { loading, error, ws, setWs, persistWs, reload } =
     useCurrentWeekWorkspace();
@@ -138,10 +140,15 @@ export default function CurrentWeekView({
 
     let weekNo: number;
 
-    if (!userConfig?.startDate) {
+    const startDate = settings.startDate;
+
+    if (!startDate) {
       weekNo = 404;
+      show(
+        '❌ Invalid Start Date, cannot generate week report, please configure your start date in Setting',
+      );
     }
-    weekNo = calcWeekIndex(userConfig.startDate, ws.weekKey);
+    weekNo = calcWeekIndex(startDate, ws.weekKey);
 
     await apiClient.legacyWeekly.write(`Week ${weekNo} (${ws.weekKey}).md`, md);
 
