@@ -75,7 +75,9 @@ All data stays on your machine.
 
 ## Architecture
 
-```
+```mermaid
+flowchart TD
+
 UI[React UI]
 
 Store[Sprint Store]
