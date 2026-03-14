@@ -1,14 +1,10 @@
 ## Compass 🧭
 
-`Stay on course, even when work drifts.`
+**Compass** is an offline-first desktop tool that helps engineers **track daily work, understand weekly progress, and generate structured work reports automatically**.
 
-**Compass 🧭** is a local-first work log and kanban system designed for individuals.
+Instead of writing weekly reports from scratch, Compass records your work activity during the week and produces a **clear changelog-style summary** that can be exported as Markdown.
 
-Unlike team-oriented task managers, Compass is built around a personal perspective:
-tracking progress, dependencies, blockers, and unfinished commitments.
-
-All data lives in plain local files.
-Tasks can flow across a kanban board, form parent-child structures, and be reflected into weekly logs automatically — helping you stay oriented, even when work becomes fragmented and uncertain.
+Compass is designed for developers who want a lightweight system to **reflect on work progress, manage personal tasks, and document technical activities** without relying on heavy team management platforms.
 
 ## Install
 
