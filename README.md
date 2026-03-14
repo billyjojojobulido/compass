@@ -84,3 +84,30 @@ Workspace --> FS
 
 TechDebt --> FS
 ```
+
+## Data Flow
+
+```mermaid
+flowchart LR
+
+Action[User Action]
+
+Event[Sprint Event]
+
+EventLog[Event Log]
+
+Projection[State Projection]
+
+Snapshot[Daily Snapshot]
+
+Workspace[Weekly Workspace]
+
+Report[Weekly Report]
+
+Action --> Event
+Event --> EventLog
+EventLog --> Projection
+Projection --> Snapshot
+Snapshot --> Workspace
+Workspace --> Report
+```
