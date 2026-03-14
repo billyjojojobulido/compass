@@ -13,7 +13,6 @@ import DailyReportModal from '../reportView/DailyReportModal';
 import { apiClient } from '@/services/ApiClient';
 import { renderWeeklyMarkdown } from '@/domain/week/renderWeeklyMarkdown';
 import { calcWeekIndex } from '@/domain/time';
-import { userConfig } from '@/config/userConfig.ts';
 import { WeekSummaryModal } from './WeekSummaryModal';
 import { useSettings } from '@/services/settings/SettingsContext';
 
@@ -143,10 +142,10 @@ export default function CurrentWeekView({
     const startDate = settings.startDate;
 
     if (!startDate) {
-      weekNo = 404;
       show(
         '❌ Invalid Start Date, cannot generate week report, please configure your start date in Setting',
       );
+      return;
     }
     weekNo = calcWeekIndex(startDate, ws.weekKey);
 
