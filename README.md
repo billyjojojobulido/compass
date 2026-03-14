@@ -16,6 +16,28 @@ Many engineers experience the same problems that I have:
 
 Compass solves this by acting as a personal work log + task board + weekly reporting engine, designed specifically for developers.
 
+## Compass Philosophy
+
+Compass follows three guiding principles:
+
+> Offline First
+
+- Your work log belongs to you.
+  No cloud dependency is required.
+
+> Lightweight but Structured
+
+- Compass focuses on clarity and reflection, not heavy project management.
+
+> Developer-Centric
+
+The tool is built around real developer workflows:
+
+- technical exploration
+- debugging sessions
+- incremental progress
+- personal knowledge tracking
+
 ## Install
 
 Clone the repo and install dependencies:
