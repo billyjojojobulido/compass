@@ -1,6 +1,20 @@
-## Compass 🧭
+<p align="center">
+  <h1 align="center">🧭 Compass</h1>
+  <p align="center">
+    Offline-first work journal and weekly reporting tool for developers
+  </p>
 
-> Compass is a **personal navigation system for engineering work**.
+  <p align="center">
+    Track your work · Understand your progress · Generate weekly reports
+  </p>
+
+  <p align="center">
+    <img src="https://img.shields.io/badge/status-MVP-orange"/>
+    <img src="https://img.shields.io/badge/platform-desktop-blue"/>
+    <img src="https://img.shields.io/badge/electron-react-green"/>
+    <img src="https://img.shields.io/badge/license-MIT-lightgrey"/>
+  </p>
+</p>
 
 **Compass** is an offline-first desktop tool that helps engineers **track daily work, understand weekly progress, and generate structured work reports automatically**.
 
