@@ -75,7 +75,7 @@ All data stays on your machine.
 
 ## Architecture
 
-```mermaid
+```
 UI[React UI]
 
 Store[Sprint Store]
