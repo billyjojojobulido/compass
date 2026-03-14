@@ -1,5 +1,7 @@
 ## Compass 🧭
 
+> Compass is a **personal navigation system for engineering work**.
+
 **Compass** is an offline-first desktop tool that helps engineers **track daily work, understand weekly progress, and generate structured work reports automatically**.
 
 Instead of writing weekly reports from scratch, Compass records your work activity during the week and produces a **clear changelog-style summary** that can be exported as Markdown.
