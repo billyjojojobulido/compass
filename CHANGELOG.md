@@ -16,6 +16,7 @@ Updates in minor version will be recorded in this file.
 
 - 🔥 upgarded UserConfig data type to support setting feature
   - incl. Langauge & Theme & Time Zone
+- 🔥 migrated original userConfig file reading to API based userConfig Wrapper components
 
 ## [0.1.7] - 2026-03-07
 
