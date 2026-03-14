@@ -56,3 +56,31 @@ Manage research tasks, investigations, and long-term improvements.
 
 • **Offline-First Data Model**  
 All data stays on your machine.
+
+## Architecture
+
+```mermaid
+UI[React UI]
+
+Store[Sprint Store]
+Workspace[Weekly Workspace]
+TechDebt[Tech Debt Store]
+
+Events[Event Log]
+
+Snapshots[Daily Snapshot]
+
+FS[Local File System]
+
+UI --> Store
+UI --> Workspace
+UI --> TechDebt
+
+Store --> Events
+Events --> FS
+
+Snapshots --> Workspace
+Workspace --> FS
+
+TechDebt --> FS
+```
