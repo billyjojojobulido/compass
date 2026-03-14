@@ -38,6 +38,25 @@ The tool is built around real developer workflows:
 - incremental progress
 - personal knowledge tracking
 
+## What Compass Does
+
+Compass combines several capabilities in a single lightweight desktop tool:
+
+• **Sprint Board**  
+Track your ongoing tasks and epics with a lightweight personal board.
+
+• **Daily Work Changelog**  
+Automatically detect what changed each day in your work.
+
+• **Weekly Report Generator**  
+Generate structured Markdown reports ready to submit to your team.
+
+• **Technical Debt Tracker**  
+Manage research tasks, investigations, and long-term improvements.
+
+• **Offline-First Data Model**  
+All data stays on your machine.
+
 ## Install
 
 Clone the repo and install dependencies:
