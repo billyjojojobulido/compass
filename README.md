@@ -12,7 +12,7 @@
     <img src="https://img.shields.io/badge/status-MVP-orange"/>
     <img src="https://img.shields.io/badge/platform-desktop-blue"/>
     <img src="https://img.shields.io/badge/electron-react-green"/>
-    <img src="https://img.shields.io/badge/license-MIT-lightgrey"/>
+    <img src="https://img.shields.io/badge/license-Apache-lightgrey"/>
   </p>
 </p>
 
