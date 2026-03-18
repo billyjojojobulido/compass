@@ -1,145 +1,131 @@
-## Compass 🧭
+<p align="center">
+  <h1 align="center">🧭 Compass</h1>
+  <p align="center">
+    Offline-first work journal and weekly reporting tool for developers
+  </p>
 
-`Stay on course, even when work drifts.`
+  <p align="center">
+    Track your work · Understand your progress · Generate weekly reports
+  </p>
 
-**Compass 🧭** is a local-first work log and kanban system designed for individuals.
+  <p align="center">
+    <img src="https://img.shields.io/badge/status-MVP-orange"/>
+    <img src="https://img.shields.io/badge/platform-desktop-blue"/>
+    <img src="https://img.shields.io/badge/electron-react-green"/>
+    <img src="https://img.shields.io/badge/license-Apache-lightgrey"/>
+  </p>
+</p>
 
-Unlike team-oriented task managers, Compass is built around a personal perspective:
-tracking progress, dependencies, blockers, and unfinished commitments.
+**Compass** is an offline-first desktop tool that helps engineers **track daily work, understand weekly progress, and generate structured work reports automatically**.
 
-All data lives in plain local files.
-Tasks can flow across a kanban board, form parent-child structures, and be reflected into weekly logs automatically — helping you stay oriented, even when work becomes fragmented and uncertain.
+Instead of writing weekly reports from scratch, Compass records your work activity during the week and produces a **clear changelog-style summary** that can be exported as Markdown.
 
-## Install
+Compass is designed for developers who want a lightweight system to **reflect on work progress, manage personal tasks, and document technical activities** without relying on heavy team management platforms.
 
-Clone the repo and install dependencies:
+## Why Compass Exists
 
-```bash
-npm install
-```
+Many engineers experience the same problems that I have:
+• Work is spread across multiple tools (Jira, GitHub, Slack, emails).
+• Weekly reports take time to reconstruct from memory.
+• Personal technical exploration and low-priority work rarely appear in official task trackers.
+• Existing productivity tools are either too heavy or too generic.
 
-## Starting Development
+Compass solves this by acting as a personal work log + task board + weekly reporting engine, designed specifically for developers.
 
-Start the app in the `dev` environment:
+## Compass Philosophy
 
-```bash
-npm start
-```
+Compass follows three guiding principles:
 
-## Packaging for Production
+> Offline First
 
-To package apps for the local platform:
+- Your work log belongs to you.
+  No cloud dependency is required.
 
-```bash
-npm run package
-```
+> Lightweight but Structured
+
+- Compass focuses on clarity and reflection, not heavy project management.
+
+> Developer-Centric
+
+The tool is built around real developer workflows:
+
+- technical exploration
+- debugging sessions
+- incremental progress
+- personal knowledge tracking
+
+## What Compass Does
+
+Compass combines several capabilities in a single lightweight desktop tool:
+
+• **Sprint Board**  
+Track your ongoing tasks and epics with a lightweight personal board.
+
+• **Daily Work Changelog**  
+Automatically detect what changed each day in your work.
+
+• **Weekly Report Generator**  
+Generate structured Markdown reports ready to submit to your team.
+
+• **Technical Debt Tracker**  
+Manage research tasks, investigations, and long-term improvements.
+
+• **Offline-First Data Model**  
+All data stays on your machine.
 
 ## Architecture
 
-### System Breakdown
+```mermaid
+flowchart TD
 
-<pre>
-[ UI Views ]
-  ├─ SprintBoard
-  ├─ PriorityView
-  ├─ CurrentWeeklyReport
-  └─ HistoryWeeklyReport
-        ↑
-[ Projections Layer ]
-  ├─ selectDailyReport(events, state, date)
-  ├─ selectWeeklyReport(events, state, weekId)
-  ├─ selectCarryOverTasks(prevWeekReport)
-  └─ selectLegacyWeekList(fsIndex)
-        ↑
-[ Domain Store ]
-  ├─ SprintState
-  ├─ SprintEvents[]
-  └─ Actions (emit events)
-        ↑
-[ Persistence Layer ]
-  ├─ Event Log Files
-  ├─ Weekly Report Files
-  └─ Legacy Import Files
-        ↑
-[ Electron IPC / FS ]
-</pre>
+UI[React UI]
 
-### Data Pipelines
+Store[Sprint Store]
+Workspace[Weekly Workspace]
+TechDebt[Tech Debt Store]
 
-<pre>
-SprintStore + Events
-        ↓
-Daily Snapshot (State Layer / Cold Data)
-        ↓
-Weekly Projection
-        ↓
-Weekly Report (Presentation Layer / Human Readable)
-        ↓
-Sidebar History View
-</pre>
+Events[Event Log]
 
-### Data Lifecycle Map
+Snapshots[Daily Snapshot]
 
-<pre>
-┌───────────────────────────────┐
-│           User Intent         │
-│  (UI interactions, decisions) │
-└───────────────┬───────────────┘
-                │
-                ▼
-┌───────────────────────────────┐
-│          Domain Actions       │
-│  createTask / moveTask / ...  │
-└───────────────┬───────────────┘
-                │ emit
-                ▼
-┌───────────────────────────────┐
-│           Event Log           │   ← append-only, grows forever
-│   events/YYYY-MM.ndjson       │
-│                               │
-│  - immutable                  │
-│  - replayable                 │
-│  - analytics source           │
-└───────────────┬───────────────┘
-                │ replay / reduce
-                ▼
-┌───────────────────────────────┐
-│          SprintState          │   ← bounded working set
-│        (state.json)           │
-│                               │
-│  - current epics/tasks only   │
-│  - hot data                   │
-│  - hydrated on app start      │
-└───────────────┬───────────────┘
-                │ snapshot (daily)
-                ▼
-┌───────────────────────────────┐
-│        Daily Snapshot         │   ← cold state checkpoint
-│  snapshots/YYYY/YYYY-MM-DD    │
-│                               │
-│  - full state clone           │
-│  - deterministic              │
-│  - used for diff              │
-└───────────────┬───────────────┘
-                │ project
-                ▼
-┌───────────────────────────────┐
-│       Weekly Workspace        │   ← editable working doc
-│      workspace.json           │
-│                               │
-│  - Mon–Fri days               │
-│  - changelog per day          │
-│  - day off / collapse / tags  │
-│  - NOT source of truth        │
-└───────────────┬───────────────┘
-                │ archive
-                ▼
-┌───────────────────────────────┐
-│      Legacy Weekly Report     │   ← human-readable history
-│   legacy-weekly/WeekXX.md     │
-│                               │
-│  - frozen                     │
-│  - versioned by content       │
-│  - shown in Sidebar history   │
-└───────────────────────────────┘
-</pre>
+FS[Local File System]
+
+UI --> Store
+UI --> Workspace
+UI --> TechDebt
+
+Store --> Events
+Events --> FS
+
+Snapshots --> Workspace
+Workspace --> FS
+
+TechDebt --> FS
+```
+
+## Data Flow
+
+```mermaid
+flowchart LR
+
+Action[User Action]
+
+Event[Sprint Event]
+
+EventLog[Event Log]
+
+Projection[State Projection]
+
+Snapshot[Daily Snapshot]
+
+Workspace[Weekly Workspace]
+
+Report[Weekly Report]
+
+Action --> Event
+Event --> EventLog
+EventLog --> Projection
+Projection --> Snapshot
+Snapshot --> Workspace
+Workspace --> Report
+```
