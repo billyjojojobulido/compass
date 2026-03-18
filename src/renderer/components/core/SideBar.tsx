@@ -1,5 +1,15 @@
 import React from 'react';
 import { LegacyWeekItem } from '@/domain/types';
+import i18n from '@/services/i18n/i18n';
+
+const enum NAV_KEY {
+  TECH_DEBT,
+  TODO,
+  PRIORITY,
+  WEEKLY_REPORT,
+  LEGACY_REPORT,
+  SETTING_MENU,
+}
 
 export type NavKey =
   | '技术债务'
@@ -43,7 +53,7 @@ export default function Sidebar({
           <section className="navTop">
             <NavButton
               active={activeNav === '技术债务'}
-              label="技术债务"
+              label={i18n.t('SideBar.TechDebt')}
               icon="🛠️"
               onClick={() => onChangeNav('技术债务')}
             />
