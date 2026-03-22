@@ -2,7 +2,7 @@ import React from 'react';
 import { LegacyWeekItem } from '@/domain/types';
 import i18n from '@/services/i18n/i18n';
 
-const enum NAV_KEY {
+export const enum NAV_KEY {
   TECH_DEBT,
   TODO,
   PRIORITY,
@@ -11,18 +11,10 @@ const enum NAV_KEY {
   SETTING_MENU,
 }
 
-export type NavKey =
-  | '技术债务'
-  | '待做事项'
-  | '优先级管理'
-  | '周总结'
-  | '历史周总结'
-  | '设置';
-
 type Props = {
   sidebarOpen: boolean;
-  activeNav: NavKey;
-  onChangeNav: (nav: NavKey) => void;
+  activeNav: NAV_KEY;
+  onChangeNav: (nav: NAV_KEY) => void;
   onRequestClose: () => void; // click backdrop to close
   legacyWeeks: LegacyWeekItem[];
 
@@ -52,28 +44,28 @@ export default function Sidebar({
         <div className="sidebarInner">
           <section className="navTop">
             <NavButton
-              active={activeNav === '技术债务'}
+              active={activeNav === NAV_KEY.TECH_DEBT}
               label={i18n.t('SideBar.TechDebt')}
               icon="🛠️"
-              onClick={() => onChangeNav('技术债务')}
+              onClick={() => onChangeNav(NAV_KEY.TECH_DEBT)}
             />
             <NavButton
-              active={activeNav === '待做事项'}
+              active={activeNav === NAV_KEY.TODO}
               label="待做事项"
               icon="✅"
-              onClick={() => onChangeNav('待做事项')}
+              onClick={() => onChangeNav(NAV_KEY.TODO)}
             />
             <NavButton
-              active={activeNav === '优先级管理'}
+              active={activeNav === NAV_KEY.PRIORITY}
               label="优先级管理"
               icon="⚡️"
-              onClick={() => onChangeNav('优先级管理')}
+              onClick={() => onChangeNav(NAV_KEY.PRIORITY)}
             />{' '}
             <NavButton
-              active={activeNav === '周总结'}
+              active={activeNav === NAV_KEY.WEEKLY_REPORT}
               label="周总结"
               icon="📝"
-              onClick={() => onChangeNav('周总结')}
+              onClick={() => onChangeNav(NAV_KEY.WEEKLY_REPORT)}
             />
           </section>
 

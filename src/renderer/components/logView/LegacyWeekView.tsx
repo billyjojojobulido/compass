@@ -3,13 +3,14 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import './legacyWeekView.css';
 import { apiClient } from '@/services/ApiClient';
+import { NAV_KEY } from '../core/SideBar';
 
 export default function LegacyWeekView({
   fileName,
   onChangeNav,
 }: {
   fileName: string;
-  onChangeNav: (key: string) => void;
+  onChangeNav: (key: NAV_KEY) => void;
 }) {
   const [md, setMd] = useState<string>('Loading...');
 
@@ -46,7 +47,10 @@ export default function LegacyWeekView({
 
         {/* button area on Top Right */}
         <div className="contentActions">
-          <button className="btnGhost" onClick={() => onChangeNav('周总结')}>
+          <button
+            className="btnGhost"
+            onClick={() => onChangeNav(NAV_KEY.WEEKLY_REPORT)}
+          >
             Back to This Week
           </button>
         </div>

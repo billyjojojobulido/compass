@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { NavKey } from '@/components/core/SideBar';
+import { NAV_KEY } from '@/components/core/SideBar';
 import SprintBoardView from '@/components/sprintView/SprintBoardView';
 import PriorityView from '@/components/priortyView/PriorityView';
 import { useSprint } from '@/domain/sprintStore';
@@ -14,28 +14,30 @@ export default function Content({
   activeWeekFile,
   reloadSidebar,
 }: {
-  activeNav: NavKey;
-  onChangeNav: (nav: NavKey) => void;
+  activeNav: NAV_KEY;
+  onChangeNav: (nav: NAV_KEY) => void;
   activeWeekFile: string | null;
   reloadSidebar: () => void;
 }) {
   const { state, actions } = useSprint();
 
   const jumpToEpic = (epicId: string) => {
-    onChangeNav('待做事项');
+    onChangeNav(NAV_KEY.TODO);
     actions.requestScrollToEpic(epicId);
   };
 
   return (
     <main className="content">
-      {activeNav === '待做事项' && <SprintBoardView />}
-      {activeNav === '优先级管理' && <PriorityView onRedirect={jumpToEpic} />}
+      {activeNav === NAV_KEY.TODO && <SprintBoardView />}
+      {activeNav === NAV_KEY.PRIORITY && (
+        <PriorityView onRedirect={jumpToEpic} />
+      )}
 
-      {activeNav === '周总结' && (
+      {activeNav === NAV_KEY.WEEKLY_REPORT && (
         <CurrentWeekView reloadSidebar={reloadSidebar} />
       )}
 
-      {activeNav === '历史周总结' &&
+      {activeNav === NAV_KEY.LEGACY_REPORT &&
         (activeWeekFile ? (
           <LegacyWeekView fileName={activeWeekFile} onChangeNav={onChangeNav} />
         ) : (
@@ -44,8 +46,8 @@ export default function Content({
           </div>
         ))}
 
-      {activeNav === '技术债务' && <TechDebtView></TechDebtView>}
-      {activeNav === '设置' && <SettingsView></SettingsView>}
+      {activeNav === NAV_KEY.TECH_DEBT && <TechDebtView></TechDebtView>}
+      {activeNav === NAV_KEY.SETTING_MENU && <SettingsView></SettingsView>}
     </main>
   );
 }

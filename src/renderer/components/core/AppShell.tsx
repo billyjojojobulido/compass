@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import TopBar from './TopBar';
-import Sidebar, { NavKey } from './SideBar';
+import Sidebar, { NAV_KEY } from './SideBar';
 import Content from '@/components/core/Content';
 import { LegacyWeekItem } from '@/domain/types';
 import { apiClient } from '@/services/ApiClient';
 
 export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeNav, setActiveNav] = useState<NavKey>('待做事项');
+  const [activeNav, setActiveNav] = useState<NAV_KEY>(NAV_KEY.TODO);
   /* history week log index + week log that is currently chosen */
   const [legacyWeeks, setLegacyWeeks] = useState<LegacyWeekItem[]>([]);
   const [activeWeekFile, setActiveWeekFile] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export default function AppShell() {
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         onOpenSettings={() => {
-          setActiveNav('设置');
+          setActiveNav(NAV_KEY.SETTING_MENU);
         }}
       />
 
@@ -38,7 +38,7 @@ export default function AppShell() {
           activeNav={activeNav}
           onChangeNav={(nav) => {
             setActiveNav(nav);
-            if (nav !== '历史周总结') setActiveWeekFile(null);
+            if (nav !== NAV_KEY.LEGACY_REPORT) setActiveWeekFile(null);
           }}
           onRequestClose={() => setSidebarOpen(false)}
           legacyWeeks={legacyWeeks}
