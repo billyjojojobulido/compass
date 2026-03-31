@@ -48,14 +48,14 @@
     }
   ],
   "stakeholders": [
-    { "id": "ME", "label": "我" },
-    { "id": "FE", "label": "前端" },
-    { "id": "BE", "label": "后端" },
+    { "id": "ME", "label": "Me" },
+    { "id": "FE", "label": "Mobile" },
+    { "id": "BE", "label": "Backend" },
     { "id": "QA", "label": "QA" },
-    { "id": "ART", "label": "设计" },
-    { "id": "COPY", "label": "文案" },
+    { "id": "ART", "label": "Designer" },
+    { "id": "COPY", "label": "Copy Writer" },
     { "id": "MATH", "label": "Math" },
-    { "id": "EXT", "label": "第三方" }
+    { "id": "EXT", "label": "External" }
   ],
   "statuses": [
     { "id": "TODO", "label": "TODO", "tone": "gray", "toClose": false },
