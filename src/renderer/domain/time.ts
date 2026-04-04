@@ -196,3 +196,28 @@ export function isDoneInWeek(
   // start inclusive, end exclusive
   return done >= start && done < end;
 }
+
+export function parseLocalDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+export function formatLocalDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+export function addDays(date: Date, amount: number): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() + amount);
+  return d;
+}
+
+export function getWorkdayKeysFromWeekKey(weekKey: string): string[] {
+  const monday = parseLocalDate(weekKey);
+  return [0, 1, 2, 3, 4].map((offset) =>
+    formatLocalDate(addDays(monday, offset)),
+  );
+}
